@@ -3,11 +3,12 @@ import LandingPage from './shared/pages/LandingPage'
 import ComingSoon from './shared/pages/ComingSoon'
 import HDMERPApp from './apps/HDMERPApp'
 import HDMAIApp from './apps/HDMAIApp'
+import SmartPOSApp from './apps/SmartPOSApp'
 
 const routerFuture = { v7_startTransition: true, v7_relativeSplatPath: true }
 
 const systemConfig = {
-  smartpos: false,
+  smartpos: true,
   hdmerp: true,
   hdmvault: false,
   hdmai: true,
@@ -20,7 +21,7 @@ function App() {
     <BrowserRouter future={routerFuture}>
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/smartpos/*" element={systemConfig.smartpos ? <ComingSoon /> : <ComingSoon />} />
+        <Route path="/smartpos/*" element={systemConfig.smartpos ? <SmartPOSApp /> : <ComingSoon />} />
         <Route path="/hdmerp/*" element={systemConfig.hdmerp ? <HDMERPApp /> : <ComingSoon />} />
         <Route path="/hdmvault/*" element={<ComingSoon />} />
         <Route path="/hdmai/*" element={systemConfig.hdmai ? <HDMAIApp /> : <ComingSoon />} />

@@ -3,6 +3,7 @@ import Dashboard from '../../pages/hdmai/Dashboard';
 import ApiKeys from '../../pages/hdmai/ApiKeys';
 import Users from '../../pages/hdmai/Users';
 import Health from '../../pages/hdmai/Health';
+import AIConfigPage from '../../pages/hdmai/AIConfig';
 
 const routes = (
   <>
@@ -11,6 +12,7 @@ const routes = (
     <Route path="api-keys" element={<ApiKeys />} />
     <Route path="users" element={<Users />} />
     <Route path="health" element={<Health />} />
+    <Route path="ai-config" element={<AIConfigPage />} />
   </>
 );
 
