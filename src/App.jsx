@@ -4,15 +4,17 @@ import ComingSoon from './shared/pages/ComingSoon'
 import HDMERPApp from './apps/HDMERPApp'
 import HDMAIApp from './apps/HDMAIApp'
 import SmartPOSApp from './apps/SmartPOSApp'
+import SparkApp from './apps/SparkApp'
+import HDMVaultApp from './apps/HDMVaultApp'
 
 const routerFuture = { v7_startTransition: true, v7_relativeSplatPath: true }
 
 const systemConfig = {
   smartpos: true,
   hdmerp: true,
-  hdmvault: false,
+  hdmvault: true,
   hdmai: true,
-  spark: false,
+  spark: true,
   vibe: false
 }
 
@@ -23,9 +25,9 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/smartpos/*" element={systemConfig.smartpos ? <SmartPOSApp /> : <ComingSoon />} />
         <Route path="/hdmerp/*" element={systemConfig.hdmerp ? <HDMERPApp /> : <ComingSoon />} />
-        <Route path="/hdmvault/*" element={<ComingSoon />} />
+        <Route path="/hdmvault/*" element={systemConfig.hdmvault ? <HDMVaultApp /> : <ComingSoon />} />
         <Route path="/hdmai/*" element={systemConfig.hdmai ? <HDMAIApp /> : <ComingSoon />} />
-        <Route path="/spark/*" element={systemConfig.spark ? <ComingSoon /> : <ComingSoon />} />
+        <Route path="/spark/*" element={systemConfig.spark ? <SparkApp /> : <ComingSoon />} />
         <Route path="/vibe/*" element={<ComingSoon />} />
         <Route path="*" element={<ComingSoon />} />
       </Routes>
