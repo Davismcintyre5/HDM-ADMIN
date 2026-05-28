@@ -1,6 +1,6 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import { useThemeSidebar } from '../../../context/smartpos/ThemeSidebarContext';
-import { HiViewGrid, HiOfficeBuilding, HiCash, HiCreditCard, HiCog, HiSparkles, HiMail, HiDatabase, HiChevronLeft, HiChevronRight, HiX } from 'react-icons/hi';
+import { HiViewGrid, HiOfficeBuilding, HiCash, HiCreditCard, HiCog, HiSparkles, HiMail, HiDatabase, HiChevronLeft, HiChevronRight, HiX, HiHome } from 'react-icons/hi';
 
 const navSections = [
   {
@@ -55,6 +55,9 @@ export default function Sidebar() {
             </div>
           ))}
         </nav>
+        <Link to="/" className="mx-3 mb-2 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-[var(--text-secondary)] hover:bg-[var(--sidebar-hover)] transition-colors">
+          <HiHome className="w-4 h-4 flex-shrink-0" /> {sidebarOpen && 'Return Home'}
+        </Link>
         {sidebarOpen && <div className="p-4 border-t border-[var(--border-color)] text-xs text-[var(--text-muted)] text-center">SmartPOS v1.0</div>}
       </aside>
     </>
