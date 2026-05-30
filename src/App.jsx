@@ -6,6 +6,8 @@ import HDMAIApp from './apps/HDMAIApp'
 import SmartPOSApp from './apps/SmartPOSApp'
 import SparkApp from './apps/SparkApp'
 import HDMVaultApp from './apps/HDMVaultApp'
+import DocusoftApp from './apps/DocusoftApp'
+import PortfolioApp from './apps/PortfolioApp'
 
 const routerFuture = { v7_startTransition: true, v7_relativeSplatPath: true }
 
@@ -15,6 +17,8 @@ const systemConfig = {
   hdmvault: true,
   hdmai: true,
   spark: true,
+  docusoft: true,
+  portfolio: true,
   vibe: false
 }
 
@@ -28,6 +32,8 @@ function App() {
         <Route path="/hdmvault/*" element={systemConfig.hdmvault ? <HDMVaultApp /> : <ComingSoon />} />
         <Route path="/hdmai/*" element={systemConfig.hdmai ? <HDMAIApp /> : <ComingSoon />} />
         <Route path="/spark/*" element={systemConfig.spark ? <SparkApp /> : <ComingSoon />} />
+        <Route path="/docusoft/*" element={systemConfig.docusoft ? <DocusoftApp /> : <ComingSoon />} />
+        <Route path="/portfolio/*" element={systemConfig.portfolio ? <PortfolioApp /> : <ComingSoon />} />
         <Route path="/vibe/*" element={<ComingSoon />} />
         <Route path="*" element={<ComingSoon />} />
       </Routes>
