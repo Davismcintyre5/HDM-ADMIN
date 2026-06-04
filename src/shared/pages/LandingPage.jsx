@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import {
   HiShoppingCart, HiOfficeBuilding, HiShieldCheck, HiSparkles,
-  HiLightningBolt, HiMusicNote, HiDocumentText, HiBriefcase, HiArrowRight
+  HiLightningBolt, HiMusicNote, HiDocumentText, HiBriefcase, HiGlobe, HiArrowRight
 } from 'react-icons/hi'
 
 const systems = [
@@ -52,6 +52,12 @@ const systems = [
     icon: HiMusicNote, bgGradient: 'from-purple-500 via-violet-500 to-blue-500', bgLight: 'bg-purple-50 dark:bg-purple-950',
     textColor: 'text-purple-600 dark:text-purple-400', borderColor: 'border-purple-200 dark:border-purple-800',
     hoverBg: 'hover:bg-purple-600', stats: { users: '8,901', sessions: '23K', engagement: '87%' }
+  },
+  {
+    id: 'bizhub', name: 'BizHub Kenya', description: 'Multi-module business platform',
+    icon: HiGlobe, bgGradient: 'from-teal-500 to-cyan-600', bgLight: 'bg-teal-50 dark:bg-teal-950',
+    textColor: 'text-teal-600 dark:text-teal-400', borderColor: 'border-teal-200 dark:border-teal-800',
+    hoverBg: 'hover:bg-teal-600', stats: { modules: '4', users: '2,500', businesses: '890' }
   }
 ]
 
@@ -70,7 +76,7 @@ export default function LandingPage() {
         </div>
       </div>
       <div className="max-w-7xl mx-auto px-3 sm:px-6 py-6 sm:py-12">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
           {systems.map((system) => (
             <div key={system.id} onClick={() => handleSystemClick(system.id)}
               className={`bg-[var(--card-bg)] rounded-xl sm:rounded-2xl shadow-md sm:shadow-lg border ${system.borderColor} cursor-pointer transform transition-all duration-300 hover:scale-[1.02] sm:hover:scale-105 hover:shadow-xl sm:hover:shadow-2xl overflow-hidden group`}>
