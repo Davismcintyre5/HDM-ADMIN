@@ -10,6 +10,16 @@ import ConfirmDialog from '../../../components/bizhub/ui/ConfirmDialog';
 import { formatDate } from '../../../utils/bizhub/formatDate';
 import { HiDownload, HiRefresh, HiTrash, HiPlus, HiClock } from 'react-icons/hi';
 
+const BASE_URL = import.meta.env.VITE_BIZHUB_API || 'http://localhost:5000/api/admin';
+
+function getToken() {
+  return localStorage.getItem('bizhub_token');
+}
+
+function authHeaders() {
+  return { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' };
+}
+
 export default function BackupsSettings() {
   const [backups, setBackups] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,24 +38,20 @@ export default function BackupsSettings() {
       .finally(() => setLoading(false));
   };
 
-useEffect(() => {
+  useEffect(() => {
     fetchBackups();
-    const token = localStorage.getItem('bizhub_token');
-    fetch('http://localhost:5000/api/admin/backups/settings', {
-      headers: { 'Authorization': `Bearer ${token}` },
-    })
-    .then(r => r.json())
-    .then(data => {
-      // Response is flat: { enabled, frequency, time, retentionDays, ... }
-      setAutoSettings({
-        enabled: data.enabled || false,
-        frequency: data.frequency || 'daily',
-        time: data.time || '02:00',
-        retentionDays: data.retentionDays || 30,
-      });
-    })
-    .catch(() => {})
-    .finally(() => setSettingsLoading(false));
+    fetch(`${BASE_URL}/backups/settings`, { headers: authHeaders() })
+      .then(r => r.json())
+      .then(data => {
+        setAutoSettings({
+          enabled: data.enabled || false,
+          frequency: data.frequency || 'daily',
+          time: data.time || '02:00',
+          retentionDays: data.retentionDays || 30,
+        });
+      })
+      .catch(() => {})
+      .finally(() => setSettingsLoading(false));
   }, []);
 
   const handleCreate = async () => {
@@ -57,11 +63,22 @@ useEffect(() => {
 
   const handleDownload = async (id) => {
     try {
-      const blob = await downloadBackup(id);
+      const response = await fetch(`${BASE_URL}/backups/${id}/download`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      if (!response.ok) throw new Error('Download failed');
+      const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = `backup-${id}.zip`;
-      document.body.appendChild(a); a.click(); document.body.removeChild(a); window.URL.revokeObjectURL(url);
-    } catch (err) { alert('Download failed'); }
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `backup-${id}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert('Download failed');
+    }
   };
 
   const handleRestore = async () => {
@@ -77,10 +94,9 @@ useEffect(() => {
   const handleSaveAutoSettings = async () => {
     setSavingSettings(true);
     try {
-      const token = localStorage.getItem('bizhub_token');
-      await fetch('http://localhost:5000/api/admin/backups/settings', {
+      await fetch(`${BASE_URL}/backups/settings`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        headers: authHeaders(),
         body: JSON.stringify(autoSettings),
       });
       alert('Auto-backup settings saved');
@@ -114,7 +130,6 @@ useEffect(() => {
 
   return (
     <div className="space-y-6">
-      {/* Auto-Backup Settings */}
       <Card>
         <div className="flex items-center gap-2 mb-4">
           <HiClock className="w-5 h-5 text-teal-600" />
@@ -155,7 +170,6 @@ useEffect(() => {
         )}
       </Card>
 
-      {/* Backup History */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-[var(--text-primary)]">Backup History</h3>
@@ -166,7 +180,6 @@ useEffect(() => {
         </Card>
       </div>
 
-      {/* Import Section */}
       <Card>
         <div className="flex items-center gap-2 mb-4">
           <span className="text-2xl">📥</span>
@@ -203,14 +216,13 @@ function ImportSection() {
     if (!file) { setError('Please select a file'); return; }
     setImporting(true); setError(''); setResult(null);
     try {
-      const token = localStorage.getItem('bizhub_token');
       const formData = new FormData();
       formData.append('file', file);
       formData.append('collection', collection);
       formData.append('mode', mode);
-      const res = await fetch('http://localhost:5000/api/admin/backups/import', {
+      const res = await fetch(`${BASE_URL}/backups/import`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${getToken()}` },
         body: formData,
       });
       const data = await res.json();

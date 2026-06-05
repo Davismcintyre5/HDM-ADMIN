@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
-import { getAISettings, updateAISettings, testAIConnection } from '../../../services/bizhub/chatbot';
+import { getAISettings, updateAISettings } from '../../../services/bizhub/chatbot';
 import Input from '../../../components/bizhub/ui/Input';
+import Toggle from '../../../components/bizhub/ui/Toggle';
 import Button from '../../../components/bizhub/ui/Button';
+import Modal from '../../../components/bizhub/ui/Modal';
 import Spinner from '../../../components/bizhub/ui/Spinner';
 import Card from '../../../components/bizhub/ui/Card';
 
@@ -13,114 +15,143 @@ const PROVIDERS = [
   { value: 'custom', label: 'Custom', needsUrl: true, needsKey: true },
 ];
 
+const MODULES = [
+  { key: 'resto', label: 'RestoManagerKE', icon: '🍽️' },
+  { key: 'pharma', label: 'PharmaSys', icon: '💊' },
+  { key: 'electro', label: 'ElectroStore', icon: '📱' },
+  { key: 'apartment', label: 'MyApartment', icon: '🏢' },
+];
+
 export default function AISettings() {
   const [settings, setSettings] = useState(null);
+  const [moduleSettings, setModuleSettings] = useState({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
+  const [configModal, setConfigModal] = useState({ open: false, module: null, form: {} });
 
-  useEffect(() => { getAISettings().then(res => setSettings(res.data || res)).catch(console.error).finally(() => setLoading(false)); }, []);
+  useEffect(() => {
+    loadAll();
+  }, []);
+
+  const loadAll = async () => {
+    setLoading(true);
+    try {
+      const globalRes = await getAISettings();
+      setSettings(globalRes.data || globalRes);
+
+      // Load per-module settings
+      const moduleData = {};
+      for (const mod of MODULES) {
+        try {
+          const token = localStorage.getItem('bizhub_token');
+          const res = await fetch(`http://localhost:5000/api/admin/chatbot/ai/${mod.key}`, {
+            headers: { 'Authorization': `Bearer ${token}` },
+          });
+          const data = await res.json();
+          moduleData[mod.key] = data.data || data;
+        } catch {
+          moduleData[mod.key] = { enabled: false };
+        }
+      }
+      setModuleSettings(moduleData);
+    } catch (err) { console.error(err); }
+    setLoading(false);
+  };
 
   const updateField = (key, value) => setSettings(prev => ({ ...prev, [key]: value }));
 
   const handleSave = async () => {
     setSaving(true);
-    try { await updateAISettings(settings); alert('AI settings saved'); } catch (err) { alert(err.message); }
+    try { await updateAISettings(settings); alert('Global AI settings saved'); } catch (err) { alert(err.message); }
     setSaving(false);
   };
 
-const handleTest = async () => {
+  const handleToggleModule = async (modKey, enabled) => {
+    try {
+      const token = localStorage.getItem('bizhub_token');
+      await fetch(`http://localhost:5000/api/admin/chatbot/ai/${modKey}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ enabled }),
+      });
+      setModuleSettings(prev => ({ ...prev, [modKey]: { ...prev[modKey], enabled } }));
+    } catch (err) { alert(err.message); }
+  };
+
+  const handleConfigureModule = (modKey) => {
+    const modSettings = moduleSettings[modKey] || { enabled: false, provider: 'hdm-ai', baseUrl: '', apiKey: '', systemPrompt: '', model: '', maxTokens: 200, temperature: 0.7 };
+    setConfigModal({ open: true, module: modKey, form: { ...modSettings } });
+  };
+
+  const handleSaveModuleConfig = async () => {
+    setSaving(true);
+    try {
+      const token = localStorage.getItem('bizhub_token');
+      await fetch(`http://localhost:5000/api/admin/chatbot/ai/${configModal.module}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(configModal.form),
+      });
+      setModuleSettings(prev => ({ ...prev, [configModal.module]: configModal.form }));
+      setConfigModal({ open: false, module: null, form: {} });
+      alert(`${MODULES.find(m => m.key === configModal.module)?.label} AI settings saved`);
+    } catch (err) { alert(err.message); }
+    setSaving(false);
+  };
+
+  const handleTest = async () => {
     setTesting(true);
     try {
       const baseUrl = (settings.baseUrl || '').replace(/\/$/, '');
-      const apiKey = settings.apiKey || '';
       const provider = settings.provider || 'hdm-ai';
-      
-      // Different providers have different test endpoints
-      let testUrl, testHeaders, testBody;
-      
       if (provider === 'hdm-ai') {
-        // HDM AI — test with a simple health or chat endpoint
-        testUrl = baseUrl.replace(/\/api\/v1\/?$/, '') + '/health';
-        const res = await fetch(testUrl);
+        const res = await fetch(baseUrl.replace(/\/api\/v1\/?$/, '') + '/health');
         const data = await res.json().catch(() => ({}));
         if (data.status === 'healthy' || data.success || res.ok) {
           alert('✅ HDM AI server is reachable and healthy!');
         } else {
-          alert('⚠️ Server reached but health check failed. API may still work.');
+          alert('⚠️ Server reached but health check failed.');
         }
       } else if (provider === 'openai') {
-        testUrl = 'https://api.openai.com/v1/models';
-        const res = await fetch(testUrl, {
-          headers: { 'Authorization': `Bearer ${apiKey}` },
-        });
-        if (res.ok) {
-          alert('✅ OpenAI connection successful! API key is valid.');
-        } else if (res.status === 401) {
-          alert('❌ Invalid OpenAI API key.');
-        } else {
-          alert('❌ OpenAI API error: HTTP ' + res.status);
-        }
+        const res = await fetch('https://api.openai.com/v1/models', { headers: { 'Authorization': `Bearer ${settings.apiKey}` } });
+        if (res.ok) alert('✅ OpenAI connection successful!');
+        else if (res.status === 401) alert('❌ Invalid OpenAI API key.');
+        else alert('❌ OpenAI API error: HTTP ' + res.status);
       } else if (provider === 'groq') {
-        testUrl = 'https://api.groq.com/openai/v1/models';
-        const res = await fetch(testUrl, {
-          headers: { 'Authorization': `Bearer ${apiKey}` },
-        });
-        if (res.ok) {
-          alert('✅ Groq connection successful! API key is valid.');
-        } else if (res.status === 401) {
-          alert('❌ Invalid Groq API key.');
-        } else {
-          alert('❌ Groq API error: HTTP ' + res.status);
-        }
+        const res = await fetch('https://api.groq.com/openai/v1/models', { headers: { 'Authorization': `Bearer ${settings.apiKey}` } });
+        if (res.ok) alert('✅ Groq connection successful!');
+        else if (res.status === 401) alert('❌ Invalid Groq API key.');
+        else alert('❌ Groq API error: HTTP ' + res.status);
       } else if (provider === 'anthropic') {
-        testUrl = 'https://api.anthropic.com/v1/messages';
-        const res = await fetch(testUrl, {
+        const res = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': apiKey,
-            'anthropic-version': '2023-06-01',
-          },
+          headers: { 'Content-Type': 'application/json', 'x-api-key': settings.apiKey, 'anthropic-version': '2023-06-01' },
           body: JSON.stringify({ model: 'claude-3-haiku-20240307', max_tokens: 1, messages: [{ role: 'user', content: 'test' }] }),
         });
-        if (res.ok) {
-          alert('✅ Anthropic connection successful! API key is valid.');
-        } else if (res.status === 401 || res.status === 403) {
-          alert('❌ Invalid Anthropic API key.');
-        } else {
-          alert('❌ Anthropic API error: HTTP ' + res.status);
-        }
+        if (res.ok) alert('✅ Anthropic connection successful!');
+        else if (res.status === 401 || res.status === 403) alert('❌ Invalid Anthropic API key.');
+        else alert('❌ Anthropic API error: HTTP ' + res.status);
       } else {
-        // Custom — just try to reach the base URL
-        testUrl = baseUrl + '/health';
-        const res = await fetch(testUrl).catch(() => null);
-        if (res?.ok) {
-          alert('✅ Custom server is reachable!');
-        } else {
-          // Try base URL directly
-          const res2 = await fetch(baseUrl).catch(() => null);
-          if (res2) {
-            alert('⚠️ Server reached but no health endpoint found. API may still work.');
-          } else {
-            alert('❌ Cannot reach server. Check the Base URL.');
-          }
-        }
+        const res = await fetch(baseUrl + '/health').catch(() => null);
+        if (res?.ok) alert('✅ Custom server is reachable!');
+        else alert('❌ Cannot reach server.');
       }
-    } catch (err) {
-      alert('❌ Connection failed. Check the Base URL: ' + (settings.baseUrl || 'Not set'));
-    }
+    } catch { alert('❌ Connection failed.'); }
     setTesting(false);
   };
+
   if (loading) return <div className="flex justify-center py-10"><Spinner size="lg" /></div>;
   if (!settings) return null;
 
   const provider = PROVIDERS.find(p => p.value === settings.provider);
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-6 max-w-3xl">
+      {/* Global AI Config */}
       <Card>
-        <h3 className="font-semibold text-[var(--text-primary)] mb-4">AI Configuration</h3>
+        <h3 className="font-semibold text-[var(--text-primary)] mb-4">🌐 Global AI Configuration</h3>
+        <p className="text-xs text-[var(--text-muted)] mb-4">Default settings used when no module-specific AI is configured.</p>
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Provider</label>
@@ -144,12 +175,84 @@ const handleTest = async () => {
             <textarea value={settings.systemPrompt || ''} onChange={(e) => updateField('systemPrompt', e.target.value)} rows={3}
               className="w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--text-primary)] focus:ring-2 focus:ring-teal-500 resize-y text-sm" />
           </div>
-          <Button variant="outline" size="sm" onClick={handleTest} loading={testing}>
-            {testing ? 'Testing...' : 'Test Connection'}
-          </Button>
+          <Button variant="outline" size="sm" onClick={handleTest} loading={testing}>Test Connection</Button>
+        </div>
+        <div className="mt-4 pt-4 border-t">
+          <Button onClick={handleSave} loading={saving}>Save Global AI Settings</Button>
         </div>
       </Card>
-      <Button onClick={handleSave} loading={saving}>Save AI Settings</Button>
+
+      {/* Per-Module AI Settings */}
+      <Card>
+        <h3 className="font-semibold text-[var(--text-primary)] mb-4">📦 Per-Module AI Settings</h3>
+        <p className="text-xs text-[var(--text-muted)] mb-4">Override global AI settings for specific modules. Falls back to global if not configured.</p>
+        <div className="space-y-3">
+          {MODULES.map(mod => {
+            const modConfig = moduleSettings[mod.key] || { enabled: false };
+            return (
+              <div key={mod.key} className="flex items-center justify-between p-3 bg-[var(--bg-secondary)] rounded-lg">
+                <div className="flex items-center gap-3">
+                  <span className="text-xl">{mod.icon}</span>
+                  <span className="font-medium text-[var(--text-primary)]">{mod.label}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Toggle checked={modConfig.enabled || false} onChange={(v) => handleToggleModule(mod.key, v)} />
+                  <Button size="sm" variant="outline" onClick={() => handleConfigureModule(mod.key)}>Configure</Button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+
+      {/* Module Config Modal */}
+      <Modal
+        open={configModal.open}
+        onClose={() => setConfigModal({ open: false, module: null, form: {} })}
+        title={`Configure ${MODULES.find(m => m.key === configModal.module)?.icon} ${MODULES.find(m => m.key === configModal.module)?.label} AI`}
+        size="md"
+      >
+        <div className="space-y-4">
+          <Toggle
+            label="Enabled"
+            checked={configModal.form.enabled || false}
+            onChange={(v) => setConfigModal(prev => ({ ...prev, form: { ...prev.form, enabled: v } }))}
+          />
+          {configModal.form.enabled && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Provider</label>
+                <select value={configModal.form.provider || 'hdm-ai'} onChange={(e) => {
+                  const p = PROVIDERS.find(pr => pr.value === e.target.value);
+                  setConfigModal(prev => ({ ...prev, form: { ...prev.form, provider: e.target.value, baseUrl: p?.baseUrl || '' } }));
+                }} className="w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--input-bg)] text-sm">
+                  {PROVIDERS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+                </select>
+              </div>
+              {(PROVIDERS.find(p => p.value === configModal.form.provider)?.needsUrl) && (
+                <Input label="Base URL" value={configModal.form.baseUrl || ''} onChange={(e) => setConfigModal(prev => ({ ...prev, form: { ...prev.form, baseUrl: e.target.value } }))} />
+              )}
+              {(PROVIDERS.find(p => p.value === configModal.form.provider)?.needsKey) && (
+                <Input label="API Key" type="password" value={configModal.form.apiKey || ''} onChange={(e) => setConfigModal(prev => ({ ...prev, form: { ...prev.form, apiKey: e.target.value } }))} placeholder="••••••••" />
+              )}
+              <Input label="Model" value={configModal.form.model || ''} onChange={(e) => setConfigModal(prev => ({ ...prev, form: { ...prev.form, model: e.target.value } }))} />
+              <div className="grid grid-cols-2 gap-4">
+                <Input label="Max Tokens" type="number" value={configModal.form.maxTokens || ''} onChange={(e) => setConfigModal(prev => ({ ...prev, form: { ...prev.form, maxTokens: Number(e.target.value) } }))} />
+                <Input label="Temperature" type="number" step="0.1" value={configModal.form.temperature || ''} onChange={(e) => setConfigModal(prev => ({ ...prev, form: { ...prev.form, temperature: parseFloat(e.target.value) } }))} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">System Prompt</label>
+                <textarea value={configModal.form.systemPrompt || ''} onChange={(e) => setConfigModal(prev => ({ ...prev, form: { ...prev.form, systemPrompt: e.target.value } }))} rows={4}
+                  className="w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--text-primary)] focus:ring-2 focus:ring-teal-500 resize-y text-sm" />
+              </div>
+            </>
+          )}
+          <div className="flex justify-end gap-3 pt-2 border-t">
+            <Button variant="secondary" onClick={() => setConfigModal({ open: false, module: null, form: {} })}>Cancel</Button>
+            <Button onClick={handleSaveModuleConfig} loading={saving}>Save Module AI</Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
