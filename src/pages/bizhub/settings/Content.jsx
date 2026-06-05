@@ -6,7 +6,7 @@ import Button from '../../../components/bizhub/ui/Button';
 import Spinner from '../../../components/bizhub/ui/Spinner';
 import Card from '../../../components/bizhub/ui/Card';
 
-const CONTENT_TABS = ['hero', 'features', 'pricing', 'footer'];
+const CONTENT_TABS = ['hero', 'features', 'pricing', 'footer', 'downloads'];
 
 export default function ContentSettings() {
   const [activeTab, setActiveTab] = useState('hero');
@@ -199,6 +199,42 @@ export default function ContentSettings() {
               <Button size="sm" variant="outline" onClick={() => updateField('columns', [...(content.columns || []), { title: '', links: [] }])}>
                 + Add Column
               </Button>
+            </div>
+          )}
+
+          {/* Downloads */}
+          {activeTab === 'downloads' && (
+            <div className="space-y-6">
+              <h3 className="font-semibold text-[var(--text-primary)] mb-4">📥 Downloads Section</h3>
+              <p className="text-xs text-[var(--text-muted)] mb-4">Configure download links for the BizHub Kenya apps.</p>
+
+              <div className="p-4 rounded-lg border border-[var(--border-color)] space-y-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">📱</span>
+                  <div>
+                    <h4 className="font-medium text-[var(--text-primary)]">Android App</h4>
+                    <p className="text-xs text-[var(--text-muted)]">Google Play Store download link</p>
+                  </div>
+                </div>
+                <div className="ml-10 space-y-3">
+                  <Input label="Download Link" value={content.android?.link || ''} onChange={(e) => updateField('android', { ...content.android, link: e.target.value })} placeholder="https://play.google.com/store/apps/details?id=ke.bizhub" />
+                  <Toggle label="Enabled" checked={content.android?.enabled || false} onChange={(v) => updateField('android', { ...content.android, enabled: v })} />
+                </div>
+              </div>
+
+              <div className="p-4 rounded-lg border border-[var(--border-color)] space-y-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">💻</span>
+                  <div>
+                    <h4 className="font-medium text-[var(--text-primary)]">Desktop App</h4>
+                    <p className="text-xs text-[var(--text-muted)]">Windows/macOS/Linux download link</p>
+                  </div>
+                </div>
+                <div className="ml-10 space-y-3">
+                  <Input label="Download Link" value={content.desktop?.link || ''} onChange={(e) => updateField('desktop', { ...content.desktop, link: e.target.value })} placeholder="https://bizhub.pxxl.click/downloads/desktop" />
+                  <Toggle label="Enabled" checked={content.desktop?.enabled || false} onChange={(v) => updateField('desktop', { ...content.desktop, enabled: v })} />
+                </div>
+              </div>
             </div>
           )}
 
