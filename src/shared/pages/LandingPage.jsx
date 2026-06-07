@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import {
   HiShoppingCart, HiOfficeBuilding, HiShieldCheck, HiSparkles,
-  HiLightningBolt, HiMusicNote, HiDocumentText, HiBriefcase, HiGlobe, HiArrowRight
+  HiLightningBolt, HiMusicNote, HiDocumentText, HiBriefcase, HiGlobe, HiMail, HiArrowRight
 } from 'react-icons/hi'
 
 const systems = [
@@ -58,6 +58,12 @@ const systems = [
     icon: HiGlobe, bgGradient: 'from-teal-500 to-cyan-600', bgLight: 'bg-teal-50 dark:bg-teal-950',
     textColor: 'text-teal-600 dark:text-teal-400', borderColor: 'border-teal-200 dark:border-teal-800',
     hoverBg: 'hover:bg-teal-600', stats: { modules: '4', users: '2,500', businesses: '890' }
+  },
+  {
+    id: 'bridge', name: 'HDM Bridge', description: 'Email delivery & communication platform',
+    icon: HiMail, bgGradient: 'from-indigo-500 to-blue-600', bgLight: 'bg-indigo-50 dark:bg-indigo-950',
+    textColor: 'text-indigo-600 dark:text-indigo-400', borderColor: 'border-indigo-200 dark:border-indigo-800',
+    hoverBg: 'hover:bg-indigo-600', stats: { emails: '1.2M', users: '3,400', delivery: '99.7%' }
   }
 ]
 

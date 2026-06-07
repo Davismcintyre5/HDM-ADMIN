@@ -10,6 +10,7 @@ import DocusoftApp from './apps/DocusoftApp'
 import PortfolioApp from './apps/PortfolioApp'
 import VibeApp from './apps/VibeApp'
 import BizhubApp from './apps/BizhubApp'
+import BridgeApp from './apps/BridgeApp'
 
 const routerFuture = { v7_startTransition: true, v7_relativeSplatPath: true }
 
@@ -22,7 +23,8 @@ const systemConfig = {
   docusoft: true,
   portfolio: true,
   vibe: true,
-  bizhub: true
+  bizhub: true,
+  bridge: true
 }
 
 function App() {
@@ -39,6 +41,7 @@ function App() {
         <Route path="/portfolio/*" element={systemConfig.portfolio ? <PortfolioApp /> : <ComingSoon />} />
         <Route path="/vibe/*" element={systemConfig.vibe ? <VibeApp /> : <ComingSoon />} />
         <Route path="/bizhub/*" element={systemConfig.bizhub ? <BizhubApp /> : <ComingSoon />} />
+        <Route path="/bridge/*" element={systemConfig.bridge ? <BridgeApp /> : <ComingSoon />} />
         <Route path="*" element={<ComingSoon />} />
       </Routes>
     </BrowserRouter>
