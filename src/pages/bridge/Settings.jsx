@@ -7,7 +7,6 @@ const tabs = [
   { key: 'currency', label: 'Currency' },
   { key: 'ai-widget', label: 'AI Widget' },
   { key: 'legal', label: 'Legal' },
-  { key: 'analytics', label: 'Analytics' },
   { key: 'backup', label: 'Backup' },
   { key: 'admins', label: 'Admins' },
   { key: 'audit', label: 'Audit Logs' },

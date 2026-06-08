@@ -31,18 +31,34 @@ export default function SystemSettings() {
   return (
     <div className="space-y-6 max-w-2xl">
       <Card>
-        <h3 className="font-semibold mb-4">General Settings</h3>
+        <h3 className="font-semibold mb-4">General</h3>
         <div className="space-y-4">
           <Input label="App Name" value={settings.app_name || ''} onChange={(e) => updateField('app_name', e.target.value)} />
+          <Input label="App Logo URL" value={settings.app_logo || ''} onChange={(e) => updateField('app_logo', e.target.value)} placeholder="/logo.png" />
+        </div>
+      </Card>
+
+      <Card>
+        <h3 className="font-semibold mb-4">Contact & Support</h3>
+        <div className="space-y-4">
+          <Input label="Support Email" type="email" value={settings.support_email || ''} onChange={(e) => updateField('support_email', e.target.value)} placeholder="support@hdmbridge.com" />
+          <Input label="Contact Phone" value={settings.contact_phone || ''} onChange={(e) => updateField('contact_phone', e.target.value)} placeholder="+254 700 000000" />
+        </div>
+      </Card>
+
+      <Card>
+        <h3 className="font-semibold mb-4">Platform</h3>
+        <div className="space-y-4">
           <Toggle label="Registration Open" checked={settings.registration_open || false} onChange={(v) => updateField('registration_open', v)} />
           <Toggle label="Maintenance Mode" checked={settings.maintenance_mode || false} onChange={(v) => updateField('maintenance_mode', v)} />
           {settings.maintenance_mode && (
             <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-sm text-yellow-700 dark:text-yellow-400">
-              ⚠ Maintenance mode is ON. Public routes return 503.
+              ⚠ Maintenance mode is ON. Public routes return 503. Admin routes remain accessible.
             </div>
           )}
         </div>
       </Card>
+
       <Button onClick={handleSave} loading={saving}>Save System Settings</Button>
     </div>
   );

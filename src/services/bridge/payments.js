@@ -15,6 +15,16 @@ export async function processRefund(id, data) {
   return res.data;
 }
 
+export async function approvePayment(id) {
+  const res = await api.post(`/payments/${id}/approve`);
+  return res.data;
+}
+
+export async function rejectPayment(id, reason) {
+  const res = await api.post(`/payments/${id}/reject`, { reason });
+  return res.data;
+}
+
 export async function createManualInvoice(data) {
   const res = await api.post('/payments/manual', data);
   return res.data;

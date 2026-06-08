@@ -10,3 +10,5 @@ export * from './aiWidget';
 export * from './legal';
 export * from './backup';
 export * from './admins';
+export * from './organizations';
+export * from './notifications';

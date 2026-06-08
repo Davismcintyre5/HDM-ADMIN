@@ -1,13 +1,16 @@
 import { NavLink, Link } from 'react-router-dom';
 import { useThemeSidebar } from '../../../context/bridge/ThemeSidebarContext';
-import { HiViewGrid, HiUsers, HiCash, HiCreditCard, HiShieldCheck, HiCog, HiChevronLeft, HiChevronRight, HiX, HiHome } from 'react-icons/hi';
+import { HiViewGrid, HiUsers, HiCash, HiCreditCard, HiShieldCheck, HiChartBar, HiOfficeBuilding, HiMail, HiCog, HiChevronLeft, HiChevronRight, HiX, HiHome } from 'react-icons/hi';
 
 const navItems = [
   { to: '/bridge', icon: HiViewGrid, label: 'Dashboard', end: true },
   { to: '/bridge/users', icon: HiUsers, label: 'Users' },
+  { to: '/bridge/organizations', icon: HiOfficeBuilding, label: 'Organizations' },
   { to: '/bridge/payments', icon: HiCash, label: 'Payments' },
   { to: '/bridge/plans', icon: HiCreditCard, label: 'Plans' },
   { to: '/bridge/payment-methods', icon: HiShieldCheck, label: 'Pay Methods' },
+  { to: '/bridge/analytics', icon: HiChartBar, label: 'Analytics' },
+  { to: '/bridge/notifications', icon: HiMail, label: 'Notifications' },
   { to: '/bridge/settings', icon: HiCog, label: 'Settings' },
 ];
 
