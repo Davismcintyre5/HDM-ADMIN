@@ -12,3 +12,4 @@ export * from './system';
 export * from './backups';
 export * from './content';
 export * from './inquiries';
+export * from './email';

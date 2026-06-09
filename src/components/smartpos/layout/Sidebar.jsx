@@ -13,6 +13,12 @@ const navSections = [
     ]
   },
   {
+    title: 'Communication',
+    items: [
+      { to: '/smartpos/compose', icon: HiMail, label: 'Compose' },
+    ]
+  },
+  {
     title: 'System',
     items: [
       { to: '/smartpos/settings', icon: HiCog, label: 'Settings' },

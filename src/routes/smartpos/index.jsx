@@ -7,6 +7,7 @@ import Subscription from '../../pages/smartpos/Subscription';
 import AIConfigPage from '../../pages/smartpos/AIConfig';
 import Communication from '../../pages/smartpos/Communication';
 import Backups from '../../pages/smartpos/Backups';
+import Compose from '../../pages/smartpos/Compose';
 import Settings from '../../pages/smartpos/settings/Settings';
 import SystemSettings from '../../pages/smartpos/settings/System';
 import PaymentMethodsSettings from '../../pages/smartpos/settings/PaymentMethods';
@@ -26,6 +27,7 @@ const routes = (
     <Route path="ai-config" element={<AIConfigPage />} />
     <Route path="communication" element={<Communication />} />
     <Route path="backups" element={<Backups />} />
+    <Route path="compose" element={<Compose />} />
     <Route path="settings" element={<Settings />}>
       <Route index element={<SystemSettings />} />
       <Route path="system" element={<SystemSettings />} />
