@@ -10,3 +10,4 @@ export * from './aiConfig';
 export * from './uploads';
 export * from './legal';
 export * from './backups';
+export * from './email';

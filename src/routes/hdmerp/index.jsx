@@ -9,6 +9,7 @@ import AIConfig from '../../pages/hdmerp/AIConfig';
 import Uploads from '../../pages/hdmerp/Uploads';
 import Legal from '../../pages/hdmerp/Legal';
 import Backups from '../../pages/hdmerp/Backups';
+import Compose from '../../pages/hdmerp/Compose';
 import Settings from '../../pages/hdmerp/settings/Settings';
 import GeneralSettings from '../../pages/hdmerp/settings/General';
 import BrandingSettings from '../../pages/hdmerp/settings/Branding';
@@ -30,6 +31,7 @@ const routes = (
     <Route path="uploads" element={<Uploads />} />
     <Route path="legal" element={<Legal />} />
     <Route path="backups" element={<Backups />} />
+    <Route path="compose" element={<Compose />} />
     <Route path="settings" element={<Settings />}>
       <Route index element={<GeneralSettings />} />
       <Route path="general" element={<GeneralSettings />} />

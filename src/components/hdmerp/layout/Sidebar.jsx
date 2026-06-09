@@ -2,8 +2,8 @@ import { NavLink, Link } from 'react-router-dom';
 import { useThemeSidebar } from '../../../context/hdmerp/ThemeSidebarContext';
 import {
   HiViewGrid, HiOfficeBuilding, HiCheckCircle, HiCreditCard, HiCash,
-  HiCog, HiCloudUpload, HiScale, HiDatabase, HiSparkles, HiChevronLeft,
-  HiChevronRight, HiX, HiHome
+  HiCog, HiCloudUpload, HiScale, HiDatabase, HiSparkles, HiMail,
+  HiChevronLeft, HiChevronRight, HiX, HiHome
 } from 'react-icons/hi';
 
 const navSections = [
@@ -15,6 +15,12 @@ const navSections = [
       { to: '/hdmerp/approvals', icon: HiCheckCircle, label: 'Approvals' },
       { to: '/hdmerp/plans', icon: HiCreditCard, label: 'Plans' },
       { to: '/hdmerp/payments', icon: HiCash, label: 'Payments' },
+    ]
+  },
+  {
+    title: 'Communication',
+    items: [
+      { to: '/hdmerp/compose', icon: HiMail, label: 'Compose' },
     ]
   },
   {

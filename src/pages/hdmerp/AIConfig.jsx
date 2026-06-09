@@ -24,32 +24,26 @@ const FEATURES = [
   { key: 'outwardKeyGen', label: 'Outward Key Gen', desc: 'Tenants can generate outward API keys' },
 ];
 
-export default function AIConfig() {
+export default function AIConfigPage() {
+  const [config, setConfig] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [config, setConfig] = useState(null);
 
-  const fetchConfig = () => {
-    setLoading(true);
-    setError('');
+  useEffect(() => {
     getAIConfig()
-      .then(data => setConfig(data))
+      .then(data => setConfig(data.config || data))
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
-  };
-
-  useEffect(() => { fetchConfig(); }, []);
+  }, []);
 
   const updateConfig = (path, value) => {
     setConfig(prev => {
-      const newConfig = JSON.parse(JSON.stringify(prev));
       const parts = path.split('.');
+      const newConfig = JSON.parse(JSON.stringify(prev));
       let obj = newConfig;
       for (let i = 0; i < parts.length - 1; i++) {
-        if (!obj[parts[i]] || typeof obj[parts[i]] !== 'object') {
-          obj[parts[i]] = {};
-        }
+        if (!obj[parts[i]] || typeof obj[parts[i]] !== 'object') obj[parts[i]] = {};
         obj = obj[parts[i]];
       }
       obj[parts[parts.length - 1]] = value;
@@ -61,11 +55,8 @@ export default function AIConfig() {
     setSaving(true);
     try {
       await updateAIConfig(config);
-      alert('AI configuration saved successfully');
-      fetchConfig();
-    } catch (e) {
-      alert(e.message);
-    }
+      alert('AI configuration saved');
+    } catch (e) { alert(e.message); }
     setSaving(false);
   };
 
@@ -76,7 +67,9 @@ export default function AIConfig() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-6">AI Configuration</h1>
+
       <div className="space-y-6 max-w-3xl">
+        {/* AI Provider */}
         <Card>
           <h2 className="text-base font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
             <span className="w-1 h-5 bg-fuchsia-500 rounded-full"></span>
@@ -92,19 +85,18 @@ export default function AIConfig() {
                   updateConfig('provider', e.target.value);
                   if (provider) updateConfig('baseUrl', provider.baseUrl);
                 }}
-                className="w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
+                className="w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-fuchsia-500 text-sm"
               >
-                {PROVIDERS.map(p => (
-                  <option key={p.value} value={p.value}>{p.label}</option>
-                ))}
+                {PROVIDERS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
               </select>
             </div>
-            <Input label="Model" value={config.model || ''} onChange={(e) => updateConfig('model', e.target.value)} />
-            <Input label="Base URL" value={config.baseUrl || ''} onChange={(e) => updateConfig('baseUrl', e.target.value)} />
-            <Input label="API Key" type="password" value={config.apiKey || ''} onChange={(e) => updateConfig('apiKey', e.target.value)} />
+            <Input label="Model" value={config.model || ''} onChange={(e) => updateConfig('model', e.target.value)} placeholder="hdm-default" />
+            <Input label="Base URL" value={config.baseUrl || ''} onChange={(e) => updateConfig('baseUrl', e.target.value)} placeholder="https://..." />
+            <Input label="API Key" type="password" value={config.apiKey || ''} onChange={(e) => updateConfig('apiKey', e.target.value)} placeholder="••••••••••••••••" />
           </div>
         </Card>
 
+        {/* Features */}
         <Card>
           <h2 className="text-base font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
             <span className="w-1 h-5 bg-green-500 rounded-full"></span>
@@ -131,16 +123,19 @@ export default function AIConfig() {
           </div>
         </Card>
 
+        {/* Landing Chatbot */}
         <Card>
           <h2 className="text-base font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
             <span className="w-1 h-5 bg-blue-500 rounded-full"></span>
             Landing Chatbot
           </h2>
+
           <Toggle
             label="Enable Landing Chatbot"
             checked={!!config.landingChatbot?.enabled}
             onChange={(v) => updateConfig('landingChatbot.enabled', v)}
           />
+
           {config.landingChatbot?.enabled && (
             <div className="mt-4 ml-2 pl-4 border-l-2 border-fuchsia-300 dark:border-fuchsia-700 space-y-4">
               <div>
@@ -148,34 +143,34 @@ export default function AIConfig() {
                 <select
                   value={config.landingChatbot?.provider || 'hdm-ai'}
                   onChange={(e) => updateConfig('landingChatbot.provider', e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
+                  className="w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-fuchsia-500 text-sm"
                 >
-                  {PROVIDERS.map(p => (
-                    <option key={p.value} value={p.value}>{p.label}</option>
-                  ))}
+                  {PROVIDERS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
                 </select>
               </div>
-              <Input label="Model" value={config.landingChatbot?.model || ''} onChange={(e) => updateConfig('landingChatbot.model', e.target.value)} />
-              <Input label="API Key" type="password" value={config.landingChatbot?.apiKey || ''} onChange={(e) => updateConfig('landingChatbot.apiKey', e.target.value)} />
-              <Input label="Bot Name" value={config.landingChatbot?.botName || ''} onChange={(e) => updateConfig('landingChatbot.botName', e.target.value)} />
+              <Input label="Model" value={config.landingChatbot?.model || ''} onChange={(e) => updateConfig('landingChatbot.model', e.target.value)} placeholder="hdm-default" />
+              <Input
+                label="Base URL"
+                value={config.landingChatbot?.baseUrl || ''}
+                onChange={(e) => updateConfig('landingChatbot.baseUrl', e.target.value)}
+                placeholder="https://hdmai-server.onrender.com/api/v1 (falls back to main AI base URL if empty)"
+              />
+              <Input label="API Key" type="password" value={config.landingChatbot?.apiKey || ''} onChange={(e) => updateConfig('landingChatbot.apiKey', e.target.value)} placeholder="••••••••••••••••" />
+              <Input label="Bot Name" value={config.landingChatbot?.botName || ''} onChange={(e) => updateConfig('landingChatbot.botName', e.target.value)} placeholder="HDM Assistant" />
               <div>
                 <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Welcome Message</label>
                 <textarea
                   value={config.landingChatbot?.welcomeMessage || ''}
                   onChange={(e) => updateConfig('landingChatbot.welcomeMessage', e.target.value)}
                   rows={2}
-                  className="w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
+                  className="w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-fuchsia-500 resize-y text-sm"
+                  placeholder="Hello! How can I help you today?"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Color</label>
                 <div className="flex items-center gap-3">
-                  <input
-                    type="color"
-                    value={config.landingChatbot?.color || '#10B981'}
-                    onChange={(e) => updateConfig('landingChatbot.color', e.target.value)}
-                    className="h-10 w-16 rounded border border-[var(--border-color)] cursor-pointer"
-                  />
+                  <input type="color" value={config.landingChatbot?.color || '#10B981'} onChange={(e) => updateConfig('landingChatbot.color', e.target.value)} className="h-10 w-16 rounded border border-[var(--border-color)] cursor-pointer" />
                   <Input value={config.landingChatbot?.color || '#10B981'} onChange={(e) => updateConfig('landingChatbot.color', e.target.value)} className="flex-1" />
                 </div>
               </div>
@@ -183,17 +178,13 @@ export default function AIConfig() {
                 <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Position</label>
                 <div className="flex gap-4">
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" name="chatPosition" value="bottom-right"
-                      checked={(config.landingChatbot?.position || 'bottom-right') === 'bottom-right'}
-                      onChange={(e) => updateConfig('landingChatbot.position', e.target.value)}
-                      className="text-fuchsia-600 focus:ring-fuchsia-500" />
+                    <input type="radio" name="chatPosition" value="bottom-right" checked={(config.landingChatbot?.position || 'bottom-right') === 'bottom-right'}
+                      onChange={(e) => updateConfig('landingChatbot.position', e.target.value)} className="text-fuchsia-600 focus:ring-fuchsia-500" />
                     <span className="text-sm text-[var(--text-primary)]">Bottom Right</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" name="chatPosition" value="bottom-left"
-                      checked={config.landingChatbot?.position === 'bottom-left'}
-                      onChange={(e) => updateConfig('landingChatbot.position', e.target.value)}
-                      className="text-fuchsia-600 focus:ring-fuchsia-500" />
+                    <input type="radio" name="chatPosition" value="bottom-left" checked={config.landingChatbot?.position === 'bottom-left'}
+                      onChange={(e) => updateConfig('landingChatbot.position', e.target.value)} className="text-fuchsia-600 focus:ring-fuchsia-500" />
                     <span className="text-sm text-[var(--text-primary)]">Bottom Left</span>
                   </label>
                 </div>
@@ -203,7 +194,7 @@ export default function AIConfig() {
         </Card>
 
         <div className="flex justify-end">
-          <Button onClick={handleSave} loading={saving} size="lg">Save Changes</Button>
+          <Button onClick={handleSave} loading={saving} size="lg">Save Configuration</Button>
         </div>
       </div>
     </div>
