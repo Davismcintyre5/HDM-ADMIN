@@ -11,3 +11,4 @@ export * from './chatbot';
 export * from './reports';
 export * from './backups';
 export * from './audit';
+export * from './broadcast';

@@ -1,6 +1,6 @@
 import { NavLink, Link } from 'react-router-dom';
 import { useThemeSidebar } from '../../../context/bizhub/ThemeSidebarContext';
-import { HiViewGrid, HiUsers, HiCreditCard, HiCash, HiChartBar, HiCog, HiChevronLeft, HiChevronRight, HiX, HiHome } from 'react-icons/hi';
+import { HiViewGrid, HiUsers, HiCreditCard, HiCash, HiChartBar, HiSpeakerphone, HiCog, HiChevronLeft, HiChevronRight, HiX, HiHome } from 'react-icons/hi';
 
 const navItems = [
   { to: '/bizhub', icon: HiViewGrid, label: 'Dashboard', end: true },
@@ -8,6 +8,7 @@ const navItems = [
   { to: '/bizhub/subscriptions', icon: HiCreditCard, label: 'Subscriptions' },
   { to: '/bizhub/payments', icon: HiCash, label: 'Payments' },
   { to: '/bizhub/reports', icon: HiChartBar, label: 'Reports' },
+  { to: '/bizhub/broadcast', icon: HiSpeakerphone, label: 'Broadcast' },
   { to: '/bizhub/settings', icon: HiCog, label: 'Settings' },
 ];
 

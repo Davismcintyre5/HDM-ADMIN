@@ -14,6 +14,8 @@ import LegalSettings from '../../pages/bizhub/settings/Legal';
 import PaymentsSettingsTab from '../../pages/bizhub/settings/PaymentsSettings';
 import AuditLogsSettings from '../../pages/bizhub/settings/AuditLogs';
 import BackupsSettings from '../../pages/bizhub/settings/Backups';
+import Broadcast from '../../pages/bizhub/Broadcast';
+
 
 const routes = (
   <>
@@ -34,6 +36,7 @@ const routes = (
       <Route path="payments" element={<PaymentsSettingsTab />} />
       <Route path="audit" element={<AuditLogsSettings />} />
       <Route path="backups" element={<BackupsSettings />} />
+      <Route path="broadcast" element={<Broadcast />} />
     </Route>
   </>
 );
