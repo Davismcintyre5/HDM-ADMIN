@@ -4,6 +4,7 @@ import Users from '../../pages/bizhub/Users';
 import Subscriptions from '../../pages/bizhub/Subscriptions';
 import Payments from '../../pages/bizhub/Payments';
 import Reports from '../../pages/bizhub/Reports';
+import Broadcast from '../../pages/bizhub/Broadcast';
 import Settings from '../../pages/bizhub/Settings';
 import SystemSettings from '../../pages/bizhub/settings/System';
 import MaintenanceSettings from '../../pages/bizhub/settings/Maintenance';
@@ -14,8 +15,6 @@ import LegalSettings from '../../pages/bizhub/settings/Legal';
 import PaymentsSettingsTab from '../../pages/bizhub/settings/PaymentsSettings';
 import AuditLogsSettings from '../../pages/bizhub/settings/AuditLogs';
 import BackupsSettings from '../../pages/bizhub/settings/Backups';
-import Broadcast from '../../pages/bizhub/Broadcast';
-
 
 const routes = (
   <>
@@ -25,6 +24,7 @@ const routes = (
     <Route path="subscriptions" element={<Subscriptions />} />
     <Route path="payments" element={<Payments />} />
     <Route path="reports" element={<Reports />} />
+    <Route path="broadcast" element={<Broadcast />} />
     <Route path="settings" element={<Settings />}>
       <Route index element={<SystemSettings />} />
       <Route path="system" element={<SystemSettings />} />
@@ -36,7 +36,6 @@ const routes = (
       <Route path="payments" element={<PaymentsSettingsTab />} />
       <Route path="audit" element={<AuditLogsSettings />} />
       <Route path="backups" element={<BackupsSettings />} />
-      <Route path="broadcast" element={<Broadcast />} />
     </Route>
   </>
 );

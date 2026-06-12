@@ -2,7 +2,7 @@ import api from './api';
 
 export async function getBroadcasts() {
   const res = await api.get('/broadcasts');
-  return res.data;
+  return res.data; // Returns array directly
 }
 
 export async function sendBroadcast(data) {
