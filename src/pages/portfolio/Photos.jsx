@@ -7,8 +7,6 @@ import Input from '../../components/portfolio/ui/Input';
 import ConfirmDialog from '../../components/portfolio/ui/ConfirmDialog';
 import { HiTrash, HiUpload, HiPencil } from 'react-icons/hi';
 
-const IMAGE_BASE = 'https://docusoftserver.pxxl.click';
-
 export default function Photos() {
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,13 +28,9 @@ export default function Photos() {
 
   const getImageUrl = (photo) => {
     if (!photo) return '';
-    if (photo.url?.startsWith('http') || photo.imageUrl?.startsWith('http')) {
-      return photo.url || photo.imageUrl;
-    }
-    if (photo.path) {
-      return `${IMAGE_BASE}${photo.path.startsWith('/') ? '' : '/'}${photo.path}`;
-    }
-    return photo.url || photo.imageUrl || photo.photo || '';
+    const path = photo.path || photo.url || photo.imageUrl || photo.photo || '';
+    if (path.startsWith('http')) return path;
+    return path;
   };
 
   const openAdd = () => {
@@ -156,7 +150,6 @@ export default function Photos() {
         </div>
       )}
 
-      {/* Add/Edit Modal */}
       <Modal
         open={modal.open}
         onClose={() => setModal({ open: false, photo: null })}
@@ -168,33 +161,16 @@ export default function Photos() {
             <div className="bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 p-3 rounded-lg text-sm">{error}</div>
           )}
 
-          <Input
-            label="Title *"
-            value={form.title}
-            onChange={(e) => setForm(p => ({ ...p, title: e.target.value }))}
-            placeholder="Photo title"
-            disabled={saving}
-          />
-
-          <Input
-            label="Category"
-            value={form.category}
-            onChange={(e) => setForm(p => ({ ...p, category: e.target.value }))}
-            placeholder="e.g., Events, Office, Team"
-            disabled={saving}
-          />
+          <Input label="Title *" value={form.title} onChange={(e) => setForm(p => ({ ...p, title: e.target.value }))} placeholder="Photo title" disabled={saving} />
+          <Input label="Category" value={form.category} onChange={(e) => setForm(p => ({ ...p, category: e.target.value }))} placeholder="e.g., Events, Office, Team" disabled={saving} />
 
           <div>
             <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
               Photo {!modal.photo && '*'}
             </label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
+            <input type="file" accept="image/*" onChange={handleFileChange}
               className="w-full text-sm text-[var(--text-primary)] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-green-50 dark:file:bg-green-900/20 file:text-green-700 dark:file:text-green-400"
-              disabled={saving}
-            />
+              disabled={saving} />
             <p className="text-xs text-[var(--text-muted)] mt-1">Max 10MB. Leave empty to keep current photo.</p>
           </div>
 
