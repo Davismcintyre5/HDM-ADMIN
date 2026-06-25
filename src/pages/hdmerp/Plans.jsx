@@ -19,6 +19,7 @@ const MODULE_KEYS = [
   'finance', 'hr', 'sales', 'inventory', 'supplyChain', 'orders',
   'manufacturing', 'contacts', 'products', 'reports', 'settings',
   'dashboard', 'landingPage', 'aiSparkle', 'aiFileUpload', 'outwardApiKeys',
+  'communications', 'crm', 'projects', 'assets',
 ];
 
 const MODULE_LABELS = {
@@ -27,6 +28,7 @@ const MODULE_LABELS = {
   contacts: 'Contacts', products: 'Products', reports: 'Reports',
   settings: 'Settings', dashboard: 'Dashboard', landingPage: 'Landing Page',
   aiSparkle: 'AI Sparkle', aiFileUpload: 'AI File Upload', outwardApiKeys: 'Outward API Keys',
+  communications: 'Communications', crm: 'CRM Pipeline', projects: 'Projects & Tasks', assets: 'Asset Management',
 };
 
 const SUPPORT_LEVELS = ['community', 'email_chat', 'dedicated'];

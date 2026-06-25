@@ -1,10 +1,17 @@
 import { useNavigate } from 'react-router-dom'
 import {
   HiShoppingCart, HiOfficeBuilding, HiShieldCheck, HiSparkles,
-  HiLightningBolt, HiMusicNote, HiDocumentText, HiBriefcase, HiGlobe, HiMail, HiArrowRight
+  HiLightningBolt, HiMusicNote, HiDocumentText, HiBriefcase, HiGlobe,
+  HiMail, HiWifi, HiArrowRight
 } from 'react-icons/hi'
 
 const systems = [
+  {
+    id: 'hdmnet', name: 'HDM NET', description: 'WiFi billing & hotspot management',
+    icon: HiWifi, bgGradient: 'from-cyan-500 to-blue-600', bgLight: 'bg-cyan-50 dark:bg-cyan-950',
+    textColor: 'text-cyan-600 dark:text-cyan-400', borderColor: 'border-cyan-200 dark:border-cyan-800',
+    hoverBg: 'hover:bg-cyan-600', stats: { owners: '156', networks: '423', revenue: '$45K' }
+  },
   {
     id: 'smartpos', name: 'SmartPOS', description: 'Point of sale management system',
     icon: HiShoppingCart, bgGradient: 'from-blue-500 to-blue-600', bgLight: 'bg-blue-50 dark:bg-blue-950',
