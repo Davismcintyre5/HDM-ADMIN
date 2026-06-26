@@ -11,6 +11,7 @@ import PortfolioApp from './apps/PortfolioApp'
 import VibeApp from './apps/VibeApp'
 import BizhubApp from './apps/BizhubApp'
 import BridgeApp from './apps/BridgeApp'
+import FlaxApp from './apps/FlaxApp'
 import HDMNetApp from './apps/HDMNetApp'
 
 const routerFuture = { v7_startTransition: true, v7_relativeSplatPath: true }
@@ -26,6 +27,7 @@ const systemConfig = {
   vibe: true,
   bizhub: true,
   bridge: true,
+  flax: true,
   hdmnet: true
 }
 
@@ -44,6 +46,7 @@ function App() {
         <Route path="/vibe/*" element={systemConfig.vibe ? <VibeApp /> : <ComingSoon />} />
         <Route path="/bizhub/*" element={systemConfig.bizhub ? <BizhubApp /> : <ComingSoon />} />
         <Route path="/bridge/*" element={systemConfig.bridge ? <BridgeApp /> : <ComingSoon />} />
+        <Route path="/flax/*" element={systemConfig.flax ? <FlaxApp /> : <ComingSoon />} />
         <Route path="/hdmnet/*" element={systemConfig.hdmnet ? <HDMNetApp /> : <ComingSoon />} />
         <Route path="*" element={<ComingSoon />} />
       </Routes>
