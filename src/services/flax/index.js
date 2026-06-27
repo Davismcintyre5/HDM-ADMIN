@@ -5,3 +5,4 @@ export * from './legals';
 export * from './financial';
 export * from './backups';
 export * from './system';
+export * from './users';

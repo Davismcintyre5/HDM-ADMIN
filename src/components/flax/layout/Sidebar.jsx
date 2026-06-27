@@ -1,15 +1,16 @@
 import { NavLink, Link } from 'react-router-dom';
 import { useThemeSidebar } from '../../../context/flax/SidebarContext';
-import { HiHome, HiUsers, HiCog, HiScale, HiCash, HiArchive, HiServer, HiChevronLeft, HiChevronRight, HiX } from 'react-icons/hi';
+import { HiHome, HiUsers, HiUserGroup, HiCog, HiScale, HiCash, HiArchive, HiServer, HiChevronLeft, HiChevronRight, HiX } from 'react-icons/hi';
 
 const navItems = [
   { to: '/flax', icon: HiHome, label: 'Dashboard', end: true },
   { to: '/flax/admins', icon: HiUsers, label: 'Admins' },
-  { to: '/flax/settings', icon: HiCog, label: 'Settings' },
-  { to: '/flax/legals', icon: HiScale, label: 'Legals' },
+  { to: '/flax/users', icon: HiUserGroup, label: 'Users' },
+   { to: '/flax/legals', icon: HiScale, label: 'Legals' },
   { to: '/flax/financial', icon: HiCash, label: 'Financial' },
   { to: '/flax/backups', icon: HiArchive, label: 'Backups' },
   { to: '/flax/system', icon: HiServer, label: 'System' },
+   { to: '/flax/settings', icon: HiCog, label: 'Settings' },
 ];
 
 export default function Sidebar() {

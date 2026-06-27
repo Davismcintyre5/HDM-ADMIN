@@ -5,7 +5,6 @@ import Card from '../../components/hdmai/ui/Card';
 import Spinner from '../../components/hdmai/ui/Spinner';
 import Badge from '../../components/hdmai/ui/Badge';
 import Button from '../../components/hdmai/ui/Button';
-import Input from '../../components/hdmai/ui/Input';
 
 export default function Usage() {
   const [usage, setUsage] = useState(null);
@@ -13,17 +12,12 @@ export default function Usage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [savingProvider, setSavingProvider] = useState(false);
-  const [savingSettings, setSavingSettings] = useState(false);
-  const [temp, setTemp] = useState(0.7);
-  const [maxTokens, setMaxTokens] = useState(1024);
 
   const fetchData = () => {
     Promise.all([getUsage(), getAIConfig()])
       .then(([u, a]) => {
-        setUsage(u);
-        setAiConfig(a);
-        setTemp(a?.temperature ?? 0.7);
-        setMaxTokens(a?.max_tokens ?? 1024);
+        setUsage(u?.data || u);
+        setAiConfig(a?.data || a);
       })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
@@ -31,10 +25,9 @@ export default function Usage() {
 
   useEffect(() => { fetchData(); }, []);
 
-  // Auto-refresh every 60 seconds
   useEffect(() => {
     const interval = setInterval(() => {
-      getUsage().then(setUsage).catch(() => {});
+      getUsage().then(u => setUsage(u?.data || u)).catch(() => {});
     }, 60000);
     return () => clearInterval(interval);
   }, []);
@@ -44,30 +37,19 @@ export default function Usage() {
     try {
       await updateAIConfig({ default_provider: provider });
       const a = await getAIConfig();
-      setAiConfig(a);
-      setTemp(a?.temperature ?? 0.7);
-      setMaxTokens(a?.max_tokens ?? 1024);
-    } catch (err) { alert(err.message); }
+      setAiConfig(a?.data || a);
+    } catch (err) { alert(err.response?.data?.message || err.message); }
     setSavingProvider(false);
   };
-
-  const handleSaveSettings = async () => {
-    setSavingSettings(true);
-    try {
-      await updateAIConfig({ temperature: temp, max_tokens: maxTokens });
-      alert('AI settings saved');
-    } catch (err) { alert(err.message); }
-    setSavingSettings(false);
-  };
-
-  if (loading) return <div className="flex justify-center py-20"><Spinner size="lg" /></div>;
-  if (error) return <Card className="text-center text-red-500">{error}</Card>;
 
   const getBarColor = (percent) => {
     if (percent > 80) return 'bg-red-500';
     if (percent > 50) return 'bg-yellow-500';
     return 'bg-fuchsia-500';
   };
+
+  if (loading) return <div className="flex justify-center py-20"><Spinner size="lg" /></div>;
+  if (error) return <Card className="text-center text-red-500">{error}</Card>;
 
   return (
     <div>
@@ -90,30 +72,6 @@ export default function Usage() {
               <Button size="sm" variant={aiConfig.default_provider === 'gemini' ? 'primary' : 'secondary'} onClick={() => handleSwitchProvider('gemini')} loading={savingProvider}>Gemini</Button>
             </div>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-[var(--text-secondary)]">Temperature</span>
-                <span className="text-[var(--text-primary)] font-medium">{temp}</span>
-              </div>
-              <input type="range" min="0" max="1" step="0.1" value={temp} onChange={(e) => setTemp(parseFloat(e.target.value))}
-                className="w-full h-2 bg-[var(--bg-tertiary)] rounded-full appearance-none cursor-pointer accent-fuchsia-500" />
-              <div className="flex justify-between text-[10px] text-[var(--text-muted)]"><span>Precise (0.0)</span><span>Creative (1.0)</span></div>
-            </div>
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-[var(--text-secondary)]">Max Tokens</span>
-                <span className="text-[var(--text-primary)] font-medium">{maxTokens}</span>
-              </div>
-              <input type="range" min="100" max="4096" step="100" value={maxTokens} onChange={(e) => setMaxTokens(parseInt(e.target.value))}
-                className="w-full h-2 bg-[var(--bg-tertiary)] rounded-full appearance-none cursor-pointer accent-fuchsia-500" />
-              <div className="flex justify-between text-[10px] text-[var(--text-muted)]"><span>100</span><span>4096</span></div>
-            </div>
-          </div>
-          <div className="mt-4">
-            <Button onClick={handleSaveSettings} loading={savingSettings} size="sm">Save Settings</Button>
-          </div>
         </Card>
       )}
 
@@ -125,13 +83,9 @@ export default function Usage() {
             {Object.entries(usage.keys).map(([keyId, keyData]) => (
               <div key={keyId}>
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="font-medium text-[var(--text-primary)]">
-                    🔑 {keyData.label}
-                  </span>
+                  <span className="font-medium text-[var(--text-primary)]">🔑 {keyData.label}</span>
                   <span className="text-xs text-[var(--text-muted)]">{keyData.services}</span>
                 </div>
-
-                {/* Per-service bars */}
                 <div className="space-y-2 mb-2">
                   {Object.entries(usage.services || {})
                     .filter(([, s]) => s.key === keyData.label)
@@ -148,8 +102,6 @@ export default function Usage() {
                       </div>
                     ))}
                 </div>
-
-                {/* Key total bar */}
                 <div className="flex justify-between text-xs mb-1">
                   <span className="text-[var(--text-primary)] font-medium">Total {keyData.label}</span>
                   <span className="text-[var(--text-muted)]">{keyData.requests_today}/{keyData.limit_per_day} ({keyData.usage_percent}%)</span>

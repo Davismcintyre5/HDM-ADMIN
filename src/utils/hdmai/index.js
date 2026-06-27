@@ -1,2 +1,1 @@
-export * from './formatDate';
-export * from './constants';
+export { formatDate } from './formatDate';

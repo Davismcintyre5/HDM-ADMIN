@@ -6,6 +6,8 @@ import Legals from '../../pages/flax/Legals';
 import Financial from '../../pages/flax/Financial';
 import Backups from '../../pages/flax/Backups';
 import System from '../../pages/flax/System';
+import Users from '../../pages/flax/Users';
+import UserDetail from '../../pages/flax/UserDetail';
 
 const routes = (
   <>
@@ -17,6 +19,8 @@ const routes = (
     <Route path="financial" element={<Financial />} />
     <Route path="backups" element={<Backups />} />
     <Route path="system" element={<System />} />
+    <Route path="users" element={<Users />} />
+    <Route path="users/:id" element={<UserDetail />} />
   </>
 );
 

@@ -1,50 +1,54 @@
 import { useState } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/hdmai/AuthContext';
 import Input from '../../components/hdmai/ui/Input';
 import Button from '../../components/hdmai/ui/Button';
-import { HiArrowLeft } from 'react-icons/hi';
+import Card from '../../components/hdmai/ui/Card';
+import Spinner from '../../components/hdmai/ui/Spinner';
+import { HiSparkles } from 'react-icons/hi';
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, isAuthenticated, loading } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-  const from = location.state?.from?.pathname || '/hdmai';
-  const [form, setForm] = useState({ email: '', password: '' });
-  const [loading, setLoading] = useState(false);
-  const [serverError, setServerError] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleChange = (e) => {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
-    if (serverError) setServerError('');
-  };
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)]"><Spinner size="lg" /></div>;
+  if (isAuthenticated) return <Navigate to="/hdmai" replace />;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.email.trim() || !form.password) return;
-    setLoading(true); setServerError('');
-    try { await login(form.email.trim(), form.password); navigate(from, { replace: true }); }
-    catch (err) { setServerError(err?.response?.data?.message || err.message || 'Login failed'); }
-    finally { setLoading(false); }
+    setError('');
+    setSubmitting(true);
+    try {
+      await login(email, password);
+      navigate('/hdmai');
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || 'Login failed');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg-secondary)] flex items-center justify-center p-4 relative">
-      <Link to="/" className="absolute top-4 left-4 flex items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
-        <HiArrowLeft className="w-5 h-5" /> Return Home
-      </Link>
-      <div className="w-full max-w-md bg-[var(--card-bg)] rounded-2xl shadow-xl border border-[var(--border-color)] p-6 sm:p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-fuchsia-600 dark:text-fuchsia-400 mb-1">HDM AI</h1>
-          <p className="text-[var(--text-secondary)] text-sm">Admin Panel</p>
+    <div className="min-h-screen bg-[var(--bg-secondary)] flex items-center justify-center p-4 transition-colors duration-200">
+      <Card className="w-full max-w-md">
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-fuchsia-100 dark:bg-fuchsia-900/30 mb-4">
+            <HiSparkles className="w-8 h-8 text-fuchsia-600 dark:text-fuchsia-400" />
+          </div>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]">HDM AI Admin</h1>
+          <p className="text-sm text-[var(--text-secondary)] mt-1">Artificial Intelligence Platform</p>
         </div>
+        {error && <div className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-3 rounded-lg mb-4 text-sm">{error}</div>}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Input label="Email" name="email" type="email" value={form.email} onChange={handleChange} placeholder="admin@hdm.ai" />
-          <Input label="Password" name="password" type="password" value={form.password} onChange={handleChange} placeholder="••••••••" />
-          {serverError && <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 text-sm">{serverError}</div>}
-          <Button type="submit" className="w-full" loading={loading}>Sign In</Button>
+          <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="admin@hdmai.com" required />
+          <Input label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" required />
+          <Button type="submit" loading={submitting} className="w-full" size="lg">Sign In</Button>
         </form>
-      </div>
+      </Card>
     </div>
   );
 }
