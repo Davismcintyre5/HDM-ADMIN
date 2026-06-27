@@ -5,7 +5,7 @@ import Badge from '../../components/hdmai/ui/Badge';
 import Button from '../../components/hdmai/ui/Button';
 import Toggle from '../../components/hdmai/ui/Toggle';
 import Spinner from '../../components/hdmai/ui/Spinner';
-import { HiServer, HiChip, HiDatabase, HiLightningBolt, HiCode, HiRefresh, HiEye, HiEyeOff } from 'react-icons/hi';
+import { HiServer, HiChip, HiDatabase, HiLightningBolt, HiCode, HiRefresh, HiEye, HiEyeOff, HiExternalLink } from 'react-icons/hi';
 
 function formatUptime(seconds) {
   if (!seconds && seconds !== 0) return 'N/A';
@@ -32,8 +32,6 @@ export default function Health() {
   const [lastRefresh, setLastRefresh] = useState(null);
   const [showSecret, setShowSecret] = useState(false);
   const [countdown, setCountdown] = useState(30);
-  const countdownRef = useState(null);
-  const intervalRef = useState(null);
 
   const fetchHealth = useCallback(async () => {
     try {
@@ -66,9 +64,7 @@ export default function Health() {
   // Pause when tab inactive
   useEffect(() => {
     const handleVisibility = () => {
-      if (!document.hidden && autoRefresh) {
-        setCountdown(30);
-      }
+      if (!document.hidden && autoRefresh) setCountdown(30);
     };
     document.addEventListener('visibilitychange', handleVisibility);
     return () => document.removeEventListener('visibilitychange', handleVisibility);
@@ -88,7 +84,7 @@ export default function Health() {
         { label: 'Status', value: health?.server, badge: true },
         { label: 'Version', value: health?.version },
         { label: 'Uptime', value: formatUptime(health?.uptime) },
-        { label: 'Memory', value: health?.memory?.rss ? `${Math.round(health.memory.rss)} MB` : 'N/A' },
+        { label: 'Memory', value: health?.memory?.rss ? `${Math.round(health.memory.rss)} MB RSS / ${Math.round(health.memory.heapUsed || 0)} MB Heap` : 'N/A' },
       ],
     },
     {
@@ -122,21 +118,21 @@ export default function Health() {
     },
   ];
 
+  // Get MERN server URL from the API base
+  const apiBase = import.meta.env.VITE_HDMAI_API || 'http://localhost:5000/api/v1/admin';
+  const mernUrl = apiBase.replace('/api/v1/admin', '');
+
   return (
     <div>
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">System Health</h1>
           {lastRefresh && (
-            <p className="text-xs text-[var(--text-muted)] mt-1">
-              Last refreshed: {lastRefresh.toLocaleTimeString()}
-            </p>
+            <p className="text-xs text-[var(--text-muted)] mt-1">Last refreshed: {lastRefresh.toLocaleTimeString()}</p>
           )}
         </div>
         <div className="flex items-center gap-3">
-          {autoRefresh && (
-            <span className="text-xs text-[var(--text-muted)]">Refresh in {countdown}s</span>
-          )}
+          {autoRefresh && <span className="text-xs text-[var(--text-muted)]">Refresh in {countdown}s</span>}
           <Button size="sm" variant="ghost" onClick={handleManualRefresh} title="Refresh now">
             <HiRefresh className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </Button>
@@ -185,8 +181,26 @@ export default function Health() {
             <Badge variant={health?.environment === 'production' ? 'warning' : 'info'}>{health?.environment || 'N/A'}</Badge>
           </div>
           <div className="flex justify-between">
-            <span className="text-[var(--text-secondary)]">Python URL:</span>
-            <span className="text-[var(--text-primary)] text-xs">{health?.python_url || 'http://localhost:5002'}</span>
+            <span className="text-[var(--text-secondary)]">Uptime:</span>
+            <span className="text-[var(--text-primary)] text-xs">
+              Server {formatUptime(health?.uptime)} | Python {formatUptime(health?.python?.uptime)}
+            </span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-[var(--text-secondary)]">MERN Server URL:</span>
+            <a href={mernUrl} target="_blank" className="text-blue-600 dark:text-blue-400 text-xs flex items-center gap-1 hover:underline">
+              {mernUrl} <HiExternalLink className="w-3 h-3" />
+            </a>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-[var(--text-secondary)]">Python AI URL:</span>
+            {health?.python?.url ? (
+              <a href={health.python.url} target="_blank" className="text-blue-600 dark:text-blue-400 text-xs flex items-center gap-1 hover:underline">
+                {health.python.url} <HiExternalLink className="w-3 h-3" />
+              </a>
+            ) : (
+              <span className="text-[var(--text-muted)] text-xs">—</span>
+            )}
           </div>
           <div className="flex justify-between">
             <span className="text-[var(--text-secondary)]">Internal Secret:</span>
@@ -198,12 +212,6 @@ export default function Health() {
                 {showSecret ? <HiEyeOff className="w-3 h-3" /> : <HiEye className="w-3 h-3" />}
               </button>
             </div>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-[var(--text-secondary)]">Uptime:</span>
-            <span className="text-[var(--text-primary)] text-xs">
-              Server {formatUptime(health?.uptime)} | Python {formatUptime(health?.python?.uptime)}
-            </span>
           </div>
           <div className="flex justify-between">
             <span className="text-[var(--text-secondary)]">Auto-refresh:</span>
