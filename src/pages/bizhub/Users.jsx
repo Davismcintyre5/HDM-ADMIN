@@ -8,7 +8,14 @@ import Modal from '../../components/bizhub/ui/Modal';
 import Input from '../../components/bizhub/ui/Input';
 import ConfirmDialog from '../../components/bizhub/ui/ConfirmDialog';
 import { formatDate } from '../../utils/bizhub/formatDate';
-import { HiPencil, HiTrash, HiBan, HiCheck, HiPlus, HiEye, HiKey } from 'react-icons/hi';
+import { HiPencil, HiTrash, HiBan, HiCheck, HiPlus, HiEye, HiKey, HiClipboardCopy } from 'react-icons/hi';
+
+const MODULE_ICONS = { pharma: '💊', electro: '📱', resto: '🍽️', apartment: '🏢' };
+const MODULE_LABELS = { pharma: 'Pharma', electro: 'Electro', resto: 'Resto', apartment: 'Apt' };
+
+const overallStatusVariant = { active: 'success', partial: 'warning', expired: 'danger', pending: 'warning', inactive: 'default' };
+const moduleStatusVariant = { active: 'success', expired: 'danger', pending: 'warning', none: 'default', cancelled: 'default' };
+const subStatusVariant = { active: 'success', expired: 'danger', cancelled: 'default', pending: 'warning' };
 
 export default function Users() {
   const [users, setUsers] = useState([]);
@@ -19,6 +26,7 @@ export default function Users() {
   const [saving, setSaving] = useState(false);
   const [confirm, setConfirm] = useState({ open: false, id: null, type: '' });
   const [actionLoading, setActionLoading] = useState(false);
+  const [copiedKey, setCopiedKey] = useState('');
 
   const fetchUsers = () => {
     setLoading(true);
@@ -62,30 +70,60 @@ export default function Users() {
     setActionLoading(false);
   };
 
+  const copyKey = (key) => {
+    navigator.clipboard.writeText(key);
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(''), 2000);
+  };
+
   const columns = [
-    { key: 'name', label: 'Name', render: (row) => (
-      <button onClick={() => setViewModal({ open: true, user: row })} className="text-teal-600 hover:underline font-medium">
-        {row.name}
-      </button>
-    )},
+    {
+      key: 'name', label: 'Name',
+      render: (row) => (
+        <button onClick={() => setViewModal({ open: true, user: row })} className="text-teal-600 hover:underline font-medium">
+          {row.name}
+        </button>
+      ),
+    },
     { key: 'email', label: 'Email' },
-    { key: 'role', label: 'Role', render: (row) => <Badge variant={row.role === 'admin' ? 'teal' : 'default'}>{row.role}</Badge> },
-    { key: 'systems', label: 'Modules', render: (row) => (
-      <div className="flex gap-1 flex-wrap">{(row.systems || []).map(s => <Badge key={s} variant="gradient">{s}</Badge>)}</div>
-    )},
-    { key: 'isActive', label: 'Status', render: (row) => (
-      row.isActive ? <Badge variant="success">Active</Badge> : <Badge variant="danger">Inactive</Badge>
-    )},
-    { key: 'actions', label: 'Actions', render: (row) => (
-      <div className="flex gap-1">
-        <Button size="sm" variant="secondary" onClick={() => setViewModal({ open: true, user: row })}><HiEye className="w-4 h-4" /></Button>
-        <Button size="sm" variant="secondary" onClick={() => openEdit(row)}><HiPencil className="w-4 h-4" /></Button>
-        <Button size="sm" variant="warning" onClick={() => setConfirm({ open: true, id: row.id || row._id, type: 'toggle' })}>
-          {row.isActive ? <HiBan className="w-4 h-4" /> : <HiCheck className="w-4 h-4" />}
-        </Button>
-        <Button size="sm" variant="danger" onClick={() => setConfirm({ open: true, id: row.id || row._id, type: 'delete' })}><HiTrash className="w-4 h-4" /></Button>
-      </div>
-    )},
+    { key: 'role', label: 'Role', render: (row) => <Badge variant={row.role === 'admin' || row.role === 'owner' ? 'teal' : 'default'}>{row.role}</Badge> },
+    {
+      key: 'moduleStatus', label: 'Modules',
+      render: (row) => {
+        const modules = row.moduleStatus || {};
+        const activeModules = Object.entries(modules).filter(([, status]) => status !== 'none');
+        if (activeModules.length === 0) return <span className="text-[var(--text-muted)] text-xs">—</span>;
+        return (
+          <div className="flex gap-1 flex-wrap">
+            {activeModules.map(([key, status]) => (
+              <Badge key={key} variant={moduleStatusVariant[status] || 'default'}>
+                {MODULE_ICONS[key] || ''} {MODULE_LABELS[key] || key}
+              </Badge>
+            ))}
+          </div>
+        );
+      },
+    },
+    {
+      key: 'overallStatus', label: 'Status',
+      render: (row) => {
+        const labels = { active: 'Active', partial: '⚠ Partial', expired: 'Expired', pending: 'Pending', inactive: 'Inactive' };
+        return <Badge variant={overallStatusVariant[row.overallStatus] || 'default'}>{labels[row.overallStatus] || row.overallStatus || (row.isActive ? 'Active' : 'Inactive')}</Badge>;
+      },
+    },
+    {
+      key: 'actions', label: 'Actions',
+      render: (row) => (
+        <div className="flex gap-1">
+          <Button size="sm" variant="secondary" onClick={() => setViewModal({ open: true, user: row })}><HiEye className="w-4 h-4" /></Button>
+          <Button size="sm" variant="secondary" onClick={() => openEdit(row)}><HiPencil className="w-4 h-4" /></Button>
+          <Button size="sm" variant="warning" onClick={() => setConfirm({ open: true, id: row.id || row._id, type: 'toggle' })}>
+            {row.isActive !== false ? <HiBan className="w-4 h-4" /> : <HiCheck className="w-4 h-4" />}
+          </Button>
+          <Button size="sm" variant="danger" onClick={() => setConfirm({ open: true, id: row.id || row._id, type: 'delete' })}><HiTrash className="w-4 h-4" /></Button>
+        </div>
+      ),
+    },
   ];
 
   return (
@@ -120,46 +158,68 @@ export default function Users() {
       </Modal>
 
       {/* View Modal */}
-      <Modal open={viewModal.open} onClose={() => setViewModal({ open: false, user: null })} title="User Details" size="md">
+      <Modal open={viewModal.open} onClose={() => setViewModal({ open: false, user: null })} title="User Details" size="lg">
         {viewModal.user && (
           <div className="space-y-4">
+            {/* Basic Info */}
             <div className="bg-[var(--bg-secondary)] rounded-lg p-4 space-y-2 text-sm">
               <div className="flex justify-between"><span className="text-[var(--text-secondary)]">Name:</span><span className="text-[var(--text-primary)] font-medium">{viewModal.user.name}</span></div>
               <div className="flex justify-between"><span className="text-[var(--text-secondary)]">Email:</span><span className="text-[var(--text-primary)]">{viewModal.user.email}</span></div>
               <div className="flex justify-between"><span className="text-[var(--text-secondary)]">Phone:</span><span className="text-[var(--text-primary)]">{viewModal.user.phone || '—'}</span></div>
               <div className="flex justify-between"><span className="text-[var(--text-secondary)]">Role:</span><Badge variant="teal">{viewModal.user.role}</Badge></div>
-              <div className="flex justify-between"><span className="text-[var(--text-secondary)]">Status:</span>{viewModal.user.isActive ? <Badge variant="success">Active</Badge> : <Badge variant="danger">Inactive</Badge>}</div>
+              <div className="flex justify-between">
+                <span className="text-[var(--text-secondary)]">Overall Status:</span>
+                <Badge variant={overallStatusVariant[viewModal.user.overallStatus] || 'default'}>
+                  {viewModal.user.overallStatus || (viewModal.user.isActive ? 'active' : 'inactive')}
+                </Badge>
+              </div>
               <div className="flex justify-between"><span className="text-[var(--text-secondary)]">Joined:</span><span className="text-[var(--text-primary)]">{formatDate(viewModal.user.createdAt, 'full')}</span></div>
             </div>
 
-            {/* Licenses */}
-            {viewModal.user.licenses?.length > 0 && (
+            {/* Module Status */}
+            {viewModal.user.moduleStatus && (
               <div>
-                <h3 className="font-semibold text-[var(--text-primary)] mb-2 flex items-center gap-2"><HiKey className="w-4 h-4 text-teal-500" /> Licenses</h3>
+                <h3 className="font-semibold text-[var(--text-primary)] mb-2">Module Status</h3>
                 <div className="space-y-2">
-                  {viewModal.user.licenses.map((lic, i) => (
-                    <div key={i} className="bg-[var(--bg-secondary)] rounded-lg p-3 text-sm">
-                      <div className="flex justify-between"><span className="text-[var(--text-secondary)]">Key:</span><code className="text-[var(--text-primary)] font-mono text-xs">{lic.key}</code></div>
-                      <div className="flex justify-between"><span className="text-[var(--text-secondary)]">Plan:</span><Badge variant="gradient">{lic.plan}</Badge></div>
-                      <div className="flex justify-between"><span className="text-[var(--text-secondary)]">Valid Until:</span><span className="text-[var(--text-primary)]">{formatDate(lic.validUntil)}</span></div>
-                      <div className="flex justify-between"><span className="text-[var(--text-secondary)]">Status:</span>{lic.active ? <Badge variant="success">Active</Badge> : <Badge variant="danger">Expired</Badge>}</div>
-                      <div className="flex justify-between"><span className="text-[var(--text-secondary)]">Modules:</span><div className="flex gap-1">{(lic.modules || []).map(m => <Badge key={m} variant="teal">{m}</Badge>)}</div></div>
-                    </div>
-                  ))}
+                  {Object.entries(viewModal.user.moduleStatus)
+                    .filter(([, status]) => status !== 'none')
+                    .map(([key, status]) => (
+                      <div key={key} className="flex justify-between items-center bg-[var(--bg-secondary)] rounded-lg p-3 text-sm">
+                        <span className="text-[var(--text-primary)]">{MODULE_ICONS[key] || ''} {MODULE_LABELS[key] || key}</span>
+                        <Badge variant={moduleStatusVariant[status] || 'default'}>{status}</Badge>
+                      </div>
+                    ))}
                 </div>
               </div>
             )}
 
-            {/* Subscriptions */}
+            {/* License Keys */}
             {viewModal.user.subscriptions?.length > 0 && (
               <div>
-                <h3 className="font-semibold text-[var(--text-primary)] mb-2">Subscriptions</h3>
+                <h3 className="font-semibold text-[var(--text-primary)] mb-2 flex items-center gap-2">
+                  <HiKey className="w-4 h-4 text-teal-500" /> License Keys
+                </h3>
                 <div className="space-y-2">
                   {viewModal.user.subscriptions.map((sub, i) => (
-                    <div key={i} className="bg-[var(--bg-secondary)] rounded-lg p-3 text-sm">
-                      <div className="flex justify-between"><span className="text-[var(--text-secondary)]">Plan:</span><Badge variant="gradient">{sub.plan}</Badge></div>
-                      <div className="flex justify-between"><span className="text-[var(--text-secondary)]">Status:</span><Badge variant={sub.status === 'active' ? 'success' : 'danger'}>{sub.status}</Badge></div>
-                      <div className="flex justify-between"><span className="text-[var(--text-secondary)]">Period:</span><span className="text-[var(--text-primary)]">{formatDate(sub.startDate)} — {formatDate(sub.endDate)}</span></div>
+                    <div key={sub.id || i} className={`bg-[var(--bg-secondary)] rounded-lg p-3 text-sm border-l-4 ${sub.status === 'active' && !sub.isExpired ? 'border-green-500' : 'border-red-400'}`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs text-[var(--text-muted)]">License Key</span>
+                        <button onClick={() => copyKey(sub.licenseKey)} className="text-teal-500 hover:text-teal-600" title="Copy">
+                          <HiClipboardCopy className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <code className="text-[var(--text-primary)] font-mono text-xs break-all select-all">{sub.licenseKey}</code>
+                      {copiedKey === sub.licenseKey && <p className="text-xs text-green-500 mt-1">Copied!</p>}
+                      <div className="grid grid-cols-2 gap-2 mt-3 text-xs">
+                        <div>
+                          <span className="text-[var(--text-muted)]">Modules: </span>
+                          <div className="flex gap-1 mt-0.5">{(sub.modules || []).map(m => <Badge key={m} variant="teal">{m}</Badge>)}</div>
+                        </div>
+                        <div><span className="text-[var(--text-muted)]">Plan: </span><Badge variant="gradient">{sub.plan}</Badge></div>
+                        <div><span className="text-[var(--text-muted)]">Status: </span><Badge variant={sub.isExpired ? 'danger' : subStatusVariant[sub.status] || 'default'}>{sub.isExpired ? 'Expired' : sub.status}</Badge></div>
+                        <div><span className="text-[var(--text-muted)]">Amount: </span><span className="text-[var(--text-primary)] font-medium">KES {sub.amount?.toLocaleString() || 0}</span></div>
+                        <div className="col-span-2"><span className="text-[var(--text-muted)]">Period: </span><span className="text-[var(--text-primary)]">{formatDate(sub.startDate)} — {formatDate(sub.endDate)}</span></div>
+                      </div>
                     </div>
                   ))}
                 </div>
