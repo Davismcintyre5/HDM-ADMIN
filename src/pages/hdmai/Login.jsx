@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+import { useNavigate, Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/hdmai/AuthContext';
 import Input from '../../components/hdmai/ui/Input';
 import Button from '../../components/hdmai/ui/Button';
 import Card from '../../components/hdmai/ui/Card';
 import Spinner from '../../components/hdmai/ui/Spinner';
-import { HiSparkles } from 'react-icons/hi';
+import { HiSparkles, HiArrowLeft } from 'react-icons/hi';
 
 export default function Login() {
   const { login, isAuthenticated, loading } = useAuth();
@@ -33,7 +33,10 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg-secondary)] flex items-center justify-center p-4 transition-colors duration-200">
+    <div className="min-h-screen bg-[var(--bg-secondary)] flex items-center justify-center p-4 transition-colors duration-200 relative">
+      <Link to="/" className="absolute top-4 left-4 flex items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+        <HiArrowLeft className="w-4 h-4" /> Return Home
+      </Link>
       <Card className="w-full max-w-md">
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-fuchsia-100 dark:bg-fuchsia-900/30 mb-4">
