@@ -13,6 +13,7 @@ import BizhubApp from './apps/BizhubApp'
 import BridgeApp from './apps/BridgeApp'
 import FlaxApp from './apps/FlaxApp'
 import HDMNetApp from './apps/HDMNetApp'
+import FarmWiseApp from './apps/FarmWiseApp'
 
 const routerFuture = { v7_startTransition: true, v7_relativeSplatPath: true }
 
@@ -28,7 +29,8 @@ const systemConfig = {
   bizhub: true,
   bridge: true,
   flax: true,
-  hdmnet: true
+  hdmnet: true,
+  farmwise: true
 }
 
 function App() {
@@ -48,6 +50,7 @@ function App() {
         <Route path="/bridge/*" element={systemConfig.bridge ? <BridgeApp /> : <ComingSoon />} />
         <Route path="/flax/*" element={systemConfig.flax ? <FlaxApp /> : <ComingSoon />} />
         <Route path="/hdmnet/*" element={systemConfig.hdmnet ? <HDMNetApp /> : <ComingSoon />} />
+        <Route path="/farmwise/*" element={systemConfig.farmwise ? <FarmWiseApp /> : <ComingSoon />} />
         <Route path="*" element={<ComingSoon />} />
       </Routes>
     </BrowserRouter>

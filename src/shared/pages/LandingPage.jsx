@@ -77,6 +77,12 @@ const systems = [
     icon: HiWifi, bgGradient: 'from-cyan-500 to-blue-600', bgLight: 'bg-cyan-50 dark:bg-cyan-950',
     textColor: 'text-cyan-600 dark:text-cyan-400', borderColor: 'border-cyan-200 dark:border-cyan-800',
     hoverBg: 'hover:bg-cyan-600', stats: { owners: '156', networks: '423', revenue: '$45K' }
+  },
+  {
+    id: 'farmwise', name: 'FarmWise', description: 'Smart farm management system',
+    icon: HiSparkles, bgGradient: 'from-emerald-500 to-green-600', bgLight: 'bg-emerald-50 dark:bg-emerald-950',
+    textColor: 'text-emerald-600 dark:text-emerald-400', borderColor: 'border-emerald-200 dark:border-emerald-800',
+    hoverBg: 'hover:bg-emerald-700', stats: { farms: '45', animals: '2.3K', alerts: '12' }
   }
 ]
 
@@ -128,5 +134,5 @@ export default function LandingPage() {
         <p>HDM Systems &copy; 2026. All rights reserved.</p>
       </div>
     </div>
-  )
+  );
 }
