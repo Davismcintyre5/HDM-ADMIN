@@ -39,3 +39,18 @@ export async function deleteUser(id) {
   const res = await api.delete(`/users/${id}`);
   return res.data;
 }
+
+export async function startTrial(id, days) {
+  const res = await api.post(`/users/${id}/trial`, { days });
+  return res.data;
+}
+
+export async function extendTrial(id, days) {
+  const res = await api.post(`/users/${id}/trial/extend`, { days });
+  return res.data;
+}
+
+export async function convertToFull(id) {
+  const res = await api.post(`/users/${id}/convert`);
+  return res.data;
+}

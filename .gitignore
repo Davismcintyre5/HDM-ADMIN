@@ -4,7 +4,7 @@ node_modules/
 # Environment
 .env
 .env.local
-.env.production
+
 
 # Build output
 dist/
@@ -15,7 +15,7 @@ build/
 npm-debug.log*
 
 # Runtime data
-backups/
+
 tmp/
 uploads/*
 !uploads/.gitkeep
