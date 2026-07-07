@@ -19,3 +19,13 @@ export async function toggleMaintenance() {
   const res = await api.post('/system/maintenance');
   return res.data;
 }
+
+export async function getDownloads() {
+  const res = await api.get('/system/downloads');
+  return res.data;
+}
+
+export async function updateDownloads(data) {
+  const res = await api.put('/system/downloads', data);
+  return res.data;
+}
