@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import {
   HiShoppingCart, HiOfficeBuilding, HiShieldCheck, HiSparkles,
   HiLightningBolt, HiMusicNote, HiDocumentText, HiBriefcase, HiGlobe,
-  HiMail, HiWifi, HiCash, HiArrowRight
+  HiMail, HiWifi, HiCash, HiShoppingBag, HiArrowRight
 } from 'react-icons/hi'
 
 const systems = [
@@ -83,6 +83,12 @@ const systems = [
     icon: HiSparkles, bgGradient: 'from-emerald-500 to-green-600', bgLight: 'bg-emerald-50 dark:bg-emerald-950',
     textColor: 'text-emerald-600 dark:text-emerald-400', borderColor: 'border-emerald-200 dark:border-emerald-800',
     hoverBg: 'hover:bg-emerald-700', stats: { farms: '45', animals: '2.3K', alerts: '12' }
+  },
+  {
+    id: 'marketbridge', name: 'MarketBridge', description: 'Multi-vendor marketplace',
+    icon: HiShoppingBag, bgGradient: 'from-violet-500 to-purple-600', bgLight: 'bg-violet-50 dark:bg-violet-950',
+    textColor: 'text-violet-600 dark:text-violet-400', borderColor: 'border-violet-200 dark:border-violet-800',
+    hoverBg: 'hover:bg-violet-700', stats: { stores: '234', products: '12K', revenue: 'KES 5M' }
   }
 ]
 
