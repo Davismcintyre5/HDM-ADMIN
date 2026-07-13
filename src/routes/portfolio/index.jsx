@@ -5,6 +5,8 @@ import Services from '../../pages/portfolio/Services';
 import Projects from '../../pages/portfolio/Projects';
 import Photos from '../../pages/portfolio/Photos';
 import Contacts from '../../pages/portfolio/Contacts';
+import Cloudinary from '../../pages/portfolio/Cloudinary';
+import MongoDB from '../../pages/portfolio/MongoDB';
 import Backups from '../../pages/portfolio/Backups';
 import Company from '../../pages/portfolio/Company';
 import Settings from '../../pages/portfolio/Settings';
@@ -18,6 +20,8 @@ const routes = (
     <Route path="projects" element={<Projects />} />
     <Route path="photos" element={<Photos />} />
     <Route path="contacts" element={<Contacts />} />
+    <Route path="cloudinary" element={<Cloudinary />} />
+    <Route path="mongodb" element={<MongoDB />} />
     <Route path="backups" element={<Backups />} />
     <Route path="company" element={<Company />} />
     <Route path="settings" element={<Settings />} />

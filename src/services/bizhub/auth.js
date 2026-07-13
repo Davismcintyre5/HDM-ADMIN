@@ -5,17 +5,17 @@ export async function login(email, password) {
   return res.data;
 }
 
-export async function getMe() {
-  const res = await api.get('/auth/me');
+export async function getProfile() {
+  const res = await api.get('/auth/profile');
+  return res.data;
+}
+
+export async function updateProfile(data) {
+  const res = await api.put('/auth/profile', data);
   return res.data;
 }
 
 export async function changePassword(data) {
-  const res = await api.post('/auth/change-password', data);
-  return res.data;
-}
-
-export async function logout() {
-  const res = await api.post('/auth/logout');
+  const res = await api.put('/auth/change-password', data);
   return res.data;
 }

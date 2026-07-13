@@ -12,8 +12,7 @@ export default function Pagination({ page, totalPages, onPageChange }) {
       <button onClick={() => onPageChange(page - 1)} disabled={page <= 1} className="p-1.5 rounded-lg border border-[var(--border-color)] text-[var(--text-secondary)] disabled:opacity-30 hover:bg-[var(--sidebar-hover)]"><HiChevronLeft className="w-4 h-4" /></button>
       <div className="flex gap-1">
         {pages.map((p, i) => p === '...' ? <span key={`dots-${i}`} className="px-2 py-1 text-[var(--text-muted)] text-sm">...</span> :
-          <button key={p} onClick={() => onPageChange(p)} className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${p === page ? 'bg-gradient-to-r from-teal-600 to-cyan-600 text-white' : 'text-[var(--text-secondary)] hover:bg-[var(--sidebar-hover)]'}`}>{p}</button>
-        )}
+          <button key={p} onClick={() => onPageChange(p)} className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${p === page ? 'bg-teal-600 text-white' : 'text-[var(--text-secondary)] hover:bg-[var(--sidebar-hover)]'}`}>{p}</button>)}
       </div>
       <button onClick={() => onPageChange(page + 1)} disabled={page >= totalPages} className="p-1.5 rounded-lg border border-[var(--border-color)] text-[var(--text-secondary)] disabled:opacity-30 hover:bg-[var(--sidebar-hover)]"><HiChevronRight className="w-4 h-4" /></button>
     </div>

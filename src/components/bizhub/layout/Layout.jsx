@@ -1,7 +1,7 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
-import { useThemeSidebar } from '../../../context/bizhub/ThemeSidebarContext';
+import { useThemeSidebar } from '../../../context/bizhub/SidebarContext';
 import { useAuth } from '../../../context/bizhub/AuthContext';
 import Spinner from '../ui/Spinner';
 

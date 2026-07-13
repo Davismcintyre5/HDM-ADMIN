@@ -1,26 +1,26 @@
 import api from './api';
 
-export async function getPaymentMethods() {
-  const res = await api.get('/payments');
+export async function getPayments(params) {
+  const res = await api.get('/payments', { params });
   return res.data;
 }
 
-export async function createPaymentMethod(data) {
-  const res = await api.post('/payments', data);
+export async function getPaymentStats() {
+  const res = await api.get('/payments/stats');
   return res.data;
 }
 
-export async function updatePaymentMethod(id, data) {
-  const res = await api.put(`/payments/${id}`, data);
+export async function getPayment(id) {
+  const res = await api.get(`/payments/${id}`);
   return res.data;
 }
 
-export async function togglePaymentMethod(id) {
-  const res = await api.patch(`/payments/${id}/toggle`);
+export async function createManualPayment(data) {
+  const res = await api.post('/payments/manual', data);
   return res.data;
 }
 
-export async function deletePaymentMethod(id) {
-  const res = await api.delete(`/payments/${id}`);
+export async function refundPayment(id, reason) {
+  const res = await api.put(`/payments/${id}/refund`, { reason });
   return res.data;
 }

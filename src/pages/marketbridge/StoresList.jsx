@@ -23,7 +23,7 @@ export default function StoresList() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [filter, setFilter] = useState('all');
-  const [confirm, setConfirm] = useState({ open: false, id: null, type: '', name: '' });
+  const [confirmDialog, setConfirmDialog] = useState({ open: false, id: null, type: '', name: '' });
   const [actionLoading, setActionLoading] = useState(false);
   const [viewModal, setViewModal] = useState({ open: false, store: null, loading: false });
 
@@ -54,17 +54,17 @@ export default function StoresList() {
   const handleAction = async () => {
     setActionLoading(true);
     try {
-      if (confirm.type === 'suspend') await suspendStore(confirm.id);
-      else if (confirm.type === 'activate') await activateStore(confirm.id);
-      else if (confirm.type === 'delete') await permanentDeleteStore(confirm.id);
+      if (confirmDialog.type === 'suspend') await suspendStore(confirmDialog.id);
+      else if (confirmDialog.type === 'activate') await activateStore(confirmDialog.id);
+      else if (confirmDialog.type === 'delete') await permanentDeleteStore(confirmDialog.id);
       fetchStores();
     } catch (err) { alert(err.message); }
     setActionLoading(false);
-    setConfirm({ open: false, id: null, type: '', name: '' });
+    setConfirmDialog({ open: false, id: null, type: '', name: '' });
   };
 
   const handleTierChange = async (storeId, tier, storeName) => {
-    if (!confirm(`Change ${storeName} tier to ${tier}?`)) return;
+    if (!window.confirm(`Change ${storeName} tier to ${tier}?`)) return;
     setActionLoading(true);
     try { await changeStoreTier(storeId, tier); fetchStores(); }
     catch (err) { alert(err.message); }
@@ -96,9 +96,9 @@ export default function StoresList() {
     { key: 'actions', label: 'Actions', render: row => (
       <div className="flex gap-1">
         <Button size="sm" variant="secondary" onClick={() => openView(row)}><HiEye className="w-4 h-4" /></Button>
-        {row.status === 'active' && <Button size="sm" variant="warning" onClick={() => setConfirm({ open: true, id: row._id, type: 'suspend', name: row.name })}><HiBan className="w-4 h-4" /></Button>}
-        {row.status === 'suspended' && <Button size="sm" variant="success" onClick={() => setConfirm({ open: true, id: row._id, type: 'activate', name: row.name })}><HiCheck className="w-4 h-4" /></Button>}
-        <Button size="sm" variant="danger" onClick={() => setConfirm({ open: true, id: row._id, type: 'delete', name: row.name })}><HiTrash className="w-4 h-4" /></Button>
+        {row.status === 'active' && <Button size="sm" variant="warning" onClick={() => setConfirmDialog({ open: true, id: row._id, type: 'suspend', name: row.name })}><HiBan className="w-4 h-4" /></Button>}
+        {row.status === 'suspended' && <Button size="sm" variant="success" onClick={() => setConfirmDialog({ open: true, id: row._id, type: 'activate', name: row.name })}><HiCheck className="w-4 h-4" /></Button>}
+        <Button size="sm" variant="danger" onClick={() => setConfirmDialog({ open: true, id: row._id, type: 'delete', name: row.name })}><HiTrash className="w-4 h-4" /></Button>
       </div>
     )},
   ];
@@ -174,7 +174,7 @@ export default function StoresList() {
               </div>
             )}
             <div className="flex justify-end gap-3 pt-2">
-              <Button variant="danger" onClick={() => { setViewModal({ open: false, store: null, loading: false }); setConfirm({ open: true, id: viewModal.store._id, type: 'delete', name: viewModal.store.name }); }}>
+              <Button variant="danger" onClick={() => { setViewModal({ open: false, store: null, loading: false }); setConfirmDialog({ open: true, id: viewModal.store._id, type: 'delete', name: viewModal.store.name }); }}>
                 <HiTrash className="w-4 h-4 mr-1" /> Delete
               </Button>
             </div>
@@ -184,11 +184,16 @@ export default function StoresList() {
         )}
       </Modal>
 
-      <ConfirmDialog open={confirm.open} onClose={() => setConfirm({ open: false, id: null, type: '', name: '' })} onConfirm={handleAction}
-        title={confirm.type === 'suspend' ? 'Suspend Store' : confirm.type === 'activate' ? 'Activate Store' : 'Permanently Delete Store'}
-        message={confirm.type === 'delete' ? `Delete ${confirm.name} and all their data? This cannot be undone.` : `${confirm.type === 'suspend' ? 'Suspend' : 'Activate'} ${confirm.name}?`}
-        confirmLabel={confirm.type === 'suspend' ? 'Suspend' : confirm.type === 'activate' ? 'Activate' : 'Delete'}
-        variant={confirm.type === 'delete' ? 'danger' : confirm.type === 'suspend' ? 'warning' : 'success'} loading={actionLoading} />
+      <ConfirmDialog 
+        open={confirmDialog.open} 
+        onClose={() => setConfirmDialog({ open: false, id: null, type: '', name: '' })} 
+        onConfirm={handleAction}
+        title={confirmDialog.type === 'suspend' ? 'Suspend Store' : confirmDialog.type === 'activate' ? 'Activate Store' : 'Permanently Delete Store'}
+        message={confirmDialog.type === 'delete' ? `Delete ${confirmDialog.name} and all their data? This cannot be undone.` : `${confirmDialog.type === 'suspend' ? 'Suspend' : 'Activate'} ${confirmDialog.name}?`}
+        confirmLabel={confirmDialog.type === 'suspend' ? 'Suspend' : confirmDialog.type === 'activate' ? 'Activate' : 'Delete'}
+        variant={confirmDialog.type === 'delete' ? 'danger' : confirmDialog.type === 'suspend' ? 'warning' : 'success'} 
+        loading={actionLoading} 
+      />
     </div>
   );
 }

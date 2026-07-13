@@ -1,6 +1,6 @@
 import { NavLink, Link } from 'react-router-dom';
 import { useThemeSidebar } from '../../../context/portfolio/ThemeSidebarContext';
-import { HiViewGrid, HiCode, HiClipboardList, HiPhotograph, HiMail, HiDatabase, HiOfficeBuilding, HiCog, HiChevronLeft, HiChevronRight, HiX, HiHome, HiBriefcase } from 'react-icons/hi';
+import { HiViewGrid, HiCode, HiClipboardList, HiPhotograph, HiMail, HiCloud, HiServer, HiDatabase, HiOfficeBuilding, HiCog, HiChevronLeft, HiChevronRight, HiX, HiHome, HiBriefcase } from 'react-icons/hi';
 
 const navItems = [
   { to: '/portfolio', icon: HiViewGrid, label: 'Dashboard', end: true },
@@ -9,6 +9,8 @@ const navItems = [
   { to: '/portfolio/projects', icon: HiClipboardList, label: 'Projects' },
   { to: '/portfolio/photos', icon: HiPhotograph, label: 'Photos' },
   { to: '/portfolio/contacts', icon: HiMail, label: 'Messages' },
+  { to: '/portfolio/cloudinary', icon: HiCloud, label: 'Cloudinary' },
+  { to: '/portfolio/mongodb', icon: HiServer, label: 'MongoDB' },
   { to: '/portfolio/backups', icon: HiDatabase, label: 'Backups' },
   { to: '/portfolio/company', icon: HiOfficeBuilding, label: 'Company' },
   { to: '/portfolio/settings', icon: HiCog, label: 'Settings' },

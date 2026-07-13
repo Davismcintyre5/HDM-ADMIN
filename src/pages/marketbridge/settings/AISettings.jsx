@@ -72,15 +72,32 @@ export default function AISettings({ settings, setSettings, onSave, saving: glob
         </div>
       </Card>
 
-      {/* Chatbot Status */}
-      <Card>
-        <h2 className="font-semibold text-[var(--text-primary)] mb-4">Chatbot Status</h2>
-        <Toggle label="Enable Chatbot" checked={isTrue('ai_enabled')} onChange={v => {
-          const val = v ? 'true' : 'false';
-          setSettings(prev => ({ ...prev, ai_enabled: val }));
-          onSave('ai_enabled', val);
-        }} />
-      </Card>
+{/* Chatbot Status */}
+<Card>
+  <h2 className="font-semibold text-[var(--text-primary)] mb-4">Chatbot Status</h2>
+  <div className="space-y-2">
+    <Toggle 
+      label="Enable Chatbot" 
+      checked={isTrue('ai_enabled')} 
+      onChange={v => {
+        const val = v ? 'true' : 'false';
+        setSettings(prev => ({ ...prev, ai_enabled: val }));
+        onSave('ai_enabled', val);
+      }}
+      description="Master switch for the AI chatbot on the platform"
+    />
+    <Toggle 
+      label="Enable Store AI" 
+      checked={isTrue('ai_store_enabled')} 
+      onChange={v => {
+        const val = v ? 'true' : 'false';
+        setSettings(prev => ({ ...prev, ai_store_enabled: val }));
+        onSave('ai_store_enabled', val);
+      }}
+      description="Allow individual stores to use AI features"
+    />
+  </div>
+</Card>
 
       {/* Bot Identity */}
       <Card>

@@ -1,6 +1,6 @@
 import { NavLink, Link } from 'react-router-dom';
 import { useThemeSidebar } from '../../../context/marketbridge/SidebarContext';
-import { HiHome, HiShoppingBag, HiClock, HiUserGroup, HiSpeakerphone, HiExclamation, HiCash, HiCreditCard, HiCog, HiChevronLeft, HiChevronRight, HiX } from 'react-icons/hi';
+import { HiHome, HiShoppingBag, HiClock, HiUserGroup, HiSpeakerphone, HiFolder, HiClipboardList, HiExclamation, HiCash, HiCreditCard, HiTruck, HiCurrencyDollar, HiUserCircle, HiCog, HiChevronLeft, HiChevronRight, HiX } from 'react-icons/hi';
 
 const navItems = [
   { to: '/marketbridge', icon: HiHome, label: 'Dashboard', end: true },
@@ -8,9 +8,15 @@ const navItems = [
   { to: '/marketbridge/stores/pending', icon: HiClock, label: 'Pending' },
   { to: '/marketbridge/customers', icon: HiUserGroup, label: 'Customers' },
   { to: '/marketbridge/communication', icon: HiSpeakerphone, label: 'Communication' },
+  { to: '/marketbridge/categories', icon: HiFolder, label: 'Categories' },
+  { to: '/marketbridge/orders', icon: HiClipboardList, label: 'Orders' },
   { to: '/marketbridge/disputes', icon: HiExclamation, label: 'Disputes' },
   { to: '/marketbridge/commissions', icon: HiCash, label: 'Commissions' },
   { to: '/marketbridge/subscriptions', icon: HiCreditCard, label: 'Plans' },
+  { to: '/marketbridge/shipping', icon: HiTruck, label: 'Shipping' },
+  { to: '/marketbridge/payouts', icon: HiCurrencyDollar, label: 'Payouts' },
+  { to: '/marketbridge/accounts', icon: HiCreditCard, label: 'Accounts' },
+  { to: '/marketbridge/agents', icon: HiUserCircle, label: 'Agents' },
   { to: '/marketbridge/settings', icon: HiCog, label: 'Settings' },
 ];
 

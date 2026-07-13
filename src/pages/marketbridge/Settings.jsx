@@ -4,16 +4,18 @@ import Spinner from '../../components/marketbridge/ui/Spinner';
 import GeneralSettings from './settings/GeneralSettings';
 import LegalSettings from './settings/LegalSettings';
 import ProviderSettings from './settings/ProviderSettings';
+import CoinSettings from './settings/CoinSettings';
 import AISettings from './settings/AISettings';
 import EmailSmsSettings from './settings/EmailSmsSettings';
 import MaintenanceSettings from './settings/MaintenanceSettings';
 import BackupSettings from './settings/BackupSettings';
-import { HiCog, HiScale, HiCloud, HiChip, HiMail, HiShieldCheck, HiArchive } from 'react-icons/hi';
+import { HiCog, HiScale, HiCloud, HiCurrencyDollar, HiChip, HiMail, HiShieldCheck, HiArchive } from 'react-icons/hi';
 
 const TABS = [
   { key: 'general', label: 'General', icon: HiCog },
   { key: 'legal', label: 'Legal', icon: HiScale },
   { key: 'providers', label: 'Providers', icon: HiCloud },
+  { key: 'coins', label: 'Coins', icon: HiCurrencyDollar },
   { key: 'ai', label: 'AI', icon: HiChip },
   { key: 'email', label: 'Email & SMS', icon: HiMail },
   { key: 'maintenance', label: 'Maintenance', icon: HiShieldCheck },
@@ -81,6 +83,7 @@ export default function Settings() {
       {activeTab === 'general' && <GeneralSettings settings={settings} setSettings={setSettings} onSave={handleSave} saving={saving} />}
       {activeTab === 'legal' && <LegalSettings settings={settings} onSave={handleSave} saving={saving} />}
       {activeTab === 'providers' && <ProviderSettings settings={settings} onToggle={handleToggle} onSave={handleSave} />}
+      {activeTab === 'coins' && <CoinSettings settings={settings} setSettings={setSettings} onSave={handleSave} />}
       {activeTab === 'ai' && <AISettings settings={settings} setSettings={setSettings} onToggle={handleToggle} onSave={handleSave} saving={saving} />}
       {activeTab === 'email' && <EmailSmsSettings settings={settings} setSettings={setSettings} onSave={handleSave} saving={saving} />}
       {activeTab === 'maintenance' && <MaintenanceSettings settings={settings} setSettings={setSettings} onToggle={handleToggle} />}

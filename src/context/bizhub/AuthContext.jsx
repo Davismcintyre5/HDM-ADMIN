@@ -14,9 +14,9 @@ export function AuthProvider({ children }) {
     if (token) setAuthToken(token);
     setupInterceptors(() => {
       localStorage.removeItem('bizhub_token');
+      localStorage.removeItem('bizhub_refresh_token');
       localStorage.removeItem('bizhub_admin');
-      setToken(null);
-      setAdmin(null);
+      setToken(null); setAdmin(null);
       window.location.href = '/bizhub/login';
     });
     setLoading(false);
@@ -24,18 +24,20 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     const data = await loginApi(email, password);
-    localStorage.setItem('bizhub_token', data.token);
-    localStorage.setItem('bizhub_admin', JSON.stringify(data.admin));
-    setAuthToken(data.token);
-    setToken(data.token);
-    setAdmin(data.admin);
+    const d = data.data || data;
+    localStorage.setItem('bizhub_token', d.accessToken);
+    localStorage.setItem('bizhub_refresh_token', d.refreshToken);
+    localStorage.setItem('bizhub_admin', JSON.stringify(d.admin || d));
+    setAuthToken(d.accessToken);
+    setToken(d.accessToken);
+    setAdmin(d.admin || d);
   };
 
   const logout = () => {
     localStorage.removeItem('bizhub_token');
+    localStorage.removeItem('bizhub_refresh_token');
     localStorage.removeItem('bizhub_admin');
-    setToken(null);
-    setAdmin(null);
+    setToken(null); setAdmin(null);
   };
 
   return (

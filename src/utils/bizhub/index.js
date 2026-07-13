@@ -1,2 +1,1 @@
-export * from './formatDate';
-export * from './validators';
+export { formatDate } from './formatDate';

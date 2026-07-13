@@ -11,3 +11,7 @@ export * from './audit';
 export * from './backup';
 export * from './communication';
 export * from './customers';
+export * from './shipping';
+export * from './categories';
+export * from './orders';
+export * from './agents';

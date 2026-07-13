@@ -9,3 +9,5 @@ export * from './contacts';
 export * from './backups';
 export * from './company';
 export * from './settings';
+export * from './cloudinary';
+export * from './mongodb';
