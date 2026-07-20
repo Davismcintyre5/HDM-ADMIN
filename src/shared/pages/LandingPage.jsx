@@ -19,10 +19,10 @@ const systems = [
     hoverBg: 'hover:bg-green-600', stats: { employees: '1,234', projects: '89', efficiency: '94%' }
   },
   {
-    id: 'hdmvault', name: 'HDM Vault', description: 'Secure data storage & management',
-    icon: HiShieldCheck, bgGradient: 'from-orange-500 to-orange-600', bgLight: 'bg-orange-50 dark:bg-orange-950',
-    textColor: 'text-orange-600 dark:text-orange-400', borderColor: 'border-orange-200 dark:border-orange-800',
-    hoverBg: 'hover:bg-orange-600', stats: { files: '45,678', storage: '2.4 TB', encrypted: '100%' }
+    id: 'nexguard', name: 'NexGuard', description: 'Cybersecurity & threat protection',
+    icon: HiShieldCheck, bgGradient: 'from-cyan-500 to-blue-600', bgLight: 'bg-cyan-50 dark:bg-cyan-950',
+    textColor: 'text-cyan-600 dark:text-cyan-400', borderColor: 'border-cyan-200 dark:border-cyan-800',
+    hoverBg: 'hover:bg-cyan-600', stats: { devices: '1,234', threats: '89', uptime: '99.9%' }
   },
   {
     id: 'hdmai', name: 'HDM AI', description: 'Artificial intelligence & ML platform',
