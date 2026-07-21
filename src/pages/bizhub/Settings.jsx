@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getSettings, updateSetting } from '../../services/bizhub/settings';
 import Spinner from '../../components/bizhub/ui/Spinner';
-import { HiCog, HiUsers, HiChip, HiSupport, HiMail, HiSwitchHorizontal, HiScale, HiArchive, HiTemplate } from 'react-icons/hi';
+import { HiCog, HiUsers, HiChip, HiSupport, HiMail, HiSwitchHorizontal, HiScale, HiArchive, HiTemplate, HiDownload } from 'react-icons/hi';
 import GeneralSettings from './settings/GeneralSettings';
 import UsersSettings from './settings/UsersSettings';
 import AISettings from './settings/AISettings';
@@ -11,6 +11,7 @@ import FeatureFlagsSettings from './settings/FeatureFlagsSettings';
 import LegalSettings from './settings/LegalSettings';
 import BackupSettings from './settings/BackupSettings';
 import LandingSettings from './settings/LandingSettings';
+import DownloadsSettings from './settings/DownloadsSettings';
 
 const TABS = [
   { key: 'general', label: 'General', icon: HiCog },
@@ -22,6 +23,7 @@ const TABS = [
   { key: 'legal', label: 'Legal', icon: HiScale },
   { key: 'backups', label: 'Backups', icon: HiArchive },
   { key: 'landing', label: 'Landing Page', icon: HiTemplate },
+  { key: 'downloads', label: 'Downloads', icon: HiDownload },
 ];
 
 export default function Settings() {
@@ -44,18 +46,18 @@ export default function Settings() {
       .catch(console.error).finally(() => setLoading(false));
   }, []);
 
-const handleSave = async (key, value, category = null, isPublic = false) => {
-  setSaving(true); setSuccess('');
-  try {
-    const data = { key, value: value ?? settings[key] };
-    if (category) data.category = category;
-    if (isPublic) data.isPublic = true;
-    await updateSetting(data);
-    setSettings(prev => ({ ...prev, [key]: value ?? prev[key] }));
-    setSuccess('Saved!'); setTimeout(() => setSuccess(''), 2000);
-  } catch (e) { alert(e.response?.data?.message || e.message); }
-  setSaving(false);
-};
+  const handleSave = async (key, value, category = null, isPublic = false) => {
+    setSaving(true); setSuccess('');
+    try {
+      const data = { key, value: value ?? settings[key] };
+      if (category) data.category = category;
+      if (isPublic) data.isPublic = true;
+      await updateSetting(data);
+      setSettings(prev => ({ ...prev, [key]: value ?? prev[key] }));
+      setSuccess('Saved!'); setTimeout(() => setSuccess(''), 2000);
+    } catch (e) { alert(e.response?.data?.message || e.message); }
+    setSaving(false);
+  };
 
   const handleToggle = (key, checked) => {
     const value = checked ? 'true' : 'false';
@@ -87,6 +89,7 @@ const handleSave = async (key, value, category = null, isPublic = false) => {
       {activeTab === 'legal' && <LegalSettings onSave={handleSave} saving={saving} />}
       {activeTab === 'backups' && <BackupSettings settings={settings} setSettings={setSettings} onSave={handleSave} />}
       {activeTab === 'landing' && <LandingSettings onSave={handleSave} saving={saving} />}
+      {activeTab === 'downloads' && <DownloadsSettings settings={settings} setSettings={setSettings} onSave={handleSave} saving={saving} />}
     </div>
   );
 }
