@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import {
   HiShoppingCart, HiOfficeBuilding, HiShieldCheck, HiSparkles,
   HiLightningBolt, HiMusicNote, HiDocumentText, HiBriefcase, HiGlobe,
-  HiMail, HiWifi, HiCash, HiShoppingBag, HiArrowRight
+  HiMail, HiWifi, HiCash, HiShoppingBag, HiArrowRight,HiAcademicCap
 } from 'react-icons/hi'
 
 const systems = [
@@ -89,7 +89,15 @@ const systems = [
     icon: HiShoppingBag, bgGradient: 'from-violet-500 to-purple-600', bgLight: 'bg-violet-50 dark:bg-violet-950',
     textColor: 'text-violet-600 dark:text-violet-400', borderColor: 'border-violet-200 dark:border-violet-800',
     hoverBg: 'hover:bg-violet-700', stats: { stores: '234', products: '12K', revenue: 'KES 5M' }
-  }
+  },
+
+  {
+  id: 'rvnp', name: 'RVNP Hub', description: 'Campus community & digital quad',
+  icon: HiAcademicCap, bgGradient: 'from-emerald-500 to-green-600', bgLight: 'bg-emerald-50 dark:bg-emerald-950',
+  textColor: 'text-emerald-600 dark:text-emerald-400', borderColor: 'border-emerald-200 dark:border-emerald-800',
+  hoverBg: 'hover:bg-emerald-600', stats: { users: '1,250', posts: '4.5K', groups: '28' }
+}
+
 ]
 
 export default function LandingPage() {

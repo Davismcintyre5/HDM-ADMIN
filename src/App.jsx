@@ -14,6 +14,7 @@ import FlaxApp from './apps/FlaxApp'
 import HDMNetApp from './apps/HDMNetApp'
 import FarmWiseApp from './apps/FarmWiseApp'
 import MarketBridgeApp from './apps/MarketBridgeApp'
+import RVNPApp from './apps/RVNPApp'
 
 const routerFuture = { v7_startTransition: true, v7_relativeSplatPath: true }
 
@@ -31,7 +32,8 @@ const systemConfig = {
   flax: true,
   hdmnet: true,
   farmwise: true,
-  marketbridge: true
+  marketbridge: true,
+  rvnp: true
 }
 
 function App() {
@@ -53,6 +55,7 @@ function App() {
         <Route path="/hdmnet/*" element={systemConfig.hdmnet ? <HDMNetApp /> : <ComingSoon />} />
         <Route path="/farmwise/*" element={systemConfig.farmwise ? <FarmWiseApp /> : <ComingSoon />} />
         <Route path="/marketbridge/*" element={systemConfig.marketbridge ? <MarketBridgeApp /> : <ComingSoon />} />
+        <Route path="/rvnp/*" element={systemConfig.rvnp ? <RVNPApp /> : <ComingSoon />} />
         <Route path="*" element={<ComingSoon />} />
       </Routes>
     </BrowserRouter>
