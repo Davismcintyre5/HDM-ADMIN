@@ -14,7 +14,6 @@ export default function NotificationsSettings({ settings, setSettings, onSave, s
 
   return (
     <div className="space-y-6 max-w-2xl">
-      {/* Email */}
       <Card>
         <h2 className="font-semibold text-[var(--text-primary)] mb-4">Email Settings</h2>
         <div className="space-y-4">
@@ -22,8 +21,6 @@ export default function NotificationsSettings({ settings, setSettings, onSave, s
           <Input label="Sender Email" type="email" value={email.senderEmail || ''} onChange={e => setEmail('senderEmail', e.target.value)} />
         </div>
       </Card>
-
-      {/* SMS */}
       <Card>
         <h2 className="font-semibold text-[var(--text-primary)] mb-4">SMS Settings</h2>
         <div className="space-y-4">
@@ -31,7 +28,6 @@ export default function NotificationsSettings({ settings, setSettings, onSave, s
           <Toggle label="Time Restriction" checked={sms.timeRestrictionEnabled || false} onChange={v => setSms('timeRestrictionEnabled', v)} description="Only send SMS during daytime hours" />
         </div>
       </Card>
-
       <div className="flex justify-end">
         <Button onClick={handleSave} loading={saving} size="lg">Save Notifications</Button>
       </div>

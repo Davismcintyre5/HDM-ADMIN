@@ -8,40 +8,33 @@ export default function FilesSettings({ settings, setSettings, onSave, saving })
   const downloads = settings.downloads || {};
 
   const setUpload = (key, value) => setSettings(prev => ({ ...prev, uploads: { ...prev.uploads, [key]: value } }));
-  const setDownload = (platform, field, value) => setSettings(prev => ({
-    ...prev, downloads: { ...prev.downloads, [platform]: { ...prev.downloads?.[platform], [field]: value } },
-  }));
+  const setDownload = (key, value) => setSettings(prev => ({ ...prev, downloads: { ...prev.downloads, [key]: value } }));
+
+  const handleSave = () => onSave({ uploads: settings.uploads, downloads: settings.downloads });
 
   return (
     <div className="space-y-6 max-w-2xl">
       <Card>
         <h2 className="font-semibold text-[var(--text-primary)] mb-4">Upload Limits</h2>
         <div className="space-y-4">
-          <Input label="Max File Size (MB)" type="number" value={uploads.maxFileSize || ''} onChange={e => setUpload('maxFileSize', e.target.value)} />
-          <Input label="Allowed Types" value={uploads.allowedTypes || ''} onChange={e => setUpload('allowedTypes', e.target.value)} placeholder="jpg,png,gif,mp4" />
-          <Input label="Max Images Per Post" type="number" value={uploads.maxImagesPerPost || ''} onChange={e => setUpload('maxImagesPerPost', e.target.value)} />
+          <Input label="Max File Size (MB)" type="number" value={uploads.maxFileSizeMB || ''} onChange={e => setUpload('maxFileSizeMB', e.target.value)} />
+          <Input label="Max Post Images" type="number" value={uploads.maxPostImages || ''} onChange={e => setUpload('maxPostImages', e.target.value)} />
+          <Input label="Max Story Size (MB)" type="number" value={uploads.maxStorySizeMB || ''} onChange={e => setUpload('maxStorySizeMB', e.target.value)} />
+          <Input label="Max Avatar Size (MB)" type="number" value={uploads.maxAvatarSizeMB || ''} onChange={e => setUpload('maxAvatarSizeMB', e.target.value)} />
         </div>
       </Card>
       <Card>
-        <h2 className="font-semibold text-[var(--text-primary)] mb-4">Desktop App</h2>
+        <h2 className="font-semibold text-[var(--text-primary)] mb-4">Downloads</h2>
         <div className="space-y-4">
-          <Toggle label="Enabled" checked={downloads.desktop?.enabled || false} onChange={v => setDownload('desktop', 'enabled', v)} />
-          <Input label="Label" value={downloads.desktop?.label || ''} onChange={e => setDownload('desktop', 'label', e.target.value)} />
-          <Input label="URL" value={downloads.desktop?.url || ''} onChange={e => setDownload('desktop', 'url', e.target.value)} />
-          <Input label="Version" value={downloads.desktop?.version || ''} onChange={e => setDownload('desktop', 'version', e.target.value)} />
-        </div>
-      </Card>
-      <Card>
-        <h2 className="font-semibold text-[var(--text-primary)] mb-4">Android App</h2>
-        <div className="space-y-4">
-          <Toggle label="Enabled" checked={downloads.android?.enabled || false} onChange={v => setDownload('android', 'enabled', v)} />
-          <Input label="Label" value={downloads.android?.label || ''} onChange={e => setDownload('android', 'label', e.target.value)} />
-          <Input label="URL" value={downloads.android?.url || ''} onChange={e => setDownload('android', 'url', e.target.value)} />
-          <Input label="Version" value={downloads.android?.version || ''} onChange={e => setDownload('android', 'version', e.target.value)} />
+          <Toggle label="Download Page Enabled" checked={downloads.downloadPageEnabled || false} onChange={v => setDownload('downloadPageEnabled', v)} />
+          <Input label="Play Store URL" value={downloads.playStoreUrl || ''} onChange={e => setDownload('playStoreUrl', e.target.value)} />
+          <Input label="App Store URL" value={downloads.appStoreUrl || ''} onChange={e => setDownload('appStoreUrl', e.target.value)} />
+          <Input label="APK URL" value={downloads.apkUrl || ''} onChange={e => setDownload('apkUrl', e.target.value)} />
+          <Input label="Min App Version" value={downloads.minAppVersion || ''} onChange={e => setDownload('minAppVersion', e.target.value)} />
         </div>
       </Card>
       <div className="flex justify-end">
-        <Button onClick={() => onSave({ uploads: settings.uploads, downloads: settings.downloads })} loading={saving} size="lg">Save Files</Button>
+        <Button onClick={handleSave} loading={saving} size="lg">Save Files</Button>
       </div>
     </div>
   );

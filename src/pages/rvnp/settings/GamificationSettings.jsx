@@ -2,41 +2,46 @@ import Card from '../../../components/rvnp/ui/Card';
 import Input from '../../../components/rvnp/ui/Input';
 import Button from '../../../components/rvnp/ui/Button';
 
-export default function GamificationSettings({ settings, onSave, saving }) {
+export default function GamificationSettings({ settings, setSettings, onSave, saving }) {
   const badges = settings.badges || {};
   const scoring = settings.scoring || {};
   const limits = settings.limits || {};
 
-  const handleSave = () => onSave({ badges, scoring, limits });
+  const setBadge = (key, value) => setSettings(prev => ({ ...prev, badges: { ...prev.badges, [key]: value } }));
+  const setScoring = (key, value) => setSettings(prev => ({ ...prev, scoring: { ...prev.scoring, [key]: value } }));
+  const setLimit = (key, value) => setSettings(prev => ({ ...prev, limits: { ...prev.limits, [key]: value } }));
+
+  const handleSave = () => onSave({ badges: settings.badges, scoring: settings.scoring, limits: settings.limits });
 
   return (
     <div className="space-y-6 max-w-2xl">
       <Card>
         <h2 className="font-semibold text-[var(--text-primary)] mb-4">Badges</h2>
         <div className="space-y-4">
-          <Input label="Newbie (posts)" value={badges.newbiePosts || ''} onChange={e => badges.newbiePosts = e.target.value} />
-          <Input label="Contributor (posts)" value={badges.contributorPosts || ''} onChange={e => badges.contributorPosts = e.target.value} />
-          <Input label="Veteran (posts)" value={badges.veteranPosts || ''} onChange={e => badges.veteranPosts = e.target.value} />
-          <Input label="Legend (posts)" value={badges.legendPosts || ''} onChange={e => badges.legendPosts = e.target.value} />
+          <Input label="Top Contributor Weekly (posts)" type="number" value={badges.topContributorWeeklyCount || ''} onChange={e => setBadge('topContributorWeeklyCount', e.target.value)} />
+          <Input label="Top Contributor Monthly (posts)" type="number" value={badges.topContributorMonthlyCount || ''} onChange={e => setBadge('topContributorMonthlyCount', e.target.value)} />
+          <Input label="Top Fan Threshold" type="number" value={badges.topFanThreshold || ''} onChange={e => setBadge('topFanThreshold', e.target.value)} />
+          <Input label="Marketplace Champion Sales" type="number" value={badges.marketplaceChampionSales || ''} onChange={e => setBadge('marketplaceChampionSales', e.target.value)} />
+          <Input label="Group Builder Members" type="number" value={badges.groupBuilderMembers || ''} onChange={e => setBadge('groupBuilderMembers', e.target.value)} />
         </div>
       </Card>
       <Card>
         <h2 className="font-semibold text-[var(--text-primary)] mb-4">Scoring</h2>
         <div className="space-y-4">
-          <Input label="Post Created" value={scoring.postCreated || ''} onChange={e => scoring.postCreated = e.target.value} />
-          <Input label="Post Liked" value={scoring.postLiked || ''} onChange={e => scoring.postLiked = e.target.value} />
-          <Input label="Comment Added" value={scoring.commentAdded || ''} onChange={e => scoring.commentAdded = e.target.value} />
-          <Input label="Group Created" value={scoring.groupCreated || ''} onChange={e => scoring.groupCreated = e.target.value} />
-          <Input label="Verification" value={scoring.verification || ''} onChange={e => scoring.verification = e.target.value} />
+          <Input label="Post Created" type="number" value={scoring.post || ''} onChange={e => setScoring('post', e.target.value)} />
+          <Input label="Comment" type="number" value={scoring.comment || ''} onChange={e => setScoring('comment', e.target.value)} />
+          <Input label="Helpful Answer" type="number" value={scoring.helpfulAnswer || ''} onChange={e => setScoring('helpfulAnswer', e.target.value)} />
+          <Input label="Listing Sold" type="number" value={scoring.listingSold || ''} onChange={e => setScoring('listingSold', e.target.value)} />
+          <Input label="Lost & Found Returned" type="number" value={scoring.lostFoundReturned || ''} onChange={e => setScoring('lostFoundReturned', e.target.value)} />
         </div>
       </Card>
       <Card>
         <h2 className="font-semibold text-[var(--text-primary)] mb-4">User Limits</h2>
         <div className="space-y-4">
-          <Input label="Posts Per Day" value={limits.postsPerDay || ''} onChange={e => limits.postsPerDay = e.target.value} />
-          <Input label="Groups Per User" value={limits.groupsPerUser || ''} onChange={e => limits.groupsPerUser = e.target.value} />
-          <Input label="Listings Per User" value={limits.listingsPerUser || ''} onChange={e => limits.listingsPerUser = e.target.value} />
-          <Input label="Stories Per Day" value={limits.storiesPerDay || ''} onChange={e => limits.storiesPerDay = e.target.value} />
+          <Input label="Post Max Characters" type="number" value={limits.postMaxChars || ''} onChange={e => setLimit('postMaxChars', e.target.value)} />
+          <Input label="Comment Max Characters" type="number" value={limits.commentMaxChars || ''} onChange={e => setLimit('commentMaxChars', e.target.value)} />
+          <Input label="Posts Per Page" type="number" value={limits.postsPerPage || ''} onChange={e => setLimit('postsPerPage', e.target.value)} />
+          <Input label="Users Per Page" type="number" value={limits.usersPerPage || ''} onChange={e => setLimit('usersPerPage', e.target.value)} />
         </div>
       </Card>
       <div className="flex justify-end">

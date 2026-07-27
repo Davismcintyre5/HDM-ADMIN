@@ -7,7 +7,7 @@ export default function GeneralSettings({ settings, setSettings, onSave, saving 
 
   const setGeneral = (key, value) => setSettings(prev => ({ ...prev, general: { ...prev.general, [key]: value } }));
 
-  const handleSave = () => onSave({ general: settings.general });
+  const handleSave = () => onSave(settings.general);
 
   return (
     <div className="space-y-6 max-w-2xl">

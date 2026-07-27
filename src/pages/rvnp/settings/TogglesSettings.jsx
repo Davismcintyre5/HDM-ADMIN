@@ -22,7 +22,7 @@ export default function TogglesSettings({ settings, setSettings, onSave, saving 
     setSettings(prev => ({ ...prev, toggles: { ...prev.toggles, [key]: value } }));
   };
 
-  const handleSave = () => onSave({ toggles: settings.toggles });
+  const handleSave = () => onSave(settings.toggles);
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -31,12 +31,7 @@ export default function TogglesSettings({ settings, setSettings, onSave, saving 
         <div className="space-y-4 divide-y divide-[var(--border-color)]">
           {TOGGLES.map(item => (
             <div key={item.key} className="pt-4 first:pt-0">
-              <Toggle
-                label={item.label}
-                checked={toggles[item.key] === true || toggles[item.key] === 'true'}
-                onChange={v => setToggle(item.key, v)}
-                description={item.desc}
-              />
+              <Toggle label={item.label} checked={toggles[item.key] === true || toggles[item.key] === 'true'} onChange={v => setToggle(item.key, v)} description={item.desc} />
             </div>
           ))}
         </div>

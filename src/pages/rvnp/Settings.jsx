@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getSettings } from '../../services/rvnp/settings';
+import { getSettings, updateSettings } from '../../services/rvnp/settings';
 import Spinner from '../../components/rvnp/ui/Spinner';
 import { HiCog, HiChip, HiBell, HiSwitchHorizontal, HiFolder, HiAcademicCap, HiScale, HiShieldCheck, HiClipboardList } from 'react-icons/hi';
 import GeneralSettings from './settings/GeneralSettings';
@@ -41,11 +41,8 @@ export default function Settings() {
   const handleSave = async (section, data) => {
     setSaving(true); setSuccess('');
     try {
-      const { updateGeneral, updateAI, updateEmail, updateSMS, updateToggles, updateUploads, updateDownloads, updateBadges, updateScoring, updateLimits, updateLegals } = await import('../../services/rvnp/settings');
-      const updaters = { general: updateGeneral, ai: updateAI, email: updateEmail, sms: updateSMS, toggles: updateToggles, uploads: updateUploads, downloads: updateDownloads, badges: updateBadges, scoring: updateScoring, limits: updateLimits, legals: updateLegals };
-      const fn = updaters[section];
-      if (fn) await fn(data);
-      setSettings(prev => ({ ...prev, ...data }));
+      await updateSettings(section, data);
+      setSettings(prev => ({ ...prev, [section]: { ...prev[section], ...data } }));
       setSuccess('Saved!'); setTimeout(() => setSuccess(''), 2000);
     } catch (e) { alert(e.response?.data?.message || e.message); }
     setSaving(false);
@@ -68,11 +65,11 @@ export default function Settings() {
 
       {activeTab === 'general' && <GeneralSettings settings={settings} setSettings={setSettings} onSave={(d) => handleSave('general', d)} saving={saving} />}
       {activeTab === 'ai' && <AISettings settings={settings} setSettings={setSettings} onSave={(d) => handleSave('ai', d)} saving={saving} />}
-      {activeTab === 'notifications' && <NotificationsSettings settings={settings} setSettings={setSettings} onSave={(d) => { handleSave('email', d.email); handleSave('sms', d.sms); }} saving={saving} />}
-      {activeTab === 'toggles' && <TogglesSettings settings={settings} onSave={(d) => handleSave('toggles', d)} saving={saving} />}
-      {activeTab === 'files' && <FilesSettings settings={settings} setSettings={setSettings} onSave={(d) => { handleSave('uploads', d.uploads); handleSave('downloads', d.downloads); }} saving={saving} />}
-      {activeTab === 'gamification' && <GamificationSettings settings={settings} onSave={(d) => { handleSave('badges', d.badges); handleSave('scoring', d.scoring); handleSave('limits', d.limits); }} saving={saving} />}
-      {activeTab === 'legals' && <LegalsSettings settings={settings} onSave={(d) => handleSave('legals', d)} saving={saving} />}
+      {activeTab === 'notifications' && <NotificationsSettings settings={settings} setSettings={setSettings} onSave={(d) => handleSave('notifications', d)} saving={saving} />}
+      {activeTab === 'toggles' && <TogglesSettings settings={settings} setSettings={setSettings} onSave={(d) => handleSave('toggles', d)} saving={saving} />}
+      {activeTab === 'files' && <FilesSettings settings={settings} setSettings={setSettings} onSave={(d) => handleSave('files', d)} saving={saving} />}
+      {activeTab === 'gamification' && <GamificationSettings settings={settings} setSettings={setSettings} onSave={(d) => handleSave('gamification', d)} saving={saving} />}
+      {activeTab === 'legals' && <LegalsSettings settings={settings} setSettings={setSettings} onSave={(d) => handleSave('legals', d)} saving={saving} />}
       {activeTab === 'admins' && <AdminsSettings />}
       {activeTab === 'auditLogs' && <AuditLogsSettings />}
     </div>

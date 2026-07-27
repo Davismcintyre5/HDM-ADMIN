@@ -11,6 +11,7 @@ import Spinner from '../../../components/rvnp/ui/Spinner';
 import { HiPlus, HiPencil, HiTrash } from 'react-icons/hi';
 
 const ROLES = ['super_admin', 'moderator', 'support_agent', 'analyst'];
+const roleVariant = { super_admin: 'danger', moderator: 'info', support_agent: 'warning', analyst: 'success' };
 
 export default function AdminsSettings() {
   const [admins, setAdmins] = useState([]);
@@ -20,11 +21,7 @@ export default function AdminsSettings() {
   const [actionLoading, setActionLoading] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'moderator' });
 
-  const fetchAdmins = () => {
-    setLoading(true);
-    getAdmins().then(res => setAdmins(res?.data || [])).catch(console.error).finally(() => setLoading(false));
-  };
-
+  const fetchAdmins = () => { setLoading(true); getAdmins().then(res => setAdmins(res?.data || [])).catch(console.error).finally(() => setLoading(false)); };
   useEffect(() => { fetchAdmins(); }, []);
 
   const openCreate = () => { setForm({ name: '', email: '', password: '', role: 'moderator' }); setModal({ open: true, mode: 'create', data: null }); };
@@ -43,8 +40,6 @@ export default function AdminsSettings() {
   };
 
   const handleDelete = async () => { setActionLoading(true); try { await deleteAdmin(confirm.id); fetchAdmins(); } catch (err) { alert(err.message); } setActionLoading(false); setConfirm({ open: false, id: null, name: '' }); };
-
-  const roleVariant = { super_admin: 'danger', moderator: 'info', support_agent: 'warning', analyst: 'success' };
 
   if (loading) return <div className="flex justify-center py-20"><Spinner size="lg" /></div>;
 
