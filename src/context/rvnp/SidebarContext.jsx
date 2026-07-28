@@ -25,11 +25,12 @@ export function SidebarProvider({ children }) {
 
   const toggleTheme = () => setDarkMode(prev => !prev);
   const toggleSidebar = () => setSidebarOpen(prev => !prev);
+  const toggleMobileSidebar = () => setMobileSidebarOpen(prev => !prev);
 
   return (
     <ThemeSidebarContext.Provider value={{
       darkMode, toggleTheme, sidebarOpen, toggleSidebar,
-      mobileSidebarOpen, setMobileSidebarOpen,
+      mobileSidebarOpen, toggleMobileSidebar, setMobileSidebarOpen,
     }}>
       {children}
     </ThemeSidebarContext.Provider>
