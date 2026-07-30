@@ -1,6 +1,6 @@
 import { NavLink, Link } from 'react-router-dom';
 import { useThemeSidebar } from '../../../context/hdmai/SidebarContext';
-import { HiHome, HiUsers, HiKey, HiCode, HiChartBar, HiHeart, HiCog, HiChevronLeft, HiChevronRight, HiX } from 'react-icons/hi';
+import { HiHome, HiUsers, HiKey, HiCode, HiChartBar, HiHeart, HiCog, HiSupport, HiChevronLeft, HiChevronRight, HiX } from 'react-icons/hi';
 
 const navItems = [
   { to: '/hdmai', icon: HiHome, label: 'Dashboard', end: true },
@@ -8,6 +8,7 @@ const navItems = [
   { to: '/hdmai/keys', icon: HiKey, label: 'AI Keys' },
   { to: '/hdmai/project-keys', icon: HiCode, label: 'Project Keys' },
   { to: '/hdmai/usage', icon: HiChartBar, label: 'Usage' },
+  { to: '/hdmai/support', icon: HiSupport, label: 'Support' },
   { to: '/hdmai/health', icon: HiHeart, label: 'Health' },
   { to: '/hdmai/settings', icon: HiCog, label: 'Settings' },
 ];

@@ -9,9 +9,9 @@ const PROVIDERS = [
   {
     key: 'groq',
     name: 'Groq',
-    model: 'Llama 3.3 70B',
-    modelValue: 'llama-3.3-70b-versatile',
-    icon: '🦙',
+    modelLabel: 'GPT-OSS 20B',
+    modelValue: 'openai/gpt-oss-20b',
+    icon: '🦎',
     bg: 'bg-gradient-to-br from-orange-400 to-rose-500',
     activeBg: 'bg-orange-50 dark:bg-orange-900/30',
     activeBorder: 'border-orange-500',
@@ -23,7 +23,7 @@ const PROVIDERS = [
   {
     key: 'gemini',
     name: 'Gemini',
-    model: 'Gemini 2.5 Flash',
+    modelLabel: 'Gemini 2.5 Flash',
     modelValue: 'gemini-2.5-flash',
     icon: '🌐',
     bg: 'bg-gradient-to-br from-blue-400 to-cyan-500',
@@ -41,6 +41,12 @@ const GEMINI_MODELS = [
   { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro (powerful)' },
 ];
 
+const GROQ_MODELS = [
+  { value: 'openai/gpt-oss-20b', label: 'GPT-OSS 20B' },
+  { value: 'llama-3.3-70b-versatile', label: 'Llama 3.3 70B' },
+  { value: 'deepseek-r1-distill-llama-70b', label: 'DeepSeek R1 70B' },
+];
+
 export default function Settings() {
   const [config, setConfig] = useState(null);
   const [usage, setUsage] = useState(null);
@@ -56,7 +62,7 @@ export default function Settings() {
         const c = cfg?.data || cfg;
         setConfig({
           defaultProvider: c?.defaultProvider || 'groq',
-          defaultModel: c?.defaultModel || 'llama-3.3-70b-versatile',
+          defaultModel: c?.defaultModel || 'openai/gpt-oss-20b',
           temperature: c?.temperature ?? 0.7,
           maxTokens: c?.maxTokens ?? 1024,
           maxApiKeysPerUser: c?.maxApiKeysPerUser ?? 5,
@@ -111,6 +117,8 @@ export default function Settings() {
 
   const updateConfig = (key, value) => setConfig(prev => ({ ...prev, [key]: value }));
 
+  const getModelOptions = () => config.defaultProvider === 'gemini' ? GEMINI_MODELS : GROQ_MODELS;
+
   if (loading) return <div className="flex justify-center py-20"><Spinner size="lg" /></div>;
   if (error) return <Card className="text-center text-red-500">{error}</Card>;
   if (!config) return null;
@@ -135,7 +143,7 @@ export default function Settings() {
             <div>
               <p className="text-xs text-[var(--text-muted)] uppercase tracking-wider">Active Provider</p>
               <h2 className="text-xl font-bold text-[var(--text-primary)]">{activeProvider?.name || config.defaultProvider}</h2>
-              <p className="text-sm text-[var(--text-secondary)]">{activeProvider?.model || config.defaultModel}</p>
+              <p className="text-sm text-[var(--text-secondary)]">{config.defaultModel}</p>
             </div>
           </div>
 
@@ -163,7 +171,7 @@ export default function Settings() {
                       <p className={`font-semibold text-sm ${isActive ? p.activeText : 'text-[var(--text-secondary)]'}`}>
                         {p.name}
                       </p>
-                      <p className="text-xs text-[var(--text-muted)]">{p.model}</p>
+                      <p className="text-xs text-[var(--text-muted)]">{p.modelLabel}</p>
                     </div>
                     {isActive && (
                       <div className="ml-auto flex items-center gap-2">
@@ -177,21 +185,19 @@ export default function Settings() {
             })}
           </div>
 
-          {/* Gemini Model Selector */}
-          {config.defaultProvider === 'gemini' && (
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Model</label>
-              <select
-                value={config.defaultModel}
-                onChange={(e) => updateConfig('defaultModel', e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--text-primary)] text-sm"
-              >
-                {GEMINI_MODELS.map(m => (
-                  <option key={m.value} value={m.value}>{m.label}</option>
-                ))}
-              </select>
-            </div>
-          )}
+          {/* Model Selector */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Model</label>
+            <select
+              value={config.defaultModel}
+              onChange={(e) => updateConfig('defaultModel', e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--text-primary)] text-sm"
+            >
+              {getModelOptions().map(m => (
+                <option key={m.value} value={m.value}>{m.label}</option>
+              ))}
+            </select>
+          </div>
 
           {/* Temperature */}
           <div className="mb-4">
@@ -246,52 +252,6 @@ export default function Settings() {
 
           <Button onClick={handleSave} loading={saving}>Save Configuration</Button>
         </Card>
-
-        {/* Usage Today */}
-        {usage && (
-          <Card>
-            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Usage Today</h2>
-            <div className="space-y-4">
-              {Object.entries(usage.providers || {}).map(([key, p]) => (
-                <div key={key}>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-[var(--text-primary)] font-medium">{p.name}</span>
-                    <span className="text-[var(--text-secondary)] text-xs">
-                      {p.limit === 'unlimited'
-                        ? 'Unlimited'
-                        : `${p.requests_today || 0}/${p.limit_requests_per_day || p.limit_flash_per_day || '?'} requests`}
-                    </span>
-                  </div>
-                  <div className="w-full bg-[var(--bg-tertiary)] rounded-full h-2.5">
-                    <div
-                      className={`h-2.5 rounded-full transition-all ${
-                        p.limit === 'unlimited'
-                          ? 'bg-green-500 w-full'
-                          : (p.usage_percent_today || 0) > 80
-                            ? 'bg-red-500'
-                            : (p.usage_percent_today || 0) > 50
-                              ? 'bg-yellow-500'
-                              : 'bg-fuchsia-500'
-                      }`}
-                      style={p.limit !== 'unlimited' ? { width: `${Math.min(p.usage_percent_today || 0, 100)}%` } : {}}
-                    />
-                  </div>
-                  <p className="text-xs text-[var(--text-muted)] mt-1">
-                    {p.tokens_today?.toLocaleString() || 0} tokens today
-                  </p>
-                </div>
-              ))}
-            </div>
-            {usage.overall && (
-              <div className="mt-4 p-3 bg-[var(--bg-secondary)] rounded-lg flex justify-between text-sm">
-                <span className="text-[var(--text-secondary)]">
-                  Total: {usage.overall.total_requests_today} requests | {usage.overall.total_tokens_today?.toLocaleString()} tokens
-                </span>
-                <span className="text-green-600 dark:text-green-400 font-medium">{usage.overall.free_tier_savings}</span>
-              </div>
-            )}
-          </Card>
-        )}
       </div>
     </div>
   );

@@ -6,3 +6,4 @@ export * from './keys';
 export * from './settings';
 export * from './health';
 export * from './aiConfig';
+export * from './support';

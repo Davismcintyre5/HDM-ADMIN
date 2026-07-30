@@ -32,20 +32,33 @@ export default function Usage() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleSwitchProvider = async (provider) => {
-    setSavingProvider(true);
-    try {
-      await updateAIConfig({ default_provider: provider });
-      const a = await getAIConfig();
-      setAiConfig(a?.data || a);
-    } catch (err) { alert(err.response?.data?.message || err.message); }
-    setSavingProvider(false);
-  };
+ const handleSwitchProvider = async (provider) => {
+  setSavingProvider(true);
+  try {
+    const p = provider === 'groq' 
+      ? { defaultProvider: 'groq', defaultModel: 'openai/gpt-oss-20b' }
+      : { defaultProvider: 'gemini', defaultModel: 'gemini-2.5-flash' };
+    await updateAIConfig({
+      ...aiConfig,
+      ...p,
+    });
+    const a = await getAIConfig();
+    setAiConfig(a?.data || a);
+  } catch (err) { alert(err.response?.data?.message || err.message); }
+  setSavingProvider(false);
+};
 
   const getBarColor = (percent) => {
     if (percent > 80) return 'bg-red-500';
     if (percent > 50) return 'bg-yellow-500';
     return 'bg-fuchsia-500';
+  };
+
+  const getModelLabel = () => {
+    if (!aiConfig) return '';
+    if (aiConfig.defaultProvider === 'groq') return `Groq (${aiConfig.defaultModel || 'GPT-OSS 20B'})`;
+    if (aiConfig.defaultProvider === 'gemini') return `Gemini (${aiConfig.defaultModel || 'Flash/Pro'})`;
+    return aiConfig.defaultProvider;
   };
 
   if (loading) return <div className="flex justify-center py-20"><Spinner size="lg" /></div>;
@@ -62,14 +75,12 @@ export default function Usage() {
             <div>
               <h2 className="font-semibold text-[var(--text-primary)]">🤖 AI Provider</h2>
               <p className="text-sm text-[var(--text-muted)] mt-1">
-                Active: <Badge variant="fuchsia">
-                  {aiConfig.default_provider === 'groq' ? 'Groq (Llama 3.3 70B)' : aiConfig.default_provider === 'gemini' ? 'Gemini (Flash/Pro)' : aiConfig.default_provider}
-                </Badge>
+                Active: <Badge variant="fuchsia">{getModelLabel()}</Badge>
               </p>
             </div>
             <div className="flex gap-2">
-              <Button size="sm" variant={aiConfig.default_provider === 'groq' ? 'primary' : 'secondary'} onClick={() => handleSwitchProvider('groq')} loading={savingProvider}>Groq</Button>
-              <Button size="sm" variant={aiConfig.default_provider === 'gemini' ? 'primary' : 'secondary'} onClick={() => handleSwitchProvider('gemini')} loading={savingProvider}>Gemini</Button>
+              <Button size="sm" variant={aiConfig.defaultProvider === 'groq' ? 'primary' : 'secondary'} onClick={() => handleSwitchProvider('groq')} loading={savingProvider}>Groq</Button>
+              <Button size="sm" variant={aiConfig.defaultProvider === 'gemini' ? 'primary' : 'secondary'} onClick={() => handleSwitchProvider('gemini')} loading={savingProvider}>Gemini</Button>
             </div>
           </div>
         </Card>
