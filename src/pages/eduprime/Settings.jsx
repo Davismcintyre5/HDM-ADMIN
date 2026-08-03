@@ -1,13 +1,17 @@
 import { useEffect, useState } from 'react';
-import { getSettings, updateSettings } from '../../services/eduprime/settings';
+import { getSettings, getLandingSettings, getChatSettings, updateSettings, updateSettingsSection } from '../../services/eduprime/settings';
 import Spinner from '../../components/eduprime/ui/Spinner';
-import { HiCog, HiSwitchHorizontal } from 'react-icons/hi';
+import { HiCog, HiSwitchHorizontal, HiTemplate, HiChat } from 'react-icons/hi';
 import GeneralSettings from './settings/GeneralSettings';
 import TogglesSettings from './settings/TogglesSettings';
+import LandingSettings from './settings/LandingSettings';
+import ChatSettings from './settings/ChatSettings';
 
 const TABS = [
   { key: 'general', label: 'General', icon: HiCog },
   { key: 'toggles', label: 'Toggles', icon: HiSwitchHorizontal },
+  { key: 'landing', label: 'Landing', icon: HiTemplate },
+  { key: 'chat', label: 'AI Chat', icon: HiChat },
 ];
 
 export default function Settings() {
@@ -19,16 +23,48 @@ export default function Settings() {
 
   useEffect(() => {
     setLoading(true);
-    getSettings()
-      .then(res => setSettings(res?.data || res || {}))
-      .catch(console.error).finally(() => setLoading(false));
+    Promise.all([getSettings(), getLandingSettings(), getChatSettings()])
+      .then(([main, landing, chat]) => {
+        const mainData = main?.data || main || {};
+        const landingData = landing?.data || landing || {};
+        const chatData = chat?.data || chat || {};
+
+        // Parse JSON strings for landing arrays
+        ['landing_features', 'landing_downloads', 'landing_testimonials'].forEach(key => {
+          if (typeof landingData[key] === 'string') {
+            try { landingData[key] = JSON.parse(landingData[key]); } catch { landingData[key] = []; }
+          }
+          if (!Array.isArray(landingData[key])) landingData[key] = [];
+        });
+
+        setSettings({ ...mainData, landing: landingData, chat: chatData });
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, []);
 
   const handleSave = async (data) => {
     setSaving(true); setSuccess('');
     try {
-      await updateSettings(data);
-      setSettings(prev => ({ ...prev, ...data }));
+      if (data.chat) {
+        await updateSettingsSection('chat', data.chat);
+        const fresh = await getChatSettings();
+        setSettings(prev => ({ ...prev, chat: fresh?.data || fresh }));
+      } else if (data.landing) {
+        await updateSettingsSection('landing', data.landing);
+        const fresh = await getLandingSettings();
+        const landingData = fresh?.data || fresh || {};
+        ['landing_features', 'landing_downloads', 'landing_testimonials'].forEach(key => {
+          if (typeof landingData[key] === 'string') {
+            try { landingData[key] = JSON.parse(landingData[key]); } catch { landingData[key] = []; }
+          }
+          if (!Array.isArray(landingData[key])) landingData[key] = [];
+        });
+        setSettings(prev => ({ ...prev, landing: landingData }));
+      } else {
+        await updateSettings(data);
+        setSettings(prev => ({ ...prev, ...data }));
+      }
       setSuccess('Saved!'); setTimeout(() => setSuccess(''), 2000);
     } catch (e) { alert(e.response?.data?.message || e.message); }
     setSaving(false);
@@ -51,6 +87,8 @@ export default function Settings() {
 
       {activeTab === 'general' && <GeneralSettings settings={settings} setSettings={setSettings} onSave={handleSave} saving={saving} />}
       {activeTab === 'toggles' && <TogglesSettings settings={settings} setSettings={setSettings} onSave={handleSave} saving={saving} />}
+      {activeTab === 'landing' && <LandingSettings settings={settings} setSettings={setSettings} onSave={handleSave} saving={saving} />}
+      {activeTab === 'chat' && <ChatSettings settings={settings} setSettings={setSettings} onSave={handleSave} saving={saving} />}
     </div>
   );
 }

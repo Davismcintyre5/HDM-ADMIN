@@ -14,3 +14,13 @@ export async function updateTicket(id, data) {
   const res = await api.patch(`/support/${id}`, data);
   return res.data;
 }
+
+export async function getContacts(params) {
+  const res = await api.get('/support/contacts', { params });
+  return res.data;
+}
+
+export async function markContactRead(id) {
+  const res = await api.patch(`/support/contacts/${id}/read`);
+  return res.data;
+}

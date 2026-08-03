@@ -4,7 +4,16 @@ import Button from '../../../components/eduprime/ui/Button';
 
 export default function TogglesSettings({ settings, setSettings, onSave, saving }) {
   const update = (key, value) => setSettings(prev => ({ ...prev, [key]: value }));
-  const handleSave = () => onSave(settings);
+
+  const handleSave = () => {
+    onSave({
+      email_enabled: settings.email_enabled,
+      sms_enabled: settings.sms_enabled,
+      redis_enabled: settings.redis_enabled,
+      cloudinary_enabled: settings.cloudinary_enabled,
+      socket_enabled: settings.socket_enabled,
+    });
+  };
 
   return (
     <div className="space-y-6 max-w-2xl">
