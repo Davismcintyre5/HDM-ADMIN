@@ -96,6 +96,13 @@ const systems = [
   icon: HiAcademicCap, bgGradient: 'from-emerald-500 to-green-600', bgLight: 'bg-emerald-50 dark:bg-emerald-950',
   textColor: 'text-emerald-600 dark:text-emerald-400', borderColor: 'border-emerald-200 dark:border-emerald-800',
   hoverBg: 'hover:bg-emerald-600', stats: { users: '1,250', posts: '4.5K', groups: '28' }
+},
+
+{
+  id: 'eduprime', name: 'EduPrime', description: 'School management & administration',
+  icon: HiAcademicCap, bgGradient: 'from-amber-500 to-orange-600', bgLight: 'bg-amber-50 dark:bg-amber-950',
+  textColor: 'text-amber-600 dark:text-amber-400', borderColor: 'border-amber-200 dark:border-amber-800',
+  hoverBg: 'hover:bg-amber-600', stats: { schools: '45', students: '12K', teachers: '890' }
 }
 
 ]

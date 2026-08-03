@@ -15,6 +15,7 @@ import HDMNetApp from './apps/HDMNetApp'
 import FarmWiseApp from './apps/FarmWiseApp'
 import MarketBridgeApp from './apps/MarketBridgeApp'
 import RVNPApp from './apps/RVNPApp'
+import EduPrimeApp from './apps/EduPrimeApp'
 
 const routerFuture = { v7_startTransition: true, v7_relativeSplatPath: true }
 
@@ -33,7 +34,8 @@ const systemConfig = {
   hdmnet: true,
   farmwise: true,
   marketbridge: true,
-  rvnp: true
+  rvnp: true,
+  eduprime: true
 }
 
 function App() {
@@ -56,6 +58,7 @@ function App() {
         <Route path="/farmwise/*" element={systemConfig.farmwise ? <FarmWiseApp /> : <ComingSoon />} />
         <Route path="/marketbridge/*" element={systemConfig.marketbridge ? <MarketBridgeApp /> : <ComingSoon />} />
         <Route path="/rvnp/*" element={systemConfig.rvnp ? <RVNPApp /> : <ComingSoon />} />
+        <Route path="/eduprime/*" element={systemConfig.eduprime ? <EduPrimeApp /> : <ComingSoon />} />
         <Route path="*" element={<ComingSoon />} />
       </Routes>
     </BrowserRouter>

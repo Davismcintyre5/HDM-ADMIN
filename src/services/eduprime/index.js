@@ -1,0 +1,11 @@
+export { default as api, setAuthToken, setupInterceptors } from './api';
+export * from './auth';
+export * from './schools';
+export * from './pendingSchools';
+export * from './support';
+export * from './legals';
+export * from './backups';
+export * from './logs';
+export * from './health';
+export * from './settings';
+export * from './reference';

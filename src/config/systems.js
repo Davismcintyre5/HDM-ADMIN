@@ -1,7 +1,7 @@
 import {
   HiShoppingCart, HiOfficeBuilding, HiShieldCheck, HiSparkles,
   HiLightningBolt, HiMusicNote, HiDocumentText, HiBriefcase,
-  HiGlobe, HiMail, HiWifi, HiCash, HiShoppingBag
+  HiGlobe, HiMail, HiWifi, HiCash, HiShoppingBag,HiAcademicCap
 } from 'react-icons/hi'
 
 export const systems = [
@@ -172,7 +172,13 @@ export const systems = [
     borderColor: 'border-violet-200 dark:border-violet-800',
     hoverBg: 'hover:bg-violet-700',
     stats: { stores: '234', products: '12K', revenue: 'KES 5M' }
-  }
+  },
+  {
+  id: 'eduprime', name: 'EduPrime', description: 'School management & administration',
+  icon: HiAcademicCap, bgGradient: 'from-amber-500 to-orange-600', bgLight: 'bg-amber-50 dark:bg-amber-950',
+  textColor: 'text-amber-600 dark:text-amber-400', borderColor: 'border-amber-200 dark:border-amber-800',
+  hoverBg: 'hover:bg-amber-600', stats: { schools: '45', students: '12K', teachers: '890' }
+}
 ]
 
 export function getSystem(id) {
