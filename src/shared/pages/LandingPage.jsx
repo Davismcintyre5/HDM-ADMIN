@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import {
   HiShoppingCart, HiOfficeBuilding, HiShieldCheck, HiSparkles,
   HiLightningBolt, HiMusicNote, HiDocumentText, HiBriefcase, HiGlobe,
-  HiMail, HiWifi, HiCash, HiShoppingBag, HiArrowRight,HiAcademicCap
+  HiMail, HiWifi, HiCash, HiShoppingBag, HiArrowRight,HiAcademicCap,HiChip
 } from 'react-icons/hi'
 
 const systems = [
@@ -30,6 +30,14 @@ const systems = [
     textColor: 'text-fuchsia-600 dark:text-fuchsia-400', borderColor: 'border-fuchsia-200 dark:border-fuchsia-800',
     hoverBg: 'hover:bg-fuchsia-600', stats: { models: '234', accuracy: '97.8%', predictions: '1.2M' }
   },
+
+  {
+  id: 'hdmai2', name: 'HDM AI v2', description: 'AI model management & monitoring',
+  icon: HiChip, bgGradient: 'from-blue-500 to-blue-600', bgLight: 'bg-blue-50 dark:bg-blue-950',
+  textColor: 'text-blue-600 dark:text-blue-400', borderColor: 'border-blue-200 dark:border-blue-800',
+  hoverBg: 'hover:bg-blue-600', stats: { models: '12', jobs: '45', users: '234' }
+},
+
   {
     id: 'spark', name: 'Spark', description: 'Privacy-first messaging by HDM',
     icon: HiLightningBolt, bgGradient: 'from-sky-500 to-sky-600', bgLight: 'bg-sky-50 dark:bg-sky-950',
