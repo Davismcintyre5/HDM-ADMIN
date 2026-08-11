@@ -17,6 +17,7 @@ import MarketBridgeApp from './apps/MarketBridgeApp'
 import RVNPApp from './apps/RVNPApp'
 import EduPrimeApp from './apps/EduPrimeApp'
 import HDMAI2App from './apps/HDMAI2App'
+import FarmVexaApp from './apps/FarmVexaApp'
 
 const routerFuture = { v7_startTransition: true, v7_relativeSplatPath: true }
 
@@ -34,6 +35,7 @@ const systemConfig = {
   flax: true,
   hdmnet: true,
   farmwise: true,
+  farmvexa: true,
   marketbridge: true,
   rvnp: true,
   eduprime: true,
@@ -58,6 +60,7 @@ function App() {
         <Route path="/flax/*" element={systemConfig.flax ? <FlaxApp /> : <ComingSoon />} />
         <Route path="/hdmnet/*" element={systemConfig.hdmnet ? <HDMNetApp /> : <ComingSoon />} />
         <Route path="/farmwise/*" element={systemConfig.farmwise ? <FarmWiseApp /> : <ComingSoon />} />
+        <Route path="/farmvexa/*" element={systemConfig.farmvexa ? <FarmVexaApp /> : <ComingSoon />} />
         <Route path="/marketbridge/*" element={systemConfig.marketbridge ? <MarketBridgeApp /> : <ComingSoon />} />
         <Route path="/rvnp/*" element={systemConfig.rvnp ? <RVNPApp /> : <ComingSoon />} />
         <Route path="/hdmai2/*" element={systemConfig.hdmai2 ? <HDMAI2App /> : <ComingSoon />} />

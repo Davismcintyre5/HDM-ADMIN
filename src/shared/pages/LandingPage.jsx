@@ -92,6 +92,14 @@ const systems = [
     textColor: 'text-emerald-600 dark:text-emerald-400', borderColor: 'border-emerald-200 dark:border-emerald-800',
     hoverBg: 'hover:bg-emerald-700', stats: { farms: '45', animals: '2.3K', alerts: '12' }
   },
+
+  {
+  id: 'farmvexa', name: 'FarmVexa', description: 'AI-Powered Farm Intelligence',
+  icon: HiGlobe, bgGradient: 'from-emerald-500 to-green-600', bgLight: 'bg-emerald-50 dark:bg-emerald-950',
+  textColor: 'text-emerald-600 dark:text-emerald-400', borderColor: 'border-emerald-200 dark:border-emerald-800',
+  hoverBg: 'hover:bg-emerald-600', stats: { farmers: '12', farms: '5', devices: '3/5' }
+},
+
   {
     id: 'marketbridge', name: 'MarketBridge', description: 'Multi-vendor marketplace',
     icon: HiShoppingBag, bgGradient: 'from-violet-500 to-purple-600', bgLight: 'bg-violet-50 dark:bg-violet-950',
