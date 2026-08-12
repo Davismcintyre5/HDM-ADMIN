@@ -55,17 +55,17 @@ export default function ChatbotSettings({ settings, setSettings, onSave, saving 
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Provider</label>
-              <select value={chatbot.provider || 'gemini'} onChange={e => update('provider', e.target.value)}
+              <select value={chatbot.aiProvider || 'gemini'} onChange={e => update('aiProvider', e.target.value)}
                 className="w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--input-bg)] text-sm">
                 {['gemini', 'hdmai'].map(p => <option key={p} value={p}>{p === 'gemini' ? 'Gemini' : 'HDM AI'}</option>)}
               </select>
             </div>
 
-            {chatbot.provider === 'gemini' || !chatbot.provider ? (
+            {(chatbot.aiProvider === 'gemini' || !chatbot.aiProvider) ? (
               <Input label="Gemini API Key" type="password" value={chatbot.geminiApiKey || ''} onChange={e => update('geminiApiKey', e.target.value)} placeholder="AIza..." />
             ) : (
               <>
-                <Input label="HDM AI API Key" type="password" value={chatbot.hdmApiKey || ''} onChange={e => update('hdmApiKey', e.target.value)} placeholder="hdm_sk_..." />
+                <Input label="HDM AI API Key" type="password" value={chatbot.hdmApiKey || ''} onChange={e => update('hdmApiKey', e.target.value)} placeholder="hdm_gen_..." />
                 <Input label="Base URL" value={chatbot.hdmBaseUrl || ''} onChange={e => update('hdmBaseUrl', e.target.value)} placeholder="https://hdmaiserver.pxxl.click/api/v1" />
               </>
             )}
