@@ -1,25 +1,25 @@
 import { useEffect, useState } from 'react';
 import { getSettings, updateSettings } from '../../services/farmvexa/settings';
 import Spinner from '../../components/farmvexa/ui/Spinner';
-import { HiChip, HiBell, HiMail, HiDeviceMobile, HiSwitchHorizontal, HiCog, HiShieldCheck, HiDownload } from 'react-icons/hi';
+import { HiChip, HiBell, HiMail, HiSwitchHorizontal, HiCog, HiDownload, HiChat, HiScale } from 'react-icons/hi';
 import AISettings from './settings/AISettings';
 import AlertsSettings from './settings/AlertsSettings';
-import EmailSettings from './settings/EmailSettings';
-import SMSSettings from './settings/SMSSettings';
+import NotificationsSettings from './settings/NotificationsSettings';
 import TogglesSettings from './settings/TogglesSettings';
 import SystemSettings from './settings/SystemSettings';
-import AdminsSettings from './settings/AdminsSettings';
 import DownloadsSettings from './settings/DownloadsSettings';
+import ChatbotSettings from './settings/ChatbotSettings';
+import LegalsSettings from './settings/LegalsSettings';
 
 const TABS = [
   { key: 'ai', label: 'AI & Limits', icon: HiChip },
   { key: 'alerts', label: 'Alerts', icon: HiBell },
-  { key: 'email', label: 'Email', icon: HiMail },
-  { key: 'sms', label: 'SMS', icon: HiDeviceMobile },
+  { key: 'notifications', label: 'Notifications', icon: HiMail },
   { key: 'toggles', label: 'Toggles', icon: HiSwitchHorizontal },
   { key: 'system', label: 'System', icon: HiCog },
   { key: 'downloads', label: 'Downloads', icon: HiDownload },
-  { key: 'admins', label: 'Admins', icon: HiShieldCheck },
+  { key: 'chatbot', label: 'Chatbot', icon: HiChat },
+  { key: 'legals', label: 'Legals', icon: HiScale },
 ];
 
 export default function Settings() {
@@ -42,6 +42,10 @@ export default function Settings() {
       const current = await getSettings();
       const currentSettings = current?.data?.settings || current?.data || {};
       const merged = { ...currentSettings, ...sectionData };
+      // Deep merge nested system object
+      if (sectionData.system && currentSettings.system) {
+        merged.system = { ...currentSettings.system, ...sectionData.system };
+      }
       await updateSettings(merged);
       setSettings(merged);
       setSuccess('Saved!'); setTimeout(() => setSuccess(''), 2000);
@@ -66,12 +70,12 @@ export default function Settings() {
 
       {activeTab === 'ai' && <AISettings settings={settings} setSettings={setSettings} onSave={handleSave} saving={saving} />}
       {activeTab === 'alerts' && <AlertsSettings settings={settings} setSettings={setSettings} onSave={handleSave} saving={saving} />}
-      {activeTab === 'email' && <EmailSettings settings={settings} setSettings={setSettings} onSave={handleSave} saving={saving} />}
-      {activeTab === 'sms' && <SMSSettings settings={settings} setSettings={setSettings} onSave={handleSave} saving={saving} />}
+      {activeTab === 'notifications' && <NotificationsSettings settings={settings} setSettings={setSettings} onSave={handleSave} saving={saving} />}
       {activeTab === 'toggles' && <TogglesSettings settings={settings} setSettings={setSettings} onSave={handleSave} saving={saving} />}
       {activeTab === 'system' && <SystemSettings settings={settings} setSettings={setSettings} onSave={handleSave} saving={saving} />}
       {activeTab === 'downloads' && <DownloadsSettings settings={settings} setSettings={setSettings} onSave={handleSave} saving={saving} />}
-      {activeTab === 'admins' && <AdminsSettings />}
+      {activeTab === 'chatbot' && <ChatbotSettings settings={settings} setSettings={setSettings} onSave={handleSave} saving={saving} />}
+      {activeTab === 'legals' && <LegalsSettings settings={settings} setSettings={setSettings} onSave={handleSave} saving={saving} />}
     </div>
   );
 }

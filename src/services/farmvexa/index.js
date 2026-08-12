@@ -9,3 +9,4 @@ export * from './health';
 export * from './settings';
 export * from './paymentMethods';
 export * from './paymentModels';
+export * from './weather';

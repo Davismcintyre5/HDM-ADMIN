@@ -1,26 +1,31 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getHealth } from '../../services/farmvexa/health';
+import { getWeatherTest, runWeatherTest } from '../../services/farmvexa/weather';
+import { updateSettings } from '../../services/farmvexa/settings';
 import Card from '../../components/farmvexa/ui/Card';
 import Badge from '../../components/farmvexa/ui/Badge';
 import Button from '../../components/farmvexa/ui/Button';
+import Toggle from '../../components/farmvexa/ui/Toggle';
 import Spinner from '../../components/farmvexa/ui/Spinner';
-import { HiRefresh, HiServer, HiDatabase, HiStatusOnline, HiMail, HiDeviceMobile, HiCloud, HiChip, HiGlobe, HiShieldCheck } from 'react-icons/hi';
+import { HiRefresh, HiServer, HiDatabase, HiStatusOnline, HiMail, HiDeviceMobile, HiCloud, HiChip, HiGlobe, HiShieldCheck, HiSun, HiPlay } from 'react-icons/hi';
 
 const REFRESH_INTERVAL = 30000;
 
 const StatusBadge = ({ status }) => {
-  const map = { running: 'success', connected: 'success', up: 'success', enabled: 'success', online: 'success', unknown: 'warning', offline: 'warning', disabled: 'default' };
+  const map = { running: 'success', connected: 'success', up: 'success', enabled: 'success', online: 'success', success: 'success', unknown: 'warning', offline: 'warning', disabled: 'default', failed: 'danger' };
   return <Badge variant={map[status] || 'default'}>{status || 'unknown'}</Badge>;
 };
 
 const StatusDot = ({ status }) => {
-  const colors = { running: 'bg-green-500', connected: 'bg-green-500', up: 'bg-green-500', enabled: 'bg-green-500', online: 'bg-green-500', unknown: 'bg-yellow-500', offline: 'bg-red-500', disabled: 'bg-gray-400' };
+  const colors = { running: 'bg-green-500', connected: 'bg-green-500', up: 'bg-green-500', enabled: 'bg-green-500', online: 'bg-green-500', success: 'bg-green-500', unknown: 'bg-yellow-500', offline: 'bg-red-500', disabled: 'bg-gray-400', failed: 'bg-red-500' };
   return <span className={`w-2.5 h-2.5 rounded-full ${colors[status] || 'bg-gray-400'} inline-block`} />;
 };
 
 export default function Health() {
   const [health, setHealth] = useState(null);
+  const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [weatherLoading, setWeatherLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
 
   const fetchHealth = useCallback(async () => {
@@ -29,7 +34,32 @@ export default function Health() {
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { fetchHealth(); const i = setInterval(fetchHealth, REFRESH_INTERVAL); return () => clearInterval(i); }, [fetchHealth]);
+ const fetchWeather = async () => {
+  try {
+    const res = await getWeatherTest();
+    console.log('Weather raw:', res);
+    console.log('Weather data:', res?.data);
+    setWeather(res?.data || res);
+  } catch (e) { console.error('Weather fetch error:', e); }
+};
+
+  useEffect(() => { fetchHealth(); fetchWeather(); const i = setInterval(fetchHealth, REFRESH_INTERVAL); return () => clearInterval(i); }, [fetchHealth]);
+
+const handleWeatherTest = async () => {
+  setWeatherLoading(true);
+  try {
+    const res = await runWeatherTest();
+    setWeather(res?.data || res);
+  } catch (err) { alert(err.message); }
+  setWeatherLoading(false);
+};
+
+  const handleWeatherToggle = async (v) => {
+    try {
+      await updateSettings({ system: { weatherTest: { enabled: v } } });
+      fetchWeather();
+    } catch (err) { alert(err.message); }
+  };
 
   if (loading && !health) return <div className="flex justify-center py-20"><Spinner size="lg" /></div>;
 
@@ -151,6 +181,97 @@ export default function Health() {
             <Detail label="Today Usage" value={stats?.todayUsage} />
           </div>
         </Card>
+
+{/* Weather API Test */}
+<Card className="border-l-4 border-l-amber-500 lg:col-span-2">
+  <div className="flex items-center justify-between mb-4">
+    <div className="flex items-center gap-2">
+      <HiSun className="w-5 h-5 text-amber-500" />
+      <h3 className="font-semibold text-[var(--text-primary)]">Weather API Test</h3>
+      {weather?.enabled !== undefined && (
+        <span className="text-xs text-[var(--text-muted)]">
+          ({weather?.enabled ? 'Enabled' : 'Disabled'})
+        </span>
+      )}
+    </div>
+    <div className="flex items-center gap-2">
+      <Toggle checked={weather?.enabled || false} onChange={handleWeatherToggle} />
+      <Button size="sm" onClick={handleWeatherTest} loading={weatherLoading}>
+        <HiPlay className="w-4 h-4 mr-1" /> Run Test
+      </Button>
+    </div>
+  </div>
+
+  {weather?.results ? (
+    <div className="space-y-4">
+      {Array.isArray(weather.results) && weather.results[0]?.location ? (
+        weather.results.map((loc, i) => (
+          <div key={i}>
+            <h4 className="text-sm font-medium text-[var(--text-primary)] mb-2">
+              📍 {loc.location}
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {loc.results?.map((api, j) => (
+                <div key={j} className="bg-[var(--bg-secondary)] rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <h5 className="text-xs font-medium text-[var(--text-primary)]">
+                      {api.api === 'openweather' ? 'OpenWeatherMap' : 'WeatherAPI'}
+                    </h5>
+                    <StatusBadge status={api.status} />
+                  </div>
+                  {api.status === 'success' ? (
+                    <div className="space-y-1 text-xs">
+                      <Detail label="Temperature" value={`${api.data?.temperature}°C`} />
+                      <Detail label="Humidity" value={`${api.data?.humidity}%`} />
+                      <Detail label="Condition" value={api.data?.condition} />
+                      <Detail label="Wind" value={api.data?.windSpeed ? `${api.data.windSpeed} m/s` : null} />
+                      <Detail label="Response" value={`${api.responseTime}ms`} />
+                    </div>
+                  ) : (
+                    <p className="text-xs text-red-500">{api.error || 'Test failed'}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))
+      ) : (
+        <div>
+          <h4 className="text-sm font-medium text-[var(--text-primary)] mb-2">
+            📍 {weather.location || 'Unknown'}
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {weather.results.map((api, j) => (
+              <div key={j} className="bg-[var(--bg-secondary)] rounded-lg p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <h5 className="text-xs font-medium text-[var(--text-primary)]">
+                    {api.api === 'openweather' ? 'OpenWeatherMap' : 'WeatherAPI'}
+                  </h5>
+                  <StatusBadge status={api.status} />
+                </div>
+                {api.status === 'success' ? (
+                  <div className="space-y-1 text-xs">
+                    <Detail label="Temperature" value={`${api.data?.temperature}°C`} />
+                    <Detail label="Humidity" value={`${api.data?.humidity}%`} />
+                    <Detail label="Condition" value={api.data?.condition} />
+                    <Detail label="Wind" value={api.data?.windSpeed ? `${api.data.windSpeed} m/s` : null} />
+                    <Detail label="Response" value={`${api.responseTime}ms`} />
+                  </div>
+                ) : (
+                  <p className="text-xs text-red-500">{api.error || 'Test failed'}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  ) : (
+    <p className="text-sm text-[var(--text-muted)] text-center py-4">
+      No weather test data. Click Run Test to check both APIs.
+    </p>
+  )}
+</Card>
       </div>
 
       {timestamp && <p className="text-xs text-[var(--text-muted)] text-center mt-6">Data timestamp: {new Date(timestamp).toLocaleString()}</p>}
