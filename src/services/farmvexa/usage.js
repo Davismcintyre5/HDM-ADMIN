@@ -5,8 +5,13 @@ export async function getTotalUsage() {
   return res.data;
 }
 
-export async function getUsersUsage() {
-  const res = await api.get('/usage/users');
+export async function getFarmsUsage() {
+  const res = await api.get('/usage/farms');
+  return res.data;
+}
+
+export async function getFarmUsage(id) {
+  const res = await api.get(`/usage/farm/${id}`);
   return res.data;
 }
 

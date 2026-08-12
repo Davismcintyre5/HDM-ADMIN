@@ -22,6 +22,8 @@ const FARMER_EMAILS = [
   { key: 'farmerMaintenanceDue', label: 'Maintenance Due' },
   { key: 'farmerWeatherAlert', label: 'Weather Alert' },
   { key: 'farmerTaskOverdue', label: 'Task Overdue' },
+  { key: 'farmerReminderUpcoming', label: 'Reminder - Upcoming' },
+{ key: 'farmerReminderFinal', label: 'Reminder - Final' },
 ];
 
 const ADMIN_EMAILS = [

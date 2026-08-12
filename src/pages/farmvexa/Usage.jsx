@@ -1,31 +1,48 @@
 import { useState, useEffect } from 'react';
-import { getTotalUsage, getUsersUsage } from '../../services/farmvexa/usage';
+import { getTotalUsage, getFarmsUsage, getUserUsage } from '../../services/farmvexa/usage';
 import Card from '../../components/farmvexa/ui/Card';
+import Input from '../../components/farmvexa/ui/Input';
+import Button from '../../components/farmvexa/ui/Button';
 import Badge from '../../components/farmvexa/ui/Badge';
 import Spinner from '../../components/farmvexa/ui/Spinner';
+import { HiSearch } from 'react-icons/hi';
 
 export default function Usage() {
   const [total, setTotal] = useState(null);
-  const [users, setUsers] = useState([]);
+  const [farms, setFarms] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [userLookup, setUserLookup] = useState('');
+  const [userUsage, setUserUsage] = useState(null);
+  const [lookupLoading, setLookupLoading] = useState(false);
 
   useEffect(() => {
-    Promise.all([getTotalUsage(), getUsersUsage()])
-      .then(([t, u]) => {
+    Promise.all([getTotalUsage(), getFarmsUsage()])
+      .then(([t, f]) => {
         setTotal(t?.data?.usage || t?.data || {});
-        setUsers(u?.data?.users || []);
+        setFarms(f?.data?.farms || f?.data || []);
       })
       .catch(console.error).finally(() => setLoading(false));
   }, []);
 
+  const handleUserLookup = async () => {
+    if (!userLookup.trim()) return;
+    setLookupLoading(true);
+    try {
+      const res = await getUserUsage(userLookup.trim());
+      setUserUsage(res?.data || res);
+    } catch (err) { alert('User not found or no usage data'); }
+    setLookupLoading(false);
+  };
+
   if (loading) return <div className="flex justify-center py-20"><Spinner size="lg" /></div>;
 
-  const maxRequests = Math.max(...users.map(u => u.usage?.today || 0), 1);
+  const maxRequests = Math.max(...farms.map(f => f.usage?.today || 0), 1);
 
   return (
     <div>
       <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-6">Usage Analytics</h1>
 
+      {/* Totals */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
         <Card>
           <h2 className="font-semibold text-[var(--text-primary)] mb-2">Today</h2>
@@ -39,23 +56,63 @@ export default function Usage() {
         </Card>
       </div>
 
-      <Card>
-        <h2 className="font-semibold text-[var(--text-primary)] mb-4">Top Users Today</h2>
-        {users.length === 0 ? (
+      {/* Top Farms Today */}
+      <Card className="mb-6">
+        <h2 className="font-semibold text-[var(--text-primary)] mb-4">Top Farms Today</h2>
+        {farms.length === 0 ? (
           <p className="text-sm text-[var(--text-muted)] text-center py-4">No usage data.</p>
         ) : (
           <div className="space-y-3">
-            {users.map((u, i) => (
+            {farms.map((f, i) => (
               <div key={i}>
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="text-[var(--text-primary)]">{u.user?.name || u.user?.email}</span>
-                  <span className="text-[var(--text-muted)]">{u.usage?.today || 0} today / {u.usage?.total || 0} total</span>
+                  <span className="text-[var(--text-primary)]">{f.farm?.name || f.name || 'Unknown'}</span>
+                  <span className="text-[var(--text-muted)]">
+                    {f.farm?.owner?.name ? `${f.farm.owner.name} · ` : ''}
+                    {f.usage?.today || 0} today / {f.usage?.total || 0} total
+                  </span>
                 </div>
                 <div className="w-full bg-[var(--bg-tertiary)] rounded-full h-3">
-                  <div className="h-3 rounded-full bg-emerald-500" style={{ width: `${((u.usage?.today || 0) / maxRequests) * 100}%` }} />
+                  <div className="h-3 rounded-full bg-emerald-500" style={{ width: `${((f.usage?.today || 0) / maxRequests) * 100}%` }} />
                 </div>
               </div>
             ))}
+          </div>
+        )}
+      </Card>
+
+      {/* User Lookup */}
+      <Card>
+        <h2 className="font-semibold text-[var(--text-primary)] mb-4">User Lookup</h2>
+        <div className="flex gap-2 mb-4">
+          <Input value={userLookup} onChange={e => setUserLookup(e.target.value)} placeholder="User ID or email..." className="flex-1" />
+          <Button onClick={handleUserLookup} loading={lookupLoading}><HiSearch className="w-4 h-4 mr-1" /> Lookup</Button>
+        </div>
+        {userUsage && (
+          <div className="bg-[var(--bg-secondary)] rounded-lg p-4 space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-[var(--text-secondary)]">User</span>
+              <span className="text-[var(--text-primary)]">{userUsage.user?.name || userUsage.user?.email || '—'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[var(--text-secondary)]">Today</span>
+              <span className="text-[var(--text-primary)] font-bold">{userUsage.usage?.today || 0}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[var(--text-secondary)]">Total</span>
+              <span className="text-[var(--text-primary)]">{userUsage.usage?.total || 0}</span>
+            </div>
+            {userUsage.history?.length > 0 && (
+              <div className="mt-3 pt-3 border-t border-[var(--border-color)]">
+                <p className="text-xs text-[var(--text-muted)] mb-2">Recent Activity</p>
+                {userUsage.history.slice(0, 5).map((h, i) => (
+                  <div key={i} className="flex justify-between text-xs">
+                    <span className="text-[var(--text-primary)]">{h.endpoint || h.action}</span>
+                    <span className="text-[var(--text-muted)]">{h.tokensUsed || h.requests} tokens</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </Card>
