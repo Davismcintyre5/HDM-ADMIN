@@ -24,6 +24,7 @@ const FARMER_EMAILS = [
   { key: 'farmerTaskOverdue', label: 'Task Overdue' },
   { key: 'farmerReminderUpcoming', label: 'Reminder - Upcoming' },
 { key: 'farmerReminderFinal', label: 'Reminder - Final' },
+{ key: 'marketInquiry', label: 'Market Inquiry' },
 ];
 
 const ADMIN_EMAILS = [
@@ -37,6 +38,7 @@ const ADMIN_EMAILS = [
   { key: 'adminNewAdmin', label: 'New Admin Added' },
   { key: 'adminWeeklyReport', label: 'Weekly Report' },
   { key: 'teamMemberAdded', label: 'Team Member Added' },
+  { key: 'marketInquiry', label: 'Market Inquiry' },
 ];
 
 const SMS_TOGGLES = [

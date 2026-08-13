@@ -10,3 +10,5 @@ export * from './settings';
 export * from './paymentMethods';
 export * from './paymentModels';
 export * from './weather';
+export * from './backups';
+export * from './market';

@@ -51,7 +51,8 @@ export default function SystemSettings({ settings, setSettings, onSave, saving }
             </div>
           </div>
           <Toggle label="Allow Self Registration" checked={system.allowSelfRegistration || false} onChange={v => update('allowSelfRegistration', v)} />
-          <Toggle label="Auto Backup" checked={system.autoBackup || false} onChange={v => update('autoBackup', v)} />
+            <Toggle label="Allow External Camera" checked={system.allowExternalCamera || false} onChange={v => update('allowExternalCamera', v)} description="Allow users to use external camera for crop scanning" />
+          <Toggle label="Marketplace" checked={system.market?.enabled || false} onChange={v => update('market', { ...system.market, enabled: v })} description="Enable marketplace feature" />
         </div>
       </Card>
 
