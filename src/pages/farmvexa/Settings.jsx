@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getSettings, updateSettings } from '../../services/farmvexa/settings';
 import Spinner from '../../components/farmvexa/ui/Spinner';
-import { HiChip, HiBell, HiMail, HiSwitchHorizontal, HiCog, HiDownload, HiChat, HiScale } from 'react-icons/hi';
+import { HiChip, HiBell, HiMail, HiSwitchHorizontal, HiCog, HiDownload,HiCamera , HiChat, HiScale } from 'react-icons/hi';
 import AISettings from './settings/AISettings';
 import AlertsSettings from './settings/AlertsSettings';
 import NotificationsSettings from './settings/NotificationsSettings';
@@ -10,6 +10,7 @@ import SystemSettings from './settings/SystemSettings';
 import DownloadsSettings from './settings/DownloadsSettings';
 import ChatbotSettings from './settings/ChatbotSettings';
 import LegalsSettings from './settings/LegalsSettings';
+import FieldScanSettings from './settings/FieldScanSettings';
 
 const TABS = [
   { key: 'ai', label: 'AI & Limits', icon: HiChip },
@@ -19,6 +20,7 @@ const TABS = [
   { key: 'system', label: 'System', icon: HiCog },
   { key: 'downloads', label: 'Downloads', icon: HiDownload },
   { key: 'chatbot', label: 'Chatbot', icon: HiChat },
+  { key: 'fieldScan', label: 'Field Scan', icon: HiCamera },
   { key: 'legals', label: 'Legals', icon: HiScale },
 ];
 
@@ -75,6 +77,7 @@ export default function Settings() {
       {activeTab === 'system' && <SystemSettings settings={settings} setSettings={setSettings} onSave={handleSave} saving={saving} />}
       {activeTab === 'downloads' && <DownloadsSettings settings={settings} setSettings={setSettings} onSave={handleSave} saving={saving} />}
       {activeTab === 'chatbot' && <ChatbotSettings settings={settings} setSettings={setSettings} onSave={handleSave} saving={saving} />}
+      {activeTab === 'fieldScan' && <FieldScanSettings settings={settings} setSettings={setSettings} onSave={handleSave} saving={saving} />}
       {activeTab === 'legals' && <LegalsSettings settings={settings} setSettings={setSettings} onSave={handleSave} saving={saving} />}
     </div>
   );

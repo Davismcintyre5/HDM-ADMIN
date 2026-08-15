@@ -31,6 +31,24 @@ export default function SystemSettings({ settings, setSettings, onSave, saving }
       </Card>
 
       <Card>
+        <h2 className="font-semibold text-[var(--text-primary)] mb-4">External Camera</h2>
+        <div className="space-y-4">
+          <Toggle label="Allow External Camera" checked={system.allowExternalCamera || false} onChange={v => update('allowExternalCamera', v)} description="Enable external camera for crop scanning" />
+          {system.allowExternalCamera && (
+            <>
+              <Input label="Camera In URL" value={system.externalCameraInUrl || ''} onChange={e => update('externalCameraInUrl', e.target.value)} placeholder="https://hdmstream.pxxl.click/in" />
+              <Input label="Camera Out URL" value={system.externalCameraOutUrl || ''} onChange={e => update('externalCameraOutUrl', e.target.value)} placeholder="https://hdmstream.pxxl.click/out" />
+            </>
+          )}
+        </div>
+      </Card>
+
+      <Card>
+        <h2 className="font-semibold text-[var(--text-primary)] mb-4">Marketplace</h2>
+        <Toggle label="Enable Marketplace" checked={system.market?.enabled || false} onChange={v => update('market', { ...system.market, enabled: v })} description="Allow farmers to list and sell products" />
+      </Card>
+
+      <Card>
         <h2 className="font-semibold text-[var(--text-primary)] mb-4">Configuration</h2>
         <div className="space-y-4">
           <Input label="Data Retention (days)" type="number" value={system.dataRetentionDays || ''} onChange={e => update('dataRetentionDays', +e.target.value)} />
@@ -51,8 +69,6 @@ export default function SystemSettings({ settings, setSettings, onSave, saving }
             </div>
           </div>
           <Toggle label="Allow Self Registration" checked={system.allowSelfRegistration || false} onChange={v => update('allowSelfRegistration', v)} />
-            <Toggle label="Allow External Camera" checked={system.allowExternalCamera || false} onChange={v => update('allowExternalCamera', v)} description="Allow users to use external camera for crop scanning" />
-          <Toggle label="Marketplace" checked={system.market?.enabled || false} onChange={v => update('market', { ...system.market, enabled: v })} description="Enable marketplace feature" />
         </div>
       </Card>
 

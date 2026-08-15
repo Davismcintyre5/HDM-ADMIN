@@ -25,6 +25,12 @@ const FARMER_EMAILS = [
   { key: 'farmerReminderUpcoming', label: 'Reminder - Upcoming' },
 { key: 'farmerReminderFinal', label: 'Reminder - Final' },
 { key: 'marketInquiry', label: 'Market Inquiry' },
+{ key: 'farmerStorageTempCritical', label: 'Storage Temp Critical' },
+{ key: 'farmerStorageHumidityCritical', label: 'Storage Humidity Critical' },
+{ key: 'farmerStorageCo2Critical', label: 'Storage CO2 Critical' },
+{ key: 'farmerStorageRatDetected', label: 'Storage Rat Detected' },
+{ key: 'marketInquiry', label: 'Market Inquiry' },
+{ key: 'farmerFieldScanResults', label: 'Field Scan Results' },
 ];
 
 const ADMIN_EMAILS = [
@@ -39,6 +45,11 @@ const ADMIN_EMAILS = [
   { key: 'adminWeeklyReport', label: 'Weekly Report' },
   { key: 'teamMemberAdded', label: 'Team Member Added' },
   { key: 'marketInquiry', label: 'Market Inquiry' },
+  { key: 'farmerStorageTempCritical', label: 'Storage Temp Critical' },
+{ key: 'farmerStorageHumidityCritical', label: 'Storage Humidity Critical' },
+{ key: 'farmerStorageCo2Critical', label: 'Storage CO2 Critical' },
+{ key: 'farmerStorageRatDetected', label: 'Storage Rat Detected' },
+{ key: 'marketInquiry', label: 'Market Inquiry' },
 ];
 
 const SMS_TOGGLES = [

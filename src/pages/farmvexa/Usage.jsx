@@ -38,6 +38,17 @@ export default function Usage() {
 
   const maxRequests = Math.max(...farms.map(f => f.usage?.today || 0), 1);
 
+  const byEndpoint = total?.byEndpoint || {};
+  const chatCount = byEndpoint.chat || 0;
+  const cropCount = byEndpoint.crop_analysis || 0;
+  const fieldScanCount = byEndpoint.field_scan || 0;
+
+  const byKey = total?.byKey || {};
+  const primaryCount = byKey.primary || 0;
+  const backupCount = byKey.backup || 0;
+  const fieldscanPrimaryCount = byKey.fieldscan_primary || 0;
+  const fieldscanBackupCount = byKey.fieldscan_backup || 0;
+
   return (
     <div>
       <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-6">Usage Analytics</h1>
@@ -55,6 +66,71 @@ export default function Usage() {
           <p className="text-xs text-[var(--text-muted)]">total requests</p>
         </Card>
       </div>
+
+      {/* Breakdown by Endpoint */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <Card>
+          <h2 className="font-semibold text-[var(--text-primary)] mb-2">💬 Chat</h2>
+          <p className="text-2xl font-bold text-blue-500">{chatCount}</p>
+          <p className="text-xs text-[var(--text-muted)]">requests today</p>
+        </Card>
+        <Card>
+          <h2 className="font-semibold text-[var(--text-primary)] mb-2">📸 Crop Analysis</h2>
+          <p className="text-2xl font-bold text-purple-500">{cropCount}</p>
+          <p className="text-xs text-[var(--text-muted)]">requests today</p>
+        </Card>
+        <Card>
+          <h2 className="font-semibold text-[var(--text-primary)] mb-2">🌾 Field Scan</h2>
+          <p className="text-2xl font-bold text-emerald-500">{fieldScanCount}</p>
+          <p className="text-xs text-[var(--text-muted)]">scans today</p>
+        </Card>
+      </div>
+
+      {/* Breakdown by Key */}
+      <Card className="mb-6">
+        <h2 className="font-semibold text-[var(--text-primary)] mb-4">Gemini Key Usage Today</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="bg-[var(--bg-secondary)] rounded-lg p-4">
+            <p className="text-sm font-semibold text-[var(--text-primary)] mb-3">Crop & Chat Keys</p>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-[var(--text-secondary)]">Primary Key</span>
+                <span className="text-[var(--text-primary)] font-bold">{primaryCount}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-[var(--text-secondary)]">Backup Key</span>
+                <span className="text-[var(--text-primary)] font-bold">{backupCount}</span>
+              </div>
+              <div className="mt-2 pt-2 border-t border-[var(--border-color)]">
+                <div className="flex justify-between text-sm">
+                  <span className="text-[var(--text-secondary)]">Total</span>
+                  <span className="text-[var(--text-primary)] font-bold">{primaryCount + backupCount}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-[var(--bg-secondary)] rounded-lg p-4">
+            <p className="text-sm font-semibold text-[var(--text-primary)] mb-3">Field Scan Keys</p>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-[var(--text-secondary)]">Primary Key</span>
+                <span className="text-[var(--text-primary)] font-bold">{fieldscanPrimaryCount}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-[var(--text-secondary)]">Backup Key</span>
+                <span className="text-[var(--text-primary)] font-bold">{fieldscanBackupCount}</span>
+              </div>
+              <div className="mt-2 pt-2 border-t border-[var(--border-color)]">
+                <div className="flex justify-between text-sm">
+                  <span className="text-[var(--text-secondary)]">Total</span>
+                  <span className="text-[var(--text-primary)] font-bold">{fieldscanPrimaryCount + fieldscanBackupCount}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
 
       {/* Top Farms Today */}
       <Card className="mb-6">
@@ -105,10 +181,27 @@ export default function Usage() {
             {userUsage.history?.length > 0 && (
               <div className="mt-3 pt-3 border-t border-[var(--border-color)]">
                 <p className="text-xs text-[var(--text-muted)] mb-2">Recent Activity</p>
-                {userUsage.history.slice(0, 5).map((h, i) => (
-                  <div key={i} className="flex justify-between text-xs">
-                    <span className="text-[var(--text-primary)]">{h.endpoint || h.action}</span>
-                    <span className="text-[var(--text-muted)]">{h.tokensUsed || h.requests} tokens</span>
+                {userUsage.history.slice(0, 10).map((h, i) => (
+                  <div key={i} className="flex justify-between text-xs py-2 border-b border-[var(--border-color)] last:border-0">
+                    <div>
+                      <span className="text-[var(--text-primary)] font-medium">
+                        {h.endpoint === 'chat' ? '💬 Chat' : h.endpoint === 'crop_analysis' ? '📸 Crop' : h.endpoint === 'field_scan' ? '🌾 Field Scan' : h.endpoint}
+                      </span>
+                      <span className="text-[var(--text-muted)] ml-2">
+                        {h.keyUsed === 'primary' ? 'Primary' : h.keyUsed === 'backup' ? 'Backup' : h.keyUsed === 'fieldscan_primary' ? 'FS Primary' : h.keyUsed === 'fieldscan_backup' ? 'FS Backup' : h.keyUsed || '—'}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[var(--text-muted)]">
+                        {new Date(h.requestTimestamp).toLocaleTimeString()}
+                      </span>
+                      {h.endpoint === 'field_scan' && h.metadata && (
+                        <div className="text-[var(--text-muted)] text-xs mt-1">
+                          📸 {h.metadata.totalFrames || 0} total | 🔍 {h.tokensUsed || 0} analyzed | ⏭️ {h.metadata.skippedFrames || 0} skipped | 🤖 {h.metadata.geminiRequests || 0} reqs
+                          {h.metadata.duration ? ` | ⏱ ${h.metadata.duration}s` : ''}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>

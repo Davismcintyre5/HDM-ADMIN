@@ -12,7 +12,6 @@ import BizhubApp from './apps/BizhubApp'
 import BridgeApp from './apps/BridgeApp'
 import FlaxApp from './apps/FlaxApp'
 import HDMNetApp from './apps/HDMNetApp'
-import FarmWiseApp from './apps/FarmWiseApp'
 import MarketBridgeApp from './apps/MarketBridgeApp'
 import RVNPApp from './apps/RVNPApp'
 import EduPrimeApp from './apps/EduPrimeApp'
@@ -34,8 +33,7 @@ const systemConfig = {
   bridge: true,
   flax: true,
   hdmnet: true,
-  farmwise: true,
-  farmvexa: true,
+   farmvexa: true,
   marketbridge: true,
   rvnp: true,
   eduprime: true,
@@ -58,8 +56,7 @@ function App() {
         <Route path="/bizhub/*" element={systemConfig.bizhub ? <BizhubApp /> : <ComingSoon />} />
         <Route path="/bridge/*" element={systemConfig.bridge ? <BridgeApp /> : <ComingSoon />} />
         <Route path="/flax/*" element={systemConfig.flax ? <FlaxApp /> : <ComingSoon />} />
-        <Route path="/hdmnet/*" element={systemConfig.hdmnet ? <HDMNetApp /> : <ComingSoon />} />
-        <Route path="/farmwise/*" element={systemConfig.farmwise ? <FarmWiseApp /> : <ComingSoon />} />
+        <Route path="/hdmnet/*" element={systemConfig.hdmnet ? <HDMNetApp /> : <ComingSoon />} />      
         <Route path="/farmvexa/*" element={systemConfig.farmvexa ? <FarmVexaApp /> : <ComingSoon />} />
         <Route path="/marketbridge/*" element={systemConfig.marketbridge ? <MarketBridgeApp /> : <ComingSoon />} />
         <Route path="/rvnp/*" element={systemConfig.rvnp ? <RVNPApp /> : <ComingSoon />} />

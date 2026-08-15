@@ -86,12 +86,6 @@ const systems = [
     textColor: 'text-cyan-600 dark:text-cyan-400', borderColor: 'border-cyan-200 dark:border-cyan-800',
     hoverBg: 'hover:bg-cyan-600', stats: { owners: '156', networks: '423', revenue: '$45K' }
   },
-  {
-    id: 'farmwise', name: 'FarmWise', description: 'Smart farm management system',
-    icon: HiSparkles, bgGradient: 'from-emerald-500 to-green-600', bgLight: 'bg-emerald-50 dark:bg-emerald-950',
-    textColor: 'text-emerald-600 dark:text-emerald-400', borderColor: 'border-emerald-200 dark:border-emerald-800',
-    hoverBg: 'hover:bg-emerald-700', stats: { farms: '45', animals: '2.3K', alerts: '12' }
-  },
 
   {
   id: 'farmvexa', name: 'FarmVexa', description: 'AI-Powered Farm Intelligence',
