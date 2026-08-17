@@ -43,17 +43,15 @@ export default function Payments() {
   const [modelModal, setModelModal] = useState({ open: false, mode: 'create', data: null });
   const [modelForm, setModelForm] = useState({ name: '', price: 0, currency: 'KES', interval: 'monthly', features: '', maxFarms: 1, maxDevices: 1, aiRequestsPerDay: 50, enabled: true });
   const [modelDelete, setModelDelete] = useState({ open: false, id: null, name: '' });
-
-  const fetchData = () => {
-    setLoading(true);
-    const fetcher = activeTab === 'methods' ? getPaymentMethods : getPaymentModels;
-    fetcher().then(res => {
-      const data = res?.data || [];
-      if (activeTab === 'methods') setMethods(Array.isArray(data) ? data : []);
-      else setModels(Array.isArray(data) ? data : []);
-    }).catch(console.error).finally(() => setLoading(false));
-  };
-
+const fetchData = () => {
+  setLoading(true);
+  const fetcher = activeTab === 'methods' ? getPaymentMethods : getPaymentModels;
+  fetcher().then(res => {
+    const data = res?.data?.models || res?.data || [];
+    if (activeTab === 'methods') setMethods(Array.isArray(data) ? data : []);
+    else setModels(Array.isArray(data) ? data : []);
+  }).catch(console.error).finally(() => setLoading(false));
+};
   useEffect(() => { fetchData(); }, [activeTab]);
 
   // Methods

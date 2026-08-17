@@ -91,7 +91,7 @@ const systems = [
   id: 'farmvexa', name: 'FarmVexa', description: 'AI-Powered Farm Intelligence',
   icon: HiGlobe, bgGradient: 'from-emerald-500 to-green-600', bgLight: 'bg-emerald-50 dark:bg-emerald-950',
   textColor: 'text-emerald-600 dark:text-emerald-400', borderColor: 'border-emerald-200 dark:border-emerald-800',
-  hoverBg: 'hover:bg-emerald-600', stats: { farmers: '12', farms: '5', devices: '3/5' }
+  hoverBg: 'hover:bg-emerald-600', stats: { farmers: '50', farms: '120', devices: '3/5' }
 },
 
   {
