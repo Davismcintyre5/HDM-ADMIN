@@ -57,7 +57,7 @@ export default function ChatbotSettings({ settings, setSettings, onSave, saving 
               <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Provider</label>
               <select value={chatbot.aiProvider || 'gemini'} onChange={e => update('aiProvider', e.target.value)}
                 className="w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--input-bg)] text-sm">
-                {['gemini', 'hdmai'].map(p => <option key={p} value={p}>{p === 'gemini' ? 'Gemini' : 'HDM AI'}</option>)}
+                {['gemini', 'hdm'].map(p => <option key={p} value={p}>{p === 'gemini' ? 'Gemini' : 'HDM AI'}</option>)}
               </select>
             </div>
 
