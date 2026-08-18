@@ -29,13 +29,8 @@ export function SidebarProvider({ children }) {
 
   return (
     <ThemeSidebarContext.Provider value={{
-      darkMode,
-      toggleTheme,
-      sidebarOpen,
-      toggleSidebar,
-      mobileSidebarOpen,
-      toggleMobileSidebar,
-      setMobileSidebarOpen,
+      darkMode, toggleTheme, sidebarOpen, toggleSidebar,
+      mobileSidebarOpen, toggleMobileSidebar, setMobileSidebarOpen,
     }}>
       {children}
     </ThemeSidebarContext.Provider>
@@ -47,5 +42,4 @@ export function useThemeSidebar() {
   if (!context) throw new Error('useThemeSidebar must be used within SidebarProvider');
   return context;
 }
-
 export { useThemeSidebar as useSidebar };

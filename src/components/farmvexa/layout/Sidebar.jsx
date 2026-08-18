@@ -2,7 +2,7 @@ import { NavLink, Link } from 'react-router-dom';
 import { useThemeSidebar } from '../../../context/farmvexa/SidebarContext';
 import {
   HiHome, HiUsers, HiCheckCircle, HiGlobe, HiChip,
-  HiChartBar, HiCog, HiHeart, HiChevronLeft,HiShoppingBag ,HiCreditCard,HiDatabase  , HiChevronRight, HiX
+  HiChartBar, HiCog, HiHeart, HiChevronLeft,HiShoppingBag ,HiCreditCard,HiDatabase  , HiChevronRight, HiX,HiDocumentText 
 } from 'react-icons/hi';
 
 const navItems = [
@@ -16,6 +16,7 @@ const navItems = [
   { to: '/farmvexa/health', icon: HiHeart, label: 'Health' },
   { to: '/farmvexa/backups', icon: HiDatabase, label: 'Backups' },
   { to: '/farmvexa/market', icon: HiShoppingBag, label: 'Marketplace' },
+  { to: '/farmvexa/documents', icon: HiDocumentText, label: 'Documents' },
   { to: '/farmvexa/settings', icon: HiCog, label: 'Settings' },
 ];
 

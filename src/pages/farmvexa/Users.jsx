@@ -22,6 +22,7 @@ const FILTERS = [
 ];
 
 const statusVariant = { pending: 'warning', approved: 'success', rejected: 'danger', inactive: 'default' };
+const subscriptionVariant = { active: 'success', pending_renewal: 'warning', expired: 'danger', cancelled: 'warning', none: 'default', pending: 'warning' };
 
 export default function Users() {
   const [users, setUsers] = useState([]);
@@ -85,15 +86,22 @@ export default function Users() {
     )},
     { key: 'email', label: 'Email', render: row => <span className="text-sm text-[var(--text-secondary)]">{row.email}</span> },
     { key: 'phone', label: 'Phone', render: row => <span className="text-sm">{row.phone || '—'}</span> },
-    { key: 'approvalStatus', label: 'Status', render: row => <Badge variant={statusVariant[row.approvalStatus] || 'default'}>{row.approvalStatus}</Badge> },
+    { key: 'approvalStatus', label: 'Approval', render: row => <Badge variant={statusVariant[row.approvalStatus] || 'default'}>{row.approvalStatus}</Badge> },
+    { key: 'account', label: 'Account', render: row => <Badge variant={row.isActive ? 'success' : 'danger'}>{row.isActive ? 'Active' : 'Blocked'}</Badge> },
+    { key: 'subscription', label: 'Subscription', render: row => (
+      <div className="text-xs">
+        <Badge variant={subscriptionVariant[row.subscriptionStatus] || 'default'}>{row.subscriptionStatus}</Badge>
+        {row.selectedPlan && <span className="text-[var(--text-muted)] ml-1">{row.selectedPlan}</span>}
+      </div>
+    )},
     { key: 'farms', label: 'Farms', render: row => <span className="text-sm">{row.farmCount || '—'}</span> },
     { key: 'actions', label: '', render: row => (
       <div className="flex gap-1">
         <Button size="sm" variant="secondary" onClick={() => setViewModal({ open: true, user: row })}><HiEye className="w-3 h-3" /></Button>
-        <Button size="sm" variant="secondary" onClick={() => handleToggle(row.id || row._id)}>
+        <Button size="sm" variant="secondary" onClick={() => handleToggle(row._id)}>
           {row.isActive ? 'Deactivate' : 'Activate'}
         </Button>
-        <Button size="sm" variant="danger" onClick={() => setConfirmDelete({ open: true, id: row.id || row._id, name: row.name })}><HiTrash className="w-3 h-3" /></Button>
+        <Button size="sm" variant="danger" onClick={() => setConfirmDelete({ open: true, id: row._id, name: row.name })}><HiTrash className="w-3 h-3" /></Button>
       </div>
     )},
   ];
@@ -125,7 +133,7 @@ export default function Users() {
       </Card>
 
       {/* View User Modal */}
-      <Modal open={viewModal.open} onClose={() => setViewModal({ open: false, user: null })} title="User Details" size="md">
+      <Modal open={viewModal.open} onClose={() => setViewModal({ open: false, user: null })} title="User Details" size="lg">
         {viewModal.user && (
           <div className="space-y-4">
             <div className="bg-[var(--bg-secondary)] rounded-lg p-4 space-y-2 text-sm">
@@ -134,11 +142,51 @@ export default function Users() {
               <Row label="Phone" value={viewModal.user.phone} />
               <Row label="County" value={viewModal.user.county} />
               <Row label="Sub-County" value={viewModal.user.subCounty} />
-              <Row label="Status">
+              <Row label="Joined" value={formatDate(viewModal.user.createdAt, 'full')} />
+              <Row label="Last Login" value={viewModal.user.lastLogin ? formatDate(viewModal.user.lastLogin, 'full') : '—'} />
+            </div>
+
+            <div className="bg-[var(--bg-secondary)] rounded-lg p-4 space-y-2 text-sm">
+              <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">Account Status</h3>
+              <Row label="Approval">
                 <Badge variant={statusVariant[viewModal.user.approvalStatus] || 'default'}>{viewModal.user.approvalStatus}</Badge>
               </Row>
-              <Row label="Joined" value={formatDate(viewModal.user.createdAt, 'full')} />
-              <Row label="Farms" value={viewModal.user.farmCount || 0} />
+              <Row label="Account">
+                <Badge variant={viewModal.user.isActive ? 'success' : 'danger'}>
+                  {viewModal.user.isActive ? 'Active' : 'Blocked'}
+                </Badge>
+              </Row>
+              <Row label="Subscription">
+                <Badge variant={subscriptionVariant[viewModal.user.subscriptionStatus] || 'default'}>
+                  {viewModal.user.subscriptionStatus}
+                </Badge>
+              </Row>
+              <Row label="Plan" value={viewModal.user.selectedPlan} />
+              <Row label="Subscription Start" value={formatDate(viewModal.user.subscriptionStartDate)} />
+              <Row label="Subscription Expiry" value={formatDate(viewModal.user.subscriptionExpiry)} />
+              <Row label="Renewal Count" value={viewModal.user.renewalCount} />
+              {viewModal.user.lastRenewalReminder && <Row label="Renewal Reminder" value={formatDate(viewModal.user.lastRenewalReminder)} />}
+            </div>
+
+            <div className="bg-[var(--bg-secondary)] rounded-lg p-4 space-y-2 text-sm">
+              <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">Payment</h3>
+              <Row label="Payment Status">
+                <Badge variant={viewModal.user.paymentStatus === 'paid' ? 'success' : 'warning'}>{viewModal.user.paymentStatus}</Badge>
+              </Row>
+              <Row label="Method" value={viewModal.user.paymentMethod} />
+              <Row label="Reference" value={viewModal.user.paymentReference} />
+              <Row label="Paid At" value={formatDate(viewModal.user.paymentDate)} />
+              {viewModal.user.payment && (
+                <>
+                  <div className="mt-2 pt-2 border-t border-[var(--border-color)]">
+                    <p className="text-xs text-[var(--text-muted)] mb-1">Pending Payment</p>
+                    <Row label="Plan" value={viewModal.user.payment.plan} />
+                    <Row label="Amount" value={viewModal.user.payment.amount} />
+                    <Row label="Method" value={viewModal.user.payment.methodType} />
+                    <Row label="Reference" value={viewModal.user.payment.reference} />
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}

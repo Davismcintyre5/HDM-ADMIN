@@ -1,9 +1,6 @@
 import { useEffect, useState } from 'react';
-import { getUsers } from '../../services/farmvexa/users';
-import { getFarms } from '../../services/farmvexa/farms';
+import { getDashboardStats } from '../../services/farmvexa/dashboard';
 import { getPendingApprovals } from '../../services/farmvexa/approvals';
-import { getTotalUsage } from '../../services/farmvexa/usage';
-import { getHealth } from '../../services/farmvexa/health';
 import { useNavigate } from 'react-router-dom';
 import Card from '../../components/farmvexa/ui/Card';
 import Spinner from '../../components/farmvexa/ui/Spinner';
@@ -21,22 +18,19 @@ export default function Dashboard() {
 
   useEffect(() => {
     Promise.all([
-      getUsers({ limit: 1 }),
-      getFarms({ limit: 1 }),
+      getDashboardStats(),
       getPendingApprovals({ limit: 1 }),
-      getTotalUsage(),
-      getHealth()
     ])
-      .then(([users, farms, approvals, usage, health]) => {
+      .then(([healthRes, pendingApprovals]) => {
+        const healthData = healthRes?.data || healthRes;
         setStats({
-          users: users?.pagination?.total || 0,
-          farms: farms?.pagination?.total || 0,
-          pending: approvals?.pagination?.total || 0,
-          todayUsage: usage?.data?.usage?.today || 0,
-          totalUsage: usage?.data?.usage?.total || 0,
-          devicesOnline: health?.data?.stats?.devices?.online || 0,
-          devicesTotal: health?.data?.stats?.devices?.total || 0,
-          services: health?.data || {},
+          users: healthData?.stats?.farmers || 0,
+          farms: healthData?.stats?.farms || 0,
+          pending: pendingApprovals?.data?.pagination?.total || 0,
+          devicesOnline: healthData?.stats?.devices?.online || 0,
+          devicesTotal: healthData?.stats?.devices?.total || 0,
+          todayUsage: healthData?.stats?.todayUsage || 0,
+          services: healthData,
         });
       })
       .catch(console.error).finally(() => setLoading(false));
@@ -71,21 +65,18 @@ export default function Dashboard() {
 
   return (
     <div>
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-[var(--text-primary)]">Dashboard</h1>
         <p className="text-sm text-[var(--text-muted)] mt-1">Welcome to FarmVexa — AI-Powered Farm Intelligence</p>
       </div>
 
-      {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard icon={HiUsers} label="Total Farmers" value={d.users || 0} color="text-emerald-500" />
         <StatCard icon={HiGlobe} label="Active Farms" value={d.farms || 0} color="text-blue-500" />
         <StatCard icon={HiCheckCircle} label="Pending Approvals" value={d.pending || 0} color="text-amber-500" />
-        <StatCard icon={HiChartBar} label="Today's Usage" value={d.todayUsage || 0} sub={`${d.totalUsage || 0} total`} color="text-violet-500" />
+        <StatCard icon={HiChartBar} label="Today's Usage" value={d.todayUsage || 0} color="text-violet-500" />
       </div>
 
-      {/* Quick Actions */}
       <div className="mb-8">
         <h2 className="font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
           <HiSparkles className="w-5 h-5 text-emerald-500" />
@@ -93,11 +84,8 @@ export default function Dashboard() {
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {quickActions.map(action => (
-            <button
-              key={action.path}
-              onClick={() => navigate(action.path)}
-              className="group relative overflow-hidden rounded-xl bg-[var(--card-bg)] border border-[var(--border-color)] p-4 hover:shadow-lg transition-all duration-300 hover:scale-[1.02]"
-            >
+            <button key={action.path} onClick={() => navigate(action.path)}
+              className="group relative overflow-hidden rounded-xl bg-[var(--card-bg)] border border-[var(--border-color)] p-4 hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
               <div className={`absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl ${action.color} opacity-10 rounded-bl-3xl group-hover:opacity-20 transition-opacity`} />
               <div className="relative flex items-center gap-3">
                 <div className={`w-10 h-10 rounded-lg ${action.iconBg} flex items-center justify-center`}>
@@ -116,9 +104,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* System Status + Overview */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* System Status */}
         <Card className="lg:col-span-2">
           <div className="flex items-center gap-2 mb-4">
             <HiHeart className="w-5 h-5 text-emerald-500" />
@@ -137,7 +123,6 @@ export default function Dashboard() {
           </div>
         </Card>
 
-        {/* Overview Stats */}
         <Card>
           <div className="flex items-center gap-2 mb-4">
             <HiChartBar className="w-5 h-5 text-emerald-500" />

@@ -1,40 +1,36 @@
 import api from './api';
 
-export async function getSetting(key) {
-  const res = await api.get(`/admin/system/${key}`);
+export async function getSettings() {
+  const res = await api.get('/settings');
   return res.data;
 }
 
-export async function updateSetting(key, value) {
-  const res = await api.put(`/admin/system/${key}`, { value });
+export async function updateSettings(data) {
+  const res = await api.put('/settings', data);
   return res.data;
 }
 
-export async function getAllSettings() {
-  const keys = [
-    'system_name',
-    'terms_and_conditions',
-    'privacy_policy',
-    'support_email',
-    'support_phone',
-    'payments_mpesa_enabled',
-    'payments_mpesa_stk_push',
-    'payments_mpesa_send_money_enabled',
-    'payments_mpesa_send_money_number',
-    'payments_mpesa_paybill_enabled',
-    'payments_mpesa_paybill_number',
-    'payments_mpesa_paybill_account',
-    'payments_mpesa_till_enabled',
-    'payments_mpesa_till_number',
-    'payments_mpesa_till_name',
-    'payments_require_proof',
-  ];
-  const results = await Promise.all(
-    keys.map(k => getSetting(k).catch(() => ({ key: k, value: '' })))
-  );
-  const settings = {};
-  results.forEach(r => {
-    settings[r.key] = r.value || '';
-  });
-  return { success: true, data: settings };
+export async function updateBranding(data) {
+  const res = await api.put('/settings/branding', data);
+  return res.data;
+}
+
+export async function updateCommission(data) {
+  const res = await api.put('/settings/commission', data);
+  return res.data;
+}
+
+export async function updateEmailToggles(data) {
+  const res = await api.put('/settings/email-toggles', data);
+  return res.data;
+}
+
+export async function updateSmsToggles(data) {
+  const res = await api.put('/settings/sms-toggles', data);
+  return res.data;
+}
+
+export async function updateMaintenance(data) {
+  const res = await api.put('/settings/maintenance', data);
+  return res.data;
 }

@@ -1,7 +1,9 @@
 export { default as api, setAuthToken, setupInterceptors } from './api';
 export * from './auth';
-export * from './owners';
-export * from './plans';
 export * from './settings';
+export * from './providers';
+export * from './transactions';
 export * from './backups';
-export * from './reports';
+export * from './pendingActivations';
+export * from './legal';
+export * from './dashboard';

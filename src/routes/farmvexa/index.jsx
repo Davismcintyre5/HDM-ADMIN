@@ -10,6 +10,7 @@ import Settings from '../../pages/farmvexa/Settings';
 import Payments from '../../pages/farmvexa/Payments';
 import Backups from '../../pages/farmvexa/Backups';
 import Market from '../../pages/farmvexa/Market';
+import Documents from '../../pages/farmvexa/Documents';
 
 const routes = (
   <>
@@ -25,6 +26,7 @@ const routes = (
     <Route path="payments" element={<Payments />} />
     <Route path="backups" element={<Backups />} />
     <Route path="market" element={<Market />} />
+    <Route path="documents" element={<Documents />} />
 
   </>
 );

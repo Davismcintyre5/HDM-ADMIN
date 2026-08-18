@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
-import { getPendingApprovals, approveUser, rejectUser, getApprovalHistory } from '../../services/farmvexa/approvals';
+import { getUsers } from '../../services/farmvexa/users';
+import { getApprovalHistory, approveUser, rejectUser } from '../../services/farmvexa/approvals';
+import { getRenewals, approveRenewal, rejectRenewal } from '../../services/farmvexa/renewals';
+import { getUpgrades, approveUpgrade, rejectUpgrade } from '../../services/farmvexa/upgrades';
 import Card from '../../components/farmvexa/ui/Card';
 import Table from '../../components/farmvexa/ui/Table';
 import Badge from '../../components/farmvexa/ui/Badge';
@@ -12,10 +15,19 @@ import { HiEye, HiCheck, HiX } from 'react-icons/hi';
 
 const TABS = [
   { key: 'pending', label: 'Pending' },
+  { key: 'renewals', label: 'Renewals' },
+  { key: 'upgrades', label: 'Upgrades' },
   { key: 'history', label: 'History' },
 ];
 
-const statusVariant = { approved: 'success', rejected: 'danger' };
+const statusVariant = { 
+  approved: 'success', 
+  rejected: 'danger', 
+  completed: 'success', 
+  failed: 'danger', 
+  pending_verification: 'warning', 
+  pending: 'warning' 
+};
 
 export default function Approvals() {
   const [activeTab, setActiveTab] = useState('pending');
@@ -32,38 +44,98 @@ export default function Approvals() {
   const fetchData = () => {
     setLoading(true);
     const params = { page, limit: 20 };
-    const fetcher = activeTab === 'pending' ? getPendingApprovals : () => getApprovalHistory(params);
-    fetcher(params)
-      .then(res => {
-        setApprovals(res?.data?.approvals || []);
-        setPagination(res?.data?.pagination || { page: 1, pages: 1 });
-      })
-      .catch(console.error).finally(() => setLoading(false));
+
+    if (activeTab === 'pending') {
+      getUsers({ ...params, approvalStatus: 'pending' })
+        .then(res => {
+          const users = res?.data?.users || [];
+          setApprovals(users.map(u => ({
+            _id: u._id,
+            user: {
+              _id: u._id,
+              name: u.name,
+              email: u.email,
+              phone: u.phone,
+              county: u.county,
+              subCounty: u.subCounty,
+              createdAt: u.createdAt,
+              selectedPlan: u.selectedPlan,
+              subscriptionStatus: u.subscriptionStatus,
+              subscriptionExpiry: u.subscriptionExpiry,
+            },
+            status: 'pending',
+            createdAt: u.createdAt,
+            payment: u.payment,
+            selectedPlan: u.selectedPlan,
+          })));
+          setPagination(res?.data?.pagination || { page: 1, pages: 1 });
+        })
+        .catch(console.error).finally(() => setLoading(false));
+    } else if (activeTab === 'renewals') {
+      getRenewals(params)
+        .then(res => {
+          setApprovals(res?.data?.renewals || res?.data || []);
+          setPagination(res?.data?.pagination || { page: 1, pages: 1 });
+        })
+        .catch(console.error).finally(() => setLoading(false));
+    } else if (activeTab === 'upgrades') {
+      getUpgrades(params)
+        .then(res => {
+          setApprovals(res?.data?.upgrades || res?.data || []);
+          setPagination(res?.data?.pagination || { page: 1, pages: 1 });
+        })
+        .catch(console.error).finally(() => setLoading(false));
+    } else {
+      getApprovalHistory(params)
+        .then(res => {
+          setApprovals(res?.data?.approvals || []);
+          setPagination(res?.data?.pagination || { page: 1, pages: 1 });
+        })
+        .catch(console.error).finally(() => setLoading(false));
+    }
   };
 
   useEffect(() => { fetchData(); }, [page, activeTab]);
 
-  const getUserId = (approval) => approval?.user?._id || approval?.user?.id || approval?._id || approval?.id;
+  const getUserId = (approval) => {
+    if (activeTab === 'renewals' || activeTab === 'upgrades') return approval?._id || approval?.id;
+    return approval?.user?._id || approval?._id || approval?.id;
+  };
 
   const handleApprove = async () => {
     const id = getUserId(viewModal.approval);
-    if (!id) return alert('User ID not found');
+    if (!id) return alert('ID not found');
     setActionLoading(true);
-    try { await approveUser(id, { notes }); setViewModal({ open: false, approval: null }); setNotes(''); fetchData(); }
+    try {
+      if (activeTab === 'renewals') await approveRenewal(id);
+      else if (activeTab === 'upgrades') await approveUpgrade(id, { notes });
+      else await approveUser(id, { notes });
+      setViewModal({ open: false, approval: null }); 
+      setNotes(''); 
+      setTimeout(() => fetchData(), 500);
+    }
     catch (err) { alert(err.message); }
     setActionLoading(false);
   };
 
   const openReject = () => {
     const id = getUserId(viewModal.approval);
-    const name = viewModal.approval?.user?.name || viewModal.approval?.name || '';
+    const name = viewModal.approval?.user?.name || viewModal.approval?.farmer?.name || '';
     setRejectModal({ open: true, id, name });
   };
 
   const handleReject = async () => {
-    if (!rejectModal.id) return alert('User ID not found');
+    if (!rejectModal.id) return alert('ID not found');
     setActionLoading(true);
-    try { await rejectUser(rejectModal.id, { reason: rejectReason, notes }); setRejectModal({ open: false, id: null, name: '' }); setNotes(''); setViewModal({ open: false, approval: null }); fetchData(); }
+    try {
+      if (activeTab === 'renewals') await rejectRenewal(rejectModal.id, { reason: rejectReason, notes });
+      else if (activeTab === 'upgrades') await rejectUpgrade(rejectModal.id, { reason: rejectReason, notes });
+      else await rejectUser(rejectModal.id, { reason: rejectReason, notes });
+      setRejectModal({ open: false, id: null, name: '' });
+      setNotes('');
+      setViewModal({ open: false, approval: null });
+      setTimeout(() => fetchData(), 500);
+    }
     catch (err) { alert(err.message); }
     setActionLoading(false);
   };
@@ -71,13 +143,45 @@ export default function Approvals() {
   const columns = [
     { key: 'name', label: 'Name', render: row => (
       <button onClick={() => { setViewModal({ open: true, approval: row }); setNotes(''); }} className="text-emerald-600 hover:underline font-medium">
-        {row.user?.name || row.name}
+        {row.user?.name || row.farmer?.name || row.name}
       </button>
     )},
-    { key: 'email', label: 'Email', render: row => <span className="text-sm text-[var(--text-secondary)]">{row.user?.email || row.email}</span> },
-    { key: 'county', label: 'County', render: row => <span className="text-sm">{row.user?.county || row.county || '—'}</span> },
-    { key: 'status', label: 'Status', render: row => activeTab === 'history' ? <Badge variant={statusVariant[row.status] || 'default'}>{row.status}</Badge> : <Badge variant="warning">Pending</Badge> },
-    { key: 'createdAt', label: 'Date', render: row => formatDate(row.createdAt || row.user?.createdAt) },
+    { key: 'email', label: 'Email', render: row => <span className="text-sm text-[var(--text-secondary)]">{row.user?.email || row.farmer?.email || row.email}</span> },
+    { key: 'phone', label: 'Phone', render: row => <span className="text-sm">{row.user?.phone || row.farmer?.phone || row.phone || '—'}</span> },
+    { key: 'plan', label: 'Plan', render: row => {
+      if (activeTab === 'upgrades') {
+        return (
+          <div className="text-xs">
+            <Badge variant="default">{row.oldPlan || '—'}</Badge>
+            <span className="mx-1 text-[var(--text-muted)]">→</span>
+            <Badge variant="info">{row.newPlan || row.plan || '—'}</Badge>
+          </div>
+        );
+      }
+      return <Badge variant="info">{row.plan || row.selectedPlan || row.planName || row.user?.selectedPlan || '—'}</Badge>;
+    }},
+    { key: 'payment', label: 'Payment', render: row => {
+      const amount = row.amount || row.payment?.amount;
+      const method = row.paymentMethod || row.payment?.methodType;
+      const reference = row.paymentReference || row.payment?.reference;
+      return amount ? (
+        <div className="text-xs">
+          <span className="text-[var(--text-primary)] font-medium">KES {amount}</span>
+          {method && <span className="text-[var(--text-muted)] ml-1">· {method}</span>}
+          {reference && <span className="text-[var(--text-muted)] ml-1">· {reference}</span>}
+        </div>
+      ) : <span className="text-sm text-[var(--text-muted)]">—</span>;
+    }},
+    { key: 'status', label: 'Status', render: row => {
+      if (activeTab === 'history') {
+        return <Badge variant={statusVariant[row.status] || 'default'}>{row.status}</Badge>;
+      }
+      const paymentStatus = row.payment?.status || row.status || 'pending_verification';
+      const label = paymentStatus === 'completed' ? 'Paid' : paymentStatus === 'failed' ? 'Failed' : paymentStatus === 'pending_verification' ? 'Pending Payment' : paymentStatus;
+      const variant = paymentStatus === 'completed' ? 'success' : paymentStatus === 'failed' ? 'danger' : 'warning';
+      return <Badge variant={variant}>{label}</Badge>;
+    }},
+    { key: 'createdAt', label: 'Date', render: row => formatDate(row.createdAt || row.user?.createdAt || row.renewalDate) },
     { key: 'actions', label: '', render: row => (
       <Button size="sm" variant="secondary" onClick={() => { setViewModal({ open: true, approval: row }); setNotes(''); }}><HiEye className="w-4 h-4" /></Button>
     )},
@@ -101,26 +205,53 @@ export default function Approvals() {
         <Pagination page={pagination.page} totalPages={pagination.pages} onPageChange={setPage} />
       </Card>
 
-      {/* View/Review Modal */}
+      {/* Review Modal */}
       <Modal open={viewModal.open} onClose={() => { setViewModal({ open: false, approval: null }); setNotes(''); }} title="Approval Review" size="lg">
         {viewModal.approval && (
           <div className="space-y-4">
             <div className="bg-[var(--bg-secondary)] rounded-lg p-4 space-y-2 text-sm">
-              <Row label="Name" value={viewModal.approval.user?.name || viewModal.approval.name} bold />
-              <Row label="Email" value={viewModal.approval.user?.email || viewModal.approval.email} />
-              <Row label="Phone" value={viewModal.approval.user?.phone || viewModal.approval.phone} />
-              <Row label="County" value={viewModal.approval.user?.county || viewModal.approval.county} />
-              <Row label="Sub-County" value={viewModal.approval.user?.subCounty || viewModal.approval.subCounty} />
+              <Row label="Name" value={viewModal.approval.user?.name || viewModal.approval.farmer?.name} bold />
+              <Row label="Email" value={viewModal.approval.user?.email || viewModal.approval.farmer?.email} />
+              <Row label="Phone" value={viewModal.approval.user?.phone || viewModal.approval.farmer?.phone} />
+              {viewModal.approval.user?.county && <Row label="County" value={viewModal.approval.user?.county} />}
+              {viewModal.approval.user?.subCounty && <Row label="Sub-County" value={viewModal.approval.user?.subCounty} />}
               <Row label="Registered" value={formatDate(viewModal.approval.user?.createdAt || viewModal.approval.createdAt, 'full')} />
-              {viewModal.approval.reviewedBy && <Row label="Reviewed By" value={viewModal.approval.reviewedBy?.name} />}
-              {viewModal.approval.rejectionReason && (
-                <div className="mt-2 p-2 bg-red-50 dark:bg-red-900/20 rounded border border-red-200 dark:border-red-800">
-                  <span className="text-red-600 dark:text-red-400 font-medium text-xs">Rejection Reason:</span>
-                  <p className="text-red-700 dark:text-red-300 text-xs mt-1">{viewModal.approval.rejectionReason}</p>
-                </div>
-              )}
             </div>
-            {activeTab === 'pending' && (
+
+            {activeTab === 'renewals' && (
+              <div className="bg-[var(--bg-secondary)] rounded-lg p-4 space-y-2 text-sm">
+                <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">Renewal Details</h3>
+                <Row label="Plan" value={viewModal.approval.plan || viewModal.approval.user?.selectedPlan} />
+                <Row label="Amount" value={`KES ${viewModal.approval.amount}`} />
+                <Row label="Method" value={viewModal.approval.paymentMethod} />
+                <Row label="Reference" value={viewModal.approval.paymentReference} />
+                <Row label="Expiry" value={formatDate(viewModal.approval.user?.subscriptionExpiry)} />
+              </div>
+            )}
+
+            {activeTab === 'upgrades' && (
+              <div className="bg-[var(--bg-secondary)] rounded-lg p-4 space-y-2 text-sm">
+                <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">Upgrade Details</h3>
+                <Row label="Current Plan" value={viewModal.approval.oldPlan} />
+                <Row label="New Plan" value={viewModal.approval.newPlan || viewModal.approval.plan} />
+                <Row label="Amount" value={`KES ${viewModal.approval.amount}`} />
+                <Row label="Method" value={viewModal.approval.paymentMethod} />
+                <Row label="Reference" value={viewModal.approval.paymentReference} />
+              </div>
+            )}
+
+            {activeTab === 'pending' && viewModal.approval.payment && (
+              <div className="bg-[var(--bg-secondary)] rounded-lg p-4 space-y-2 text-sm">
+                <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">Payment Details</h3>
+                <Row label="Plan" value={viewModal.approval.payment.plan || viewModal.approval.selectedPlan} />
+                <Row label="Amount" value={`KES ${viewModal.approval.payment.amount}`} />
+                <Row label="Method" value={viewModal.approval.payment.methodType} />
+                <Row label="Reference" value={viewModal.approval.payment.reference} />
+                <Row label="Status" value={viewModal.approval.payment.status} />
+              </div>
+            )}
+
+            {(activeTab === 'pending' || activeTab === 'renewals' || activeTab === 'upgrades') && (
               <>
                 <Input label="Admin Notes" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Internal notes..." />
                 <div className="flex justify-end gap-2">

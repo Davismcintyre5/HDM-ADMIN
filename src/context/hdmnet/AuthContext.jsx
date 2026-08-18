@@ -4,8 +4,8 @@ import { login as loginApi, setAuthToken, setupInterceptors } from '../../servic
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('hdmnet_user')); } catch { return null; }
+  const [admin, setAdmin] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('hdmnet_admin')); } catch { return null; }
   });
   const [token, setToken] = useState(localStorage.getItem('hdmnet_token') || null);
   const [loading, setLoading] = useState(true);
@@ -15,9 +15,8 @@ export function AuthProvider({ children }) {
     setupInterceptors(() => {
       localStorage.removeItem('hdmnet_token');
       localStorage.removeItem('hdmnet_refresh_token');
-      localStorage.removeItem('hdmnet_user');
-      setToken(null);
-      setUser(null);
+      localStorage.removeItem('hdmnet_admin');
+      setToken(null); setAdmin(null);
       window.location.href = '/hdmnet/login';
     });
     setLoading(false);
@@ -25,24 +24,24 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     const data = await loginApi(email, password);
-    localStorage.setItem('hdmnet_token', data.access_token);
-    localStorage.setItem('hdmnet_refresh_token', data.refresh_token);
-    localStorage.setItem('hdmnet_user', JSON.stringify(data.user));
-    setAuthToken(data.access_token);
-    setToken(data.access_token);
-    setUser(data.user);
+    const d = data.data || data;
+    localStorage.setItem('hdmnet_token', d.accessToken);
+    localStorage.setItem('hdmnet_refresh_token', d.refreshToken);
+    localStorage.setItem('hdmnet_admin', JSON.stringify(d.admin || d));
+    setAuthToken(d.accessToken);
+    setToken(d.accessToken);
+    setAdmin(d.admin || d);
   };
 
   const logout = () => {
     localStorage.removeItem('hdmnet_token');
     localStorage.removeItem('hdmnet_refresh_token');
-    localStorage.removeItem('hdmnet_user');
-    setToken(null);
-    setUser(null);
+    localStorage.removeItem('hdmnet_admin');
+    setToken(null); setAdmin(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!token, loading }}>
+    <AuthContext.Provider value={{ admin, token, login, logout, isAuthenticated: !!token, loading }}>
       {children}
     </AuthContext.Provider>
   );

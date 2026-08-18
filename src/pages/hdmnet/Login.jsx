@@ -20,16 +20,10 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setSubmitting(true);
-    try {
-      await login(email, password);
-      navigate('/hdmnet');
-    } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Login failed');
-    } finally {
-      setSubmitting(false);
-    }
+    setError(''); setSubmitting(true);
+    try { await login(email, password); navigate('/hdmnet'); }
+    catch (err) { setError(err.response?.data?.message || err.message || 'Login failed'); }
+    finally { setSubmitting(false); }
   };
 
   return (
@@ -39,11 +33,11 @@ export default function Login() {
       </Link>
       <Card className="w-full max-w-md">
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-cyan-100 dark:bg-cyan-900/30 mb-4">
-            <HiWifi className="w-8 h-8 text-cyan-600 dark:text-cyan-400" />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 mb-4">
+            <HiWifi className="w-8 h-8 text-blue-600 dark:text-blue-400" />
           </div>
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">HDM NET Admin</h1>
-          <p className="text-sm text-[var(--text-secondary)] mt-1">Sign in to manage WiFi billing</p>
+          <p className="text-sm text-[var(--text-secondary)] mt-1">WiFi billing & hotspot management</p>
         </div>
         {error && <div className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-3 rounded-lg mb-4 text-sm">{error}</div>}
         <form onSubmit={handleSubmit} className="space-y-4">

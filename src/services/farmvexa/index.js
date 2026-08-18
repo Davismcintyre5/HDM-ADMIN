@@ -12,3 +12,7 @@ export * from './paymentModels';
 export * from './weather';
 export * from './backups';
 export * from './market';
+export * from './documents';
+export * from './payments';
+export * from './renewals';
+export * from './upgrades';

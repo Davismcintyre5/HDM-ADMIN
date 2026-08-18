@@ -1,98 +1,63 @@
 import { useEffect, useState } from 'react';
-import { getOwners } from '../../services/hdmnet/owners';
-import { getPlans } from '../../services/hdmnet/plans';
+import { getDashboardStats } from '../../services/hdmnet/dashboard';
+import { useNavigate } from 'react-router-dom';
 import Card from '../../components/hdmnet/ui/Card';
 import Spinner from '../../components/hdmnet/ui/Spinner';
-import Badge from '../../components/hdmnet/ui/Badge';
-import { HiUsers, HiCreditCard, HiCurrencyDollar, HiCheckCircle } from 'react-icons/hi';
-import { useNavigate } from 'react-router-dom';
-import { formatDate } from '../../utils/hdmnet/formatDate';
+import StatCard from '../../components/hdmnet/ui/StatCard';
+import { HiUsers, HiCreditCard, HiWifi, HiCash, HiArrowRight, HiSparkles } from 'react-icons/hi';
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
-  const [recentOwners, setRecentOwners] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([
-      getOwners({ limit: 100 }).catch(() => ({ data: [] })),
-      getPlans().catch(() => []),
-    ])
-      .then(([ownersRes, plansRes]) => {
-        const owners = ownersRes?.data || ownersRes || [];
-        const plans = plansRes?.data || plansRes || [];
-        const pending = owners.filter(o => o.status === 'pending').length;
-        const active = owners.filter(o => o.status === 'active').length;
-        setStats({
-          totalOwners: owners.length,
-          activeOwners: active,
-          pendingOwners: pending,
-          totalPlans: Array.isArray(plans) ? plans.length : 0,
-        });
-        setRecentOwners(owners.slice(0, 5));
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    getDashboardStats()
+      .then(res => setStats(res?.data || res))
+      .catch(console.error).finally(() => setLoading(false));
   }, []);
-
-  const statCards = [
-    { key: 'totalOwners', label: 'Total Owners', icon: HiUsers, color: 'text-blue-600 dark:text-blue-400' },
-    { key: 'activeOwners', label: 'Active Owners', icon: HiCheckCircle, color: 'text-green-600 dark:text-green-400' },
-    { key: 'pendingOwners', label: 'Pending Approval', icon: HiCurrencyDollar, color: 'text-yellow-600 dark:text-yellow-400' },
-    { key: 'totalPlans', label: 'Plans', icon: HiCreditCard, color: 'text-purple-600 dark:text-purple-400' },
-  ];
 
   if (loading) return <div className="flex justify-center py-20"><Spinner size="lg" /></div>;
 
+  const d = stats || {};
+  const providers = typeof d.providers === 'object' ? d.providers?.total || 0 : d.providers || 0;
+  const routers = typeof d.routers === 'object' ? d.routers?.total || 0 : d.routers || 0;
+  const transactions = typeof d.transactions === 'object' ? d.transactions?.total || 0 : d.transactions || 0;
+  const revenue = typeof d.revenue === 'object' ? d.revenue?.total || 0 : d.revenue || 0;
+
   return (
     <div>
-      <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-2">Dashboard</h1>
-      <p className="text-sm text-[var(--text-secondary)] mb-6">Overview of your WiFi billing platform</p>
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Dashboard</h1>
+        <p className="text-sm text-[var(--text-muted)] mt-1">HDM NET system overview</p>
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {statCards.map((s) => (
-          <Card key={s.key}>
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm text-[var(--text-secondary)]">{s.label}</p>
-                <p className="text-2xl font-bold text-[var(--text-primary)] mt-1">{(stats?.[s.key] ?? 0).toLocaleString()}</p>
-              </div>
-              <s.icon className={`w-8 h-8 ${s.color}`} />
-            </div>
-          </Card>
-        ))}
+        <StatCard icon={HiUsers} label="Providers" value={providers} color="text-blue-500" />
+        <StatCard icon={HiWifi} label="Routers" value={routers} color="text-cyan-500" />
+        <StatCard icon={HiCreditCard} label="Transactions" value={transactions} color="text-amber-500" />
+        <StatCard icon={HiCash} label="Revenue" value={revenue} color="text-green-500" />
       </div>
 
       <Card>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-[var(--text-primary)]">Recent Owners</h2>
-          <button onClick={() => navigate('/hdmnet/owners')} className="text-sm text-cyan-600 dark:text-cyan-400 hover:underline">
-            View All
-          </button>
+        <div className="flex items-center gap-2 mb-4">
+          <HiSparkles className="w-5 h-5 text-blue-500" />
+          <h2 className="font-semibold text-[var(--text-primary)]">Quick Actions</h2>
         </div>
-        {recentOwners.length > 0 ? (
-          <div className="space-y-2">
-            {recentOwners.map((owner) => (
-              <div key={owner._id || owner.id} className="flex items-center justify-between py-2 border-b border-[var(--border-color)] last:border-0">
-                <div>
-                  <button onClick={() => navigate(`/hdmnet/owners/${owner._id || owner.id}`)} className="text-sm font-medium text-cyan-600 dark:text-cyan-400 hover:underline">
-                    {owner.business_name || owner.full_name || owner.name || 'N/A'}
-                  </button>
-                  <p className="text-xs text-[var(--text-muted)]">{owner.email || 'N/A'}</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Badge variant={owner.status === 'active' ? 'success' : owner.status === 'pending' ? 'warning' : 'default'}>
-                    {owner.status || 'unknown'}
-                  </Badge>
-                  <span className="text-xs text-[var(--text-muted)]">{formatDate(owner.createdAt)}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-[var(--text-muted)] py-4 text-center">No owners registered yet.</p>
-        )}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          {[
+            { label: 'Providers', path: '/hdmnet/providers' },
+            { label: 'Pending', path: '/hdmnet/pending' },
+            { label: 'Transactions', path: '/hdmnet/transactions' },
+            { label: 'Settings', path: '/hdmnet/settings' },
+          ].map(link => (
+            <button key={link.path} onClick={() => navigate(link.path)}
+              className="flex items-center justify-between p-3 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--sidebar-hover)] text-sm text-[var(--text-primary)] transition-colors group">
+              {link.label}
+              <HiArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+            </button>
+          ))}
+        </div>
       </Card>
     </div>
   );

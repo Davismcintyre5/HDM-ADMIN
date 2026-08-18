@@ -1,20 +1,24 @@
 import { Route } from 'react-router-dom';
 import Dashboard from '../../pages/hdmnet/Dashboard';
-import Owners from '../../pages/hdmnet/Owners';
-import OwnerDetail from '../../pages/hdmnet/OwnerDetail';
-import Plans from '../../pages/hdmnet/Plans';
-import Settings from '../../pages/hdmnet/Settings';
+import Providers from '../../pages/hdmnet/Providers';
+import ProviderDetail from '../../pages/hdmnet/ProviderDetail';
+import PendingActivations from '../../pages/hdmnet/PendingActivations';
+import Transactions from '../../pages/hdmnet/Transactions';
 import Backups from '../../pages/hdmnet/Backups';
+import Legal from '../../pages/hdmnet/Legal';
+import Settings from '../../pages/hdmnet/Settings';
 
 const routes = (
   <>
     <Route index element={<Dashboard />} />
     <Route path="dashboard" element={<Dashboard />} />
-    <Route path="owners" element={<Owners />} />
-    <Route path="owners/:id" element={<OwnerDetail />} />
-    <Route path="plans" element={<Plans />} />
-    <Route path="settings" element={<Settings />} />
+    <Route path="providers" element={<Providers />} />
+    <Route path="providers/:id" element={<ProviderDetail />} />
+    <Route path="pending" element={<PendingActivations />} />
+    <Route path="transactions" element={<Transactions />} />
     <Route path="backups" element={<Backups />} />
+    <Route path="legal" element={<Legal />} />
+    <Route path="settings" element={<Settings />} />
   </>
 );
 

@@ -6,6 +6,7 @@ export default function Button({ children, variant = 'primary', size = 'md', cla
     danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
     success: 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500',
     warning: 'bg-yellow-600 text-white hover:bg-yellow-700 focus:ring-yellow-500',
+    info: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
     outline: 'border border-[var(--border-color)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] focus:ring-cyan-500',
     ghost: 'text-[var(--text-secondary)] hover:bg-[var(--sidebar-hover)]',
   };
