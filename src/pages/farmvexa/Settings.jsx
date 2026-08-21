@@ -11,6 +11,7 @@ import DownloadsSettings from './settings/DownloadsSettings';
 import ChatbotSettings from './settings/ChatbotSettings';
 import LegalsSettings from './settings/LegalsSettings';
 import FieldScanSettings from './settings/FieldScanSettings';
+import VirtualDeviceSettings from './settings/VirtualDeviceSettings';
 
 const TABS = [
   { key: 'ai', label: 'AI & Limits', icon: HiChip },
@@ -22,6 +23,7 @@ const TABS = [
   { key: 'chatbot', label: 'Chatbot', icon: HiChat },
   { key: 'fieldScan', label: 'Field Scan', icon: HiCamera },
   { key: 'legals', label: 'Legals', icon: HiScale },
+  { key: 'virtualDevice', label: 'Virtual Device', icon: HiChip },
 ];
 
 export default function Settings() {
@@ -79,6 +81,7 @@ export default function Settings() {
       {activeTab === 'chatbot' && <ChatbotSettings settings={settings} setSettings={setSettings} onSave={handleSave} saving={saving} />}
       {activeTab === 'fieldScan' && <FieldScanSettings settings={settings} setSettings={setSettings} onSave={handleSave} saving={saving} />}
       {activeTab === 'legals' && <LegalsSettings settings={settings} setSettings={setSettings} onSave={handleSave} saving={saving} />}
+      {activeTab === 'virtualDevice' && <VirtualDeviceSettings settings={settings} setSettings={setSettings} onSave={handleSave} saving={saving} />}
     </div>
   );
 }

@@ -16,3 +16,4 @@ export * from './documents';
 export * from './payments';
 export * from './renewals';
 export * from './upgrades';
+export * from './virtualDevice';
