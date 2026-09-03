@@ -1,2 +1,2 @@
 export { formatDate } from './formatDate';
-export { formatCurrency, formatBytes } from './formatters';
+export { formatCurrency } from './formatters';

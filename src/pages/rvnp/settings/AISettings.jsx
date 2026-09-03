@@ -1,70 +1,96 @@
+import { useEffect, useState } from 'react';
+import { getAISettings, updateAISettings } from '../../../services/rvnp/aiSettings';
 import Card from '../../../components/rvnp/ui/Card';
 import Input from '../../../components/rvnp/ui/Input';
 import Toggle from '../../../components/rvnp/ui/Toggle';
 import Button from '../../../components/rvnp/ui/Button';
+import Spinner from '../../../components/rvnp/ui/Spinner';
 
-export default function AISettings({ settings, setSettings, onSave, saving }) {
-  const ai = settings.ai || {};
+export default function AISettings() {
+  const [settings, setSettings] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [success, setSuccess] = useState('');
 
-  const setAi = (key, value) => setSettings(prev => ({ ...prev, ai: { ...prev.ai, [key]: value } }));
+  useEffect(() => {
+    setLoading(true);
+    getAISettings()
+      .then(res => setSettings(res?.data || res || {}))
+      .catch(console.error).finally(() => setLoading(false));
+  }, []);
 
-  const handleSave = () => onSave(settings.ai);
+  const update = (key, value) => setSettings(prev => ({ ...prev, [key]: value }));
+
+  const handleSave = async () => {
+    setSaving(true); setSuccess('');
+    try {
+      await updateAISettings(settings);
+      setSuccess('Saved!'); setTimeout(() => setSuccess(''), 2000);
+    } catch (e) { alert(e.response?.data?.message || e.message); }
+    setSaving(false);
+  };
+
+  if (loading) return <div className="flex justify-center py-20"><Spinner size="lg" /></div>;
 
   return (
     <div className="space-y-6 max-w-2xl">
+      {/* Master Toggle */}
       <Card>
-        <Toggle label="AI Master" checked={ai.aiEnabled || false} onChange={v => setAi('aiEnabled', v)} description="Master toggle for all AI features" />
-      </Card>
-      <Card>
-        <h2 className="font-semibold text-[var(--text-primary)] mb-4">AI Features</h2>
-        <div className="space-y-4 divide-y divide-[var(--border-color)]">
-          <div className="pt-4 first:pt-0">
-            <Toggle label="AI Chat" checked={ai.chatEnabled || false} onChange={v => setAi('chatEnabled', v)} description="General chat assistant for students" />
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="font-semibold text-[var(--text-primary)]">HDM AI</h2>
+            <p className="text-sm text-[var(--text-muted)] mt-1">Enable AI assistant for campus</p>
           </div>
-          <div className="pt-4">
-            <Toggle label="Content Moderation" checked={ai.moderationEnabled || false} onChange={v => setAi('moderationEnabled', v)} description="Auto-scan posts, stories, comments, listings" />
-            {ai.moderationEnabled && (
-              <div className="mt-3 space-y-4 pl-2 border-l-2 border-emerald-200 dark:border-emerald-800">
-                <div>
-                  <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Moderation Sensitivity: {ai.moderationSensitivity ?? 0.75}</label>
-                  <input type="range" min="0" max="1" step="0.05" value={ai.moderationSensitivity ?? 0.75}
-                    onChange={e => setAi('moderationSensitivity', parseFloat(e.target.value))} className="w-full accent-emerald-600" />
-                  <p className="text-xs text-[var(--text-muted)] mt-1">Content above this score is flagged for review</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Auto-Remove Threshold: {ai.autoFlagThreshold ?? 0.3}</label>
-                  <input type="range" min="0" max="1" step="0.05" value={ai.autoFlagThreshold ?? 0.3}
-                    onChange={e => setAi('autoFlagThreshold', parseFloat(e.target.value))} className="w-full accent-emerald-600" />
-                  <p className="text-xs text-[var(--text-muted)] mt-1">Below = auto-approved · 0.30–0.75 = flagged · above 0.75 = auto-removed</p>
-                </div>
+          <Toggle checked={settings?.enabled || false} onChange={v => update('enabled', v)} />
+        </div>
+      </Card>
+
+      {/* AI Identity */}
+      <Card>
+        <h2 className="font-semibold text-[var(--text-primary)] mb-4">AI Identity</h2>
+        <div className="space-y-4">
+          <Input label="AI Name" value={settings?.name || ''} onChange={e => update('name', e.target.value)} placeholder="HDM AI" />
+          <div>
+            <Input label="AI Avatar URL" value={settings?.avatarUrl || ''} onChange={e => update('avatarUrl', e.target.value)} placeholder="https://..." />
+            {settings?.avatarUrl && (
+              <div className="mt-2 p-3 bg-[var(--bg-secondary)] rounded-lg flex items-center gap-3">
+                <img src={settings.avatarUrl} alt="AI Avatar" className="h-10 w-10 object-cover rounded-full" onError={e => e.target.style.display = 'none'} />
+                <span className="text-xs text-[var(--text-muted)]">Avatar Preview</span>
               </div>
             )}
           </div>
-          <div className="pt-4">
-            <Toggle label="Document Verification" checked={ai.verificationScanEnabled || false} onChange={v => setAi('verificationScanEnabled', v)} description="AI scans student IDs for HDM Verification" />
-          </div>
-          <div className="pt-4">
-            <Toggle label="Smart Feed Ranking" checked={ai.smartFeedEnabled || false} onChange={v => setAi('smartFeedEnabled', v)} description="AI ranks posts based on user interests" />
-          </div>
-          <div className="pt-4">
-            <Toggle label="Suggested Replies" checked={ai.suggestedRepliesEnabled || false} onChange={v => setAi('suggestedRepliesEnabled', v)} description="AI suggests quick replies in chat" />
-          </div>
-          <div className="pt-4">
-            <Toggle label="Trending Topics" checked={ai.trendingEnabled || false} onChange={v => setAi('trendingEnabled', v)} description="AI detects trending keywords from posts" />
+          <div>
+            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Description</label>
+            <textarea value={settings?.description || ''} onChange={e => update('description', e.target.value)} rows={2}
+              className="w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--input-bg)] text-sm resize-y"
+              placeholder="Your campus AI assistant" />
           </div>
         </div>
       </Card>
+
+      {/* API Configuration */}
       <Card>
-        <h2 className="font-semibold text-[var(--text-primary)] mb-4">Model Version</h2>
-        <div className="flex gap-3 items-end">
-          <div className="flex-1">
-            <Input label="Version" value={ai.modelVersion || ''} onChange={e => setAi('modelVersion', e.target.value)} placeholder="v2.1" />
-          </div>
-          <Button onClick={handleSave} loading={saving}>Save</Button>
+        <h2 className="font-semibold text-[var(--text-primary)] mb-4">API Configuration</h2>
+        <div className="space-y-4">
+          <Input label="Base URL" value={settings?.baseUrl || ''} onChange={e => update('baseUrl', e.target.value)} placeholder="https://api.hdm-ai.com" />
+          <Input label="API Key" type="password" value={settings?.apiKey || ''} onChange={e => update('apiKey', e.target.value)} placeholder="hdm_xxxxxxxx" />
         </div>
       </Card>
+
+      {/* Feature Toggles */}
+      <Card>
+        <h2 className="font-semibold text-[var(--text-primary)] mb-4">Feature Toggles</h2>
+        <div className="space-y-4">
+          <Toggle label="Chat" checked={settings?.chatEnabled || false} onChange={v => update('chatEnabled', v)} description="Users can chat with AI" />
+          <Toggle label="Content" checked={settings?.contentEnabled || false} onChange={v => update('contentEnabled', v)} description="AI helps generate content" />
+          <Toggle label="Comment Analysis" checked={settings?.commentAnalysisEnabled || false} onChange={v => update('commentAnalysisEnabled', v)} description="AI analyzes comments" />
+        </div>
+      </Card>
+
+      {success && <div className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 p-3 rounded-lg text-sm">{success}</div>}
+
       <div className="flex justify-end">
-        <Button onClick={handleSave} loading={saving} size="lg">Save All Changes</Button>
+        <Button onClick={handleSave} loading={saving} size="lg">Save Changes</Button>
       </div>
     </div>
   );

@@ -10,42 +10,32 @@ export async function getUser(id) {
   return res.data;
 }
 
-export async function updateUser(id, data) {
-  const res = await api.patch(`/users/${id}`, data);
-  return res.data;
-}
-
 export async function suspendUser(id, data) {
-  const res = await api.post(`/users/${id}/suspend`, data);
+  const res = await api.put(`/users/${id}/suspend`, data);
   return res.data;
 }
 
-export async function unsuspendUser(id) {
-  const res = await api.post(`/users/${id}/unsuspend`);
-  return res.data;
-}
-
-export async function banUser(id, data) {
-  const res = await api.post(`/users/${id}/ban`, data);
-  return res.data;
-}
-
-export async function unbanUser(id) {
-  const res = await api.post(`/users/${id}/unban`);
-  return res.data;
-}
-
-export async function verifyUser(id) {
-  const res = await api.post(`/users/${id}/verify`);
-  return res.data;
-}
-
-export async function unverifyUser(id, data) {
-  const res = await api.post(`/users/${id}/unverify`, data);
+export async function reactivateUser(id) {
+  const res = await api.put(`/users/${id}/reactivate`);
   return res.data;
 }
 
 export async function deleteUser(id) {
   const res = await api.delete(`/users/${id}`);
+  return res.data;
+}
+
+export async function changeUserRole(id, data) {
+  const res = await api.put(`/users/${id}/role`, data);
+  return res.data;
+}
+
+export async function verifyUser(id) {
+  const res = await api.put(`/users/${id}/verify`);
+  return res.data;
+}
+
+export async function toggleHdmVerified(id) {
+  const res = await api.put(`/users/${id}/hdm-verified`);
   return res.data;
 }

@@ -3,7 +3,6 @@ import Sidebar from './Sidebar';
 import Header from './Header';
 import { useThemeSidebar } from '../../../context/rvnp/SidebarContext';
 import { useAuth } from '../../../context/rvnp/AuthContext';
-import { SettingsProvider } from '../../../context/rvnp/SettingsContext';
 import Spinner from '../ui/Spinner';
 
 export default function Layout() {
@@ -15,14 +14,12 @@ export default function Layout() {
   if (!isAuthenticated) return <Navigate to="/rvnp/login" state={{ from: location }} replace />;
 
   return (
-    <SettingsProvider>
-      <div className="min-h-screen bg-[var(--bg-primary)] transition-colors duration-200">
-        <Sidebar />
-        <div className={`transition-all duration-300 ${sidebarOpen ? 'lg:ml-64' : 'lg:ml-20'}`}>
-          <Header />
-          <main className="p-4 sm:p-6 lg:p-8"><Outlet /></main>
-        </div>
+    <div className="min-h-screen bg-[var(--bg-primary)] transition-colors duration-200">
+      <Sidebar />
+      <div className={`transition-all duration-300 ${sidebarOpen ? 'lg:ml-64' : 'lg:ml-20'}`}>
+        <Header />
+        <main className="p-4 sm:p-6 lg:p-8"><Outlet /></main>
       </div>
-    </SettingsProvider>
+    </div>
   );
 }

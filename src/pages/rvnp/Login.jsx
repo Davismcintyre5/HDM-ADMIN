@@ -37,7 +37,7 @@ export default function Login() {
             <HiAcademicCap className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
           </div>
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">RVNP Campus Hub</h1>
-          <p className="text-sm text-[var(--text-secondary)] mt-1">The Digital Quad of Rift Valley National Polytechnic</p>
+          <p className="text-sm text-[var(--text-secondary)] mt-1">RVNP Connected</p>
         </div>
         {error && <div className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-3 rounded-lg mb-4 text-sm">{error}</div>}
         <form onSubmit={handleSubmit} className="space-y-4">

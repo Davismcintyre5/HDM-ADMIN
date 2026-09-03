@@ -1,27 +1,17 @@
 import { useEffect, useState } from 'react';
-import { getSettings, updateSettings } from '../../services/rvnp/settings';
+import { getGeneralSettings, updateGeneralSettings } from '../../services/rvnp/settings';
 import Spinner from '../../components/rvnp/ui/Spinner';
-import { HiCog, HiChip, HiBell, HiSwitchHorizontal, HiFolder, HiAcademicCap, HiScale, HiShieldCheck, HiClipboardList } from 'react-icons/hi';
+import { HiCog, HiChip, HiOfficeBuilding, HiAcademicCap } from 'react-icons/hi';
 import GeneralSettings from './settings/GeneralSettings';
 import AISettings from './settings/AISettings';
-import NotificationsSettings from './settings/NotificationsSettings';
-import TogglesSettings from './settings/TogglesSettings';
-import FilesSettings from './settings/FilesSettings';
-import GamificationSettings from './settings/GamificationSettings';
-import LegalsSettings from './settings/LegalsSettings';
-import AdminsSettings from './settings/AdminsSettings';
-import AuditLogsSettings from './settings/AuditLogsSettings';
+import CampusesSettings from './settings/CampusesSettings';
+import DepartmentsSettings from './settings/DepartmentsSettings';
 
 const TABS = [
   { key: 'general', label: 'General', icon: HiCog },
   { key: 'ai', label: 'AI', icon: HiChip },
-  { key: 'notifications', label: 'Notifications', icon: HiBell },
-  { key: 'toggles', label: 'Toggles', icon: HiSwitchHorizontal },
-  { key: 'files', label: 'Files', icon: HiFolder },
-  { key: 'gamification', label: 'Gamification', icon: HiAcademicCap },
-  { key: 'legals', label: 'Legals', icon: HiScale },
-  { key: 'admins', label: 'Admins', icon: HiShieldCheck },
-  { key: 'auditLogs', label: 'Audit Logs', icon: HiClipboardList },
+  { key: 'campuses', label: 'Campuses', icon: HiOfficeBuilding },
+  { key: 'departments', label: 'Departments', icon: HiAcademicCap },
 ];
 
 export default function Settings() {
@@ -33,16 +23,16 @@ export default function Settings() {
 
   useEffect(() => {
     setLoading(true);
-    getSettings()
+    getGeneralSettings()
       .then(res => setSettings(res?.data || res || {}))
       .catch(console.error).finally(() => setLoading(false));
   }, []);
 
-  const handleSave = async (section, data) => {
+  const handleSave = async (data) => {
     setSaving(true); setSuccess('');
     try {
-      await updateSettings(section, data);
-      setSettings(prev => ({ ...prev, [section]: { ...prev[section], ...data } }));
+      await updateGeneralSettings(data);
+      setSettings(prev => ({ ...prev, ...data }));
       setSuccess('Saved!'); setTimeout(() => setSuccess(''), 2000);
     } catch (e) { alert(e.response?.data?.message || e.message); }
     setSaving(false);
@@ -63,15 +53,10 @@ export default function Settings() {
         ))}
       </div>
 
-      {activeTab === 'general' && <GeneralSettings settings={settings} setSettings={setSettings} onSave={(d) => handleSave('general', d)} saving={saving} />}
-      {activeTab === 'ai' && <AISettings settings={settings} setSettings={setSettings} onSave={(d) => handleSave('ai', d)} saving={saving} />}
-      {activeTab === 'notifications' && <NotificationsSettings settings={settings} setSettings={setSettings} onSave={(d) => handleSave('notifications', d)} saving={saving} />}
-      {activeTab === 'toggles' && <TogglesSettings settings={settings} setSettings={setSettings} onSave={(d) => handleSave('toggles', d)} saving={saving} />}
-      {activeTab === 'files' && <FilesSettings settings={settings} setSettings={setSettings} onSave={(d) => handleSave('files', d)} saving={saving} />}
-      {activeTab === 'gamification' && <GamificationSettings settings={settings} setSettings={setSettings} onSave={(d) => handleSave('gamification', d)} saving={saving} />}
-      {activeTab === 'legals' && <LegalsSettings settings={settings} setSettings={setSettings} onSave={(d) => handleSave('legals', d)} saving={saving} />}
-      {activeTab === 'admins' && <AdminsSettings />}
-      {activeTab === 'auditLogs' && <AuditLogsSettings />}
+      {activeTab === 'general' && <GeneralSettings settings={settings} setSettings={setSettings} onSave={handleSave} saving={saving} />}
+      {activeTab === 'ai' && <AISettings />}
+      {activeTab === 'campuses' && <CampusesSettings />}
+      {activeTab === 'departments' && <DepartmentsSettings />}
     </div>
   );
 }

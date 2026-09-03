@@ -1,24 +1,19 @@
 import { NavLink, Link } from 'react-router-dom';
 import { useThemeSidebar } from '../../../context/rvnp/SidebarContext';
 import {
-  HiHome, HiUsers, HiBadgeCheck, HiShieldCheck, HiStar,
-  HiSupport, HiFlag, HiSpeakerphone, HiChartBar, HiCreditCard,
-  HiCube, HiHeart, HiDatabase, HiCog,
+  HiHome, HiUsers, HiShieldCheck, HiFlag, HiClipboardList,
+  HiChartBar, HiCog, HiScale,HiHeart, HiDatabase,
   HiChevronLeft, HiChevronRight, HiX
 } from 'react-icons/hi';
 
 const navItems = [
   { to: '/rvnp', icon: HiHome, label: 'Dashboard', end: true },
   { to: '/rvnp/users', icon: HiUsers, label: 'Users' },
-  { to: '/rvnp/verification-queue', icon: HiBadgeCheck, label: 'Verifications' },
   { to: '/rvnp/moderation', icon: HiShieldCheck, label: 'Moderation' },
-  { to: '/rvnp/spotlight', icon: HiStar, label: 'Spotlight' },
-  { to: '/rvnp/support', icon: HiSupport, label: 'Support' },
   { to: '/rvnp/reports', icon: HiFlag, label: 'Reports' },
-  { to: '/rvnp/announcements', icon: HiSpeakerphone, label: 'Announcements' },
+  { to: '/rvnp/audit-logs', icon: HiClipboardList, label: 'Audit Logs' },
   { to: '/rvnp/analytics', icon: HiChartBar, label: 'Analytics' },
-  { to: '/rvnp/payments', icon: HiCreditCard, label: 'Payments' },
-  { to: '/rvnp/plans', icon: HiCube, label: 'Plans' },
+  { to: '/rvnp/legals', icon: HiScale, label: 'Legals' },
   { to: '/rvnp/health', icon: HiHeart, label: 'Health' },
   { to: '/rvnp/backups', icon: HiDatabase, label: 'Backups' },
   { to: '/rvnp/settings', icon: HiCog, label: 'Settings' },
@@ -32,9 +27,7 @@ export default function Sidebar() {
       {mobileSidebarOpen && <div className="fixed inset-0 z-40 bg-black/50 lg:hidden" onClick={() => setMobileSidebarOpen(false)} />}
       <aside className={`fixed top-0 left-0 z-50 h-full bg-[var(--sidebar-bg)] border-r border-[var(--border-color)] transition-all duration-300 flex flex-col ${sidebarOpen ? 'w-64' : 'w-20'} ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
         <div className="h-16 flex items-center justify-between px-4 border-b border-[var(--border-color)] bg-emerald-600">
-          {sidebarOpen && (
-            <span className="text-lg font-bold text-white">🎓 RVNP Hub</span>
-          )}
+          {sidebarOpen && <span className="text-lg font-bold text-white">🎓 RVNP Hub</span>}
           <button onClick={toggleSidebar} className="p-1.5 rounded-lg hover:bg-white/20 text-white hidden lg:block">
             {sidebarOpen ? <HiChevronLeft className="w-5 h-5" /> : <HiChevronRight className="w-5 h-5" />}
           </button>

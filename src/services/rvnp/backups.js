@@ -1,5 +1,17 @@
 import api from './api';
 
+const BASE_URL = import.meta.env.VITE_RVNP_API || 'http://localhost:5000/api/admin';
+
+export async function getBackupSettings() {
+  const res = await api.get('/backups/settings');
+  return res.data;
+}
+
+export async function updateBackupSettings(data) {
+  const res = await api.put('/backups/settings', data);
+  return res.data;
+}
+
 export async function getBackups() {
   const res = await api.get('/backups');
   return res.data;
@@ -10,34 +22,36 @@ export async function createBackup() {
   return res.data;
 }
 
-export async function restoreBackup(formData) {
-  const res = await api.post('/backups/restore', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
+export async function downloadBackup(filename, token) {
+  const res = await fetch(`${BASE_URL}/backups/download/${filename}`, {
+    headers: { 'Authorization': `Bearer ${token}` },
   });
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+export async function sendBackupEmail(filename, data) {
+  const res = await api.post(`/backups/send-email/${filename}`, data);
   return res.data;
 }
 
-export async function downloadBackup(id) {
-  const res = await api.get(`/backups/${id}/download`);
+export async function deleteBackup(filename) {
+  const res = await api.delete(`/backups/${filename}`);
   return res.data;
 }
 
-export async function sendBackupEmail(id, data) {
-  const res = await api.post(`/backups/${id}/send-email`, data);
-  return res.data;
-}
-
-export async function deleteBackup(id) {
-  const res = await api.delete(`/backups/${id}`);
-  return res.data;
-}
-
-export async function getAutoBackupSettings() {
-  const res = await api.get('/backups/settings/auto');
-  return res.data;
-}
-
-export async function updateAutoBackupSettings(data) {
-  const res = await api.patch('/backups/settings/auto', data);
-  return res.data;
+export async function uploadRestore(formData, token) {
+  const res = await fetch(`${BASE_URL}/backups/upload-restore`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}` },
+    body: formData,
+  });
+  return res.json();
 }

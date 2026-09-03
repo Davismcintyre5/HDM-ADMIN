@@ -1,21 +1,16 @@
 import api from './api';
 
-export async function getStats() {
-  const res = await api.get('/stats');
+export async function getDashboardStats() {
+  const res = await api.get('/dashboard/stats');
   return res.data;
 }
 
-export async function getQuickStats() {
-  const res = await api.get('/stats/quick');
+export async function getUsersByCampus() {
+  const res = await api.get('/dashboard/users-by-campus');
   return res.data;
 }
 
-export async function getUserGrowth(days = 30) {
-  const res = await api.get('/stats/user-growth', { params: { days } });
-  return res.data;
-}
-
-export async function getContentActivity(days = 7) {
-  const res = await api.get('/stats/content-activity', { params: { days } });
+export async function getPostsByCampus() {
+  const res = await api.get('/dashboard/posts-by-campus');
   return res.data;
 }

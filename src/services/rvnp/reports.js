@@ -10,17 +10,12 @@ export async function getReport(id) {
   return res.data;
 }
 
-export async function resolveReport(id, data) {
-  const res = await api.post(`/reports/${id}/resolve`, data);
+export async function updateReportStatus(id, data) {
+  const res = await api.put(`/reports/${id}/status`, data);
   return res.data;
 }
 
-export async function dismissReport(id, data) {
-  const res = await api.post(`/reports/${id}/dismiss`, data);
-  return res.data;
-}
-
-export async function getReportStats() {
-  const res = await api.get('/reports/stats');
+export async function deleteReport(id) {
+  const res = await api.delete(`/reports/${id}`);
   return res.data;
 }

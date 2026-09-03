@@ -10,21 +10,6 @@ export async function login(email, password) {
   return res.data;
 }
 
-export async function getMe() {
-  const res = await api.get('/auth/me');
-  return res.data;
-}
-
-export async function updateProfile(data) {
-  const res = await api.patch('/auth/profile', data);
-  return res.data;
-}
-
-export async function changePassword(data) {
-  const res = await api.patch('/auth/password', data);
-  return res.data;
-}
-
 export async function logout() {
   localStorage.removeItem('rvnp_token');
   localStorage.removeItem('rvnp_refresh_token');
