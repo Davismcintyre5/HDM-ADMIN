@@ -22,7 +22,7 @@ const statusVariant = { PENDING: 'warning', REVIEWED: 'info', RESOLVED: 'success
 
 export default function Reports() {
   const [reports, setReports] = useState([]);
-  const [pagination, setPagination] = useState({ page: 1, pages: 1 });
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [filter, setFilter] = useState('');
@@ -30,14 +30,17 @@ export default function Reports() {
   const [viewModal, setViewModal] = useState({ open: false, report: null });
   const [confirmDelete, setConfirmDelete] = useState({ open: false, id: null, name: '' });
 
+  const limit = 20;
+  const totalPages = Math.ceil(total / limit);
+
   const fetchReports = () => {
     setLoading(true);
-    const params = { page, limit: 20 };
+    const params = { page, limit };
     if (filter) params.status = filter;
     getReports(params)
       .then(res => {
-        setReports(res?.data?.reports || res?.data || []);
-        setPagination(res?.data?.pagination || { page: 1, pages: 1 });
+        setReports(res?.data?.reports || []);
+        setTotal(res?.data?.total || 0);
       })
       .catch(console.error).finally(() => setLoading(false));
   };
@@ -53,8 +56,12 @@ export default function Reports() {
 
   const handleDelete = async () => {
     setActionLoading(true);
-    try { await deleteReport(confirmDelete.id); setConfirmDelete({ open: false, id: null, name: '' }); fetchReports(); }
-    catch (err) { alert(err.message); }
+    try {
+      await deleteReport(confirmDelete.id);
+      setReports(prev => prev.filter(r => r.id !== confirmDelete.id));
+      setConfirmDelete({ open: false, id: null, name: '' });
+      fetchReports();
+    } catch (err) { alert(err.message); }
     setActionLoading(false);
   };
 
@@ -66,7 +73,7 @@ export default function Reports() {
     { key: 'actions', label: '', render: row => (
       <div className="flex gap-1">
         <Button size="sm" variant="secondary" onClick={() => setViewModal({ open: true, report: row })}><HiEye className="w-3 h-3" /></Button>
-        <Button size="sm" variant="danger" onClick={() => setConfirmDelete({ open: true, id: row.id || row._id, name: row.reason || row.type })}><HiTrash className="w-3 h-3" /></Button>
+        <Button size="sm" variant="danger" onClick={() => setConfirmDelete({ open: true, id: row.id, name: row.reason || row.type })}><HiTrash className="w-3 h-3" /></Button>
       </div>
     )},
   ];
@@ -86,9 +93,10 @@ export default function Reports() {
 
       <Card>
         <Table columns={columns} data={reports} loading={loading} emptyMessage="No reports found." />
-        <Pagination page={pagination.page} totalPages={pagination.pages} onPageChange={setPage} />
+        {totalPages > 1 && <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />}
       </Card>
 
+      {/* View Report Modal */}
       <Modal open={viewModal.open} onClose={() => setViewModal({ open: false, report: null })} title="Report Details" size="md">
         {viewModal.report && (
           <div className="space-y-4">
@@ -99,17 +107,19 @@ export default function Reports() {
                 <Badge variant={statusVariant[viewModal.report.status] || 'default'}>{viewModal.report.status}</Badge>
               </Row>
               <Row label="Date" value={formatDate(viewModal.report.createdAt, 'full')} />
+              {viewModal.report.description && <Row label="Description" value={viewModal.report.description} />}
             </div>
             {viewModal.report.status === 'PENDING' && (
               <div className="flex justify-end gap-2">
-                <Button variant="danger" onClick={() => handleStatus(viewModal.report.id || viewModal.report._id, 'DISMISSED')} loading={actionLoading}>Dismiss</Button>
-                <Button variant="success" onClick={() => handleStatus(viewModal.report.id || viewModal.report._id, 'RESOLVED')} loading={actionLoading}>Resolve</Button>
+                <Button variant="danger" onClick={() => handleStatus(viewModal.report.id, 'DISMISSED')} loading={actionLoading}>Dismiss</Button>
+                <Button variant="success" onClick={() => handleStatus(viewModal.report.id, 'RESOLVED')} loading={actionLoading}>Resolve</Button>
               </div>
             )}
           </div>
         )}
       </Modal>
 
+      {/* Delete Confirm */}
       <ConfirmDialog open={confirmDelete.open} onClose={() => setConfirmDelete({ open: false, id: null, name: '' })} onConfirm={handleDelete}
         title="Delete Report" message={`Delete report "${confirmDelete.name}"?`} confirmLabel="Delete" variant="danger" loading={actionLoading} />
     </div>
