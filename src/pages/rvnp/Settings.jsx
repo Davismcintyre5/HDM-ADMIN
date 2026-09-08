@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react';
 import { getGeneralSettings, updateGeneralSettings } from '../../services/rvnp/settings';
 import Spinner from '../../components/rvnp/ui/Spinner';
-import { HiCog, HiChip, HiOfficeBuilding, HiAcademicCap } from 'react-icons/hi';
+import { HiCog, HiChip, HiOfficeBuilding, HiAcademicCap, HiUpload } from 'react-icons/hi';
 import GeneralSettings from './settings/GeneralSettings';
 import AISettings from './settings/AISettings';
+import UploadSettings from './settings/UploadSettings';
 import CampusesSettings from './settings/CampusesSettings';
 import DepartmentsSettings from './settings/DepartmentsSettings';
 
 const TABS = [
   { key: 'general', label: 'General', icon: HiCog },
   { key: 'ai', label: 'AI', icon: HiChip },
+  { key: 'upload', label: 'Upload', icon: HiUpload },
   { key: 'campuses', label: 'Campuses', icon: HiOfficeBuilding },
   { key: 'departments', label: 'Departments', icon: HiAcademicCap },
 ];
@@ -55,6 +57,7 @@ export default function Settings() {
 
       {activeTab === 'general' && <GeneralSettings settings={settings} setSettings={setSettings} onSave={handleSave} saving={saving} />}
       {activeTab === 'ai' && <AISettings />}
+      {activeTab === 'upload' && <UploadSettings />}
       {activeTab === 'campuses' && <CampusesSettings />}
       {activeTab === 'departments' && <DepartmentsSettings />}
     </div>

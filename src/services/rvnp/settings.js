@@ -20,6 +20,17 @@ export async function deleteSetting(key) {
   return res.data;
 }
 
+// Upload Settings
+export async function getUploadSettings() {
+  const res = await api.get('/settings/upload');
+  return res.data;
+}
+
+export async function updateUploadSettings(data) {
+  const res = await api.patch('/settings/upload', data);
+  return res.data;
+}
+
 // Campuses
 export async function getCampuses() {
   const res = await api.get('/settings/campuses');
