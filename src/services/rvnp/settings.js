@@ -31,6 +31,17 @@ export async function updateUploadSettings(data) {
   return res.data;
 }
 
+// AI Context
+export async function getAIContext() {
+  const res = await api.get('/settings/ai-context');
+  return res.data;
+}
+
+export async function updateAIContext(data) {
+  const res = await api.patch('/settings/ai-context', data);
+  return res.data;
+}
+
 // Campuses
 export async function getCampuses() {
   const res = await api.get('/settings/campuses');
