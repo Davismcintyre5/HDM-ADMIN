@@ -1,6 +1,6 @@
 import api from './api';
 
-export async function getDashboard() {
-  const res = await api.get('/dashboard');
-  return res.data.data; // { totalClients, activeClients, ... }
+export async function getOverview() {
+  const res = await api.get('/dashboard/overview');
+  return res.data;
 }

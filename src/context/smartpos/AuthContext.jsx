@@ -4,59 +4,44 @@ import { login as loginApi, setAuthToken, setupInterceptors } from '../../servic
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [admin, setAdmin] = useState(null);
-  const [token, setToken] = useState(null);
+  const [admin, setAdmin] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('smartpos_admin')); } catch { return null; }
+  });
+  const [token, setToken] = useState(localStorage.getItem('smartpos_token') || null);
   const [loading, setLoading] = useState(true);
 
-  // On mount, read from localStorage
   useEffect(() => {
-    const storedToken = localStorage.getItem('smartpos_admin_token');
-    const storedAdmin = localStorage.getItem('smartpos_admin_user');
-    
-    if (storedToken) {
-      setToken(storedToken);
-      setAuthToken(storedToken);
-    }
-    if (storedAdmin) {
-      try { setAdmin(JSON.parse(storedAdmin)); } catch { setAdmin(null); }
-    }
-    
+    if (token) setAuthToken(token);
     setupInterceptors(() => {
-      localStorage.removeItem('smartpos_admin_token');
-      localStorage.removeItem('smartpos_admin_user');
-      setToken(null);
-      setAdmin(null);
+      localStorage.removeItem('smartpos_token');
+      localStorage.removeItem('smartpos_refresh_token');
+      localStorage.removeItem('smartpos_admin');
+      setToken(null); setAdmin(null);
       window.location.href = '/smartpos/login';
     });
-    
     setLoading(false);
   }, []);
 
   const login = async (email, password) => {
     const data = await loginApi(email, password);
-    localStorage.setItem('smartpos_admin_token', data.token);
-    localStorage.setItem('smartpos_admin_user', JSON.stringify(data.admin));
-    setAuthToken(data.token);
-    setToken(data.token);
-    setAdmin(data.admin);
+    const d = data.data || data;
+    localStorage.setItem('smartpos_token', d.accessToken);
+    localStorage.setItem('smartpos_refresh_token', d.refreshToken);
+    localStorage.setItem('smartpos_admin', JSON.stringify(d.admin || d));
+    setAuthToken(d.accessToken);
+    setToken(d.accessToken);
+    setAdmin(d.admin || d);
   };
 
   const logout = () => {
-    localStorage.removeItem('smartpos_admin_token');
-    localStorage.removeItem('smartpos_admin_user');
-    setToken(null);
-    setAdmin(null);
+    localStorage.removeItem('smartpos_token');
+    localStorage.removeItem('smartpos_refresh_token');
+    localStorage.removeItem('smartpos_admin');
+    setToken(null); setAdmin(null);
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      admin, 
-      token, 
-      login, 
-      logout, 
-      isAuthenticated: !!token, 
-      loading 
-    }}>
+    <AuthContext.Provider value={{ admin, token, login, logout, isAuthenticated: !!token, loading }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,36 +1,26 @@
 import api from './api';
 
-export async function getPendingPayments() {
-  const res = await api.get('/payments/pending');
-  return res.data.data;
-}
-
-export async function getAllPayments() {
-  const res = await api.get('/payments');
-  return res.data.data;
-}
-
-export async function approvePayment(id) {
-  const res = await api.put(`/payments/${id}/approve`, { auto: false });
+export async function getPayments(params) {
+  const res = await api.get('/payments', { params });
   return res.data;
 }
 
-export async function rejectPayment(id, reason) {
-  const res = await api.put(`/payments/${id}/reject`, { reason });
+export async function getPayment(id) {
+  const res = await api.get(`/payments/${id}`);
   return res.data;
 }
 
-export async function deletePayment(id) {
-  const res = await api.delete(`/payments/${id}`);
+export async function verifyPayment(id) {
+  const res = await api.post(`/payments/${id}/verify`);
   return res.data;
 }
 
-export async function deleteAllApproved() {
-  const res = await api.delete('/payments/approved');
+export async function retryPayment(id) {
+  const res = await api.post(`/payments/${id}/retry`);
   return res.data;
 }
 
-export async function deleteAllRejected() {
-  const res = await api.delete('/payments/rejected');
+export async function refundPayment(id, data) {
+  const res = await api.post(`/payments/${id}/refund`, data);
   return res.data;
 }

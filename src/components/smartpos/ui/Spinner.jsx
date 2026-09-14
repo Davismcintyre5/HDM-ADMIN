@@ -2,7 +2,7 @@ export default function Spinner({ size = 'md', className = '' }) {
   const sizes = { sm: 'h-4 w-4', md: 'h-8 w-8', lg: 'h-12 w-12' };
   return (
     <div className={`flex items-center justify-center ${className}`}>
-      <div className={`${sizes[size]} border-4 border-[var(--border-color)] border-t-blue-600 rounded-full animate-spin`} />
+      <div className={`${sizes[size]} border-4 border-[var(--border-color)] border-t-cyan-600 rounded-full animate-spin`} />
     </div>
   );
 }

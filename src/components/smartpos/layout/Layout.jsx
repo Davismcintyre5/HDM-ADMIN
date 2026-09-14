@@ -1,7 +1,7 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
-import { useThemeSidebar } from '../../../context/smartpos/ThemeSidebarContext';
+import { useThemeSidebar } from '../../../context/smartpos/SidebarContext';
 import { useAuth } from '../../../context/smartpos/AuthContext';
 import Spinner from '../ui/Spinner';
 
@@ -10,19 +10,8 @@ export default function Layout() {
   const { isAuthenticated, loading } = useAuth();
   const location = useLocation();
 
-  // Show spinner while checking auth
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)]">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
-
-  // Only redirect if not loading and not authenticated
-  if (!isAuthenticated) {
-    return <Navigate to="/smartpos/login" state={{ from: location }} replace />;
-  }
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)]"><Spinner size="lg" /></div>;
+  if (!isAuthenticated) return <Navigate to="/smartpos/login" state={{ from: location }} replace />;
 
   return (
     <div className="min-h-screen bg-[var(--bg-primary)] transition-colors duration-200">

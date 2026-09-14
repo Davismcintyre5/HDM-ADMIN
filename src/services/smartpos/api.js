@@ -1,38 +1,63 @@
 import axios from 'axios';
 
-const BASE_URL = import.meta.env.VITE_SMARTPOS_API || 'http://localhost:5000/api/admin';
+const BASE_URL = import.meta.env.VITE_SMARTPOS_API || 'http://localhost:5000/api/v1/admin';
 
 const api = axios.create({
   baseURL: BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-    'Cache-Control': 'no-cache',
-    'Pragma': 'no-cache',
-  },
+  headers: { 'Content-Type': 'application/json' },
 });
 
-export function setAuthToken(token) {
-  if (token) {
-    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-  } else {
-    delete api.defaults.headers.common['Authorization'];
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error.response?.status;
+    if (status >= 500 || !status) {
+      console.error(`[ERROR] ${status || 'NETWORK'} — ${error.config?.url}`, error.response?.data?.message || error.message);
+    }
+    return Promise.reject(error);
   }
+);
+
+export function setAuthToken(token) {
+  if (token) api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  else delete api.defaults.headers.common['Authorization'];
 }
 
 export function setupInterceptors(logoutFn) {
   api.interceptors.response.use(
     (response) => response,
     async (error) => {
-      if (error.response?.status === 429) {
-        const retryAfter = error.response.headers['retry-after'] || 5;
-        console.warn(`Rate limited. Retry after ${retryAfter}s`);
-        return Promise.reject(new Error(`Too many requests. Please wait ${retryAfter} seconds.`));
-      }
-      if (error.response?.status === 401) {
+      const originalRequest = error.config;
+      if (error.response?.status !== 401 || originalRequest._retry) return Promise.reject(error);
+
+      originalRequest._retry = true;
+
+      try {
+        const refreshToken = localStorage.getItem('smartpos_refresh_token');
+        if (!refreshToken) {
+          logoutFn();
+          return Promise.reject(new Error('No refresh token'));
+        }
+
+        const res = await axios.post(`${BASE_URL}/auth/refresh`, { refreshToken });
+        const d = res.data.data || res.data;
+        const accessToken = d.accessToken;
+        const newRefresh = d.refreshToken;
+
+        localStorage.setItem('smartpos_token', accessToken);
+        localStorage.setItem('smartpos_refresh_token', newRefresh);
+        setAuthToken(accessToken);
+
+        originalRequest.headers = {
+          ...originalRequest.headers,
+          Authorization: `Bearer ${accessToken}`,
+        };
+
+        return api(originalRequest);
+      } catch (refreshErr) {
         logoutFn();
-        return Promise.reject(new Error('Session expired. Please login again.'));
+        return Promise.reject(new Error('Session expired'));
       }
-      return Promise.reject(error);
     }
   );
 }
