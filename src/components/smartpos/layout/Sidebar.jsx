@@ -2,8 +2,9 @@ import { NavLink, Link } from 'react-router-dom';
 import { useThemeSidebar } from '../../../context/smartpos/SidebarContext';
 import {
   HiHome, HiUsers, HiCreditCard, HiCube, HiTemplate, HiCash,
-  HiChartBar, HiBell, HiShieldCheck, HiClipboardList, HiDatabase,
-  HiScale, HiCog, HiHeart, HiChevronLeft, HiChevronRight, HiX
+  HiChartBar, HiBell, HiShieldCheck, HiDatabase,
+  HiScale, HiCog, HiHeart, HiChevronLeft, HiChevronRight, HiX,
+  HiSparkles
 } from 'react-icons/hi';
 
 const navItems = [
@@ -13,15 +14,15 @@ const navItems = [
   { to: '/smartpos/payments', icon: HiCash, label: 'Payments' },
   { to: '/smartpos/plans', icon: HiCube, label: 'Plans' },
   { to: '/smartpos/payment-methods', icon: HiTemplate, label: 'Payment Methods' },
+  { to: '/smartpos/ai', icon: HiSparkles, label: 'AI' },
   { to: '/smartpos/analytics', icon: HiChartBar, label: 'Analytics' },
   { to: '/smartpos/revenue', icon: HiCash, label: 'Revenue' },
   { to: '/smartpos/notifications', icon: HiBell, label: 'Notifications' },
   { to: '/smartpos/admins', icon: HiShieldCheck, label: 'Admins' },
-  { to: '/smartpos/audit', icon: HiClipboardList, label: 'Audit Log' },
   { to: '/smartpos/backups', icon: HiDatabase, label: 'Backups' },
   { to: '/smartpos/legal', icon: HiScale, label: 'Legal' },
   { to: '/smartpos/health', icon: HiHeart, label: 'Health' },
-  { to: '/smartpos/settings', icon: HiCog, label: 'Settings' },
+  { to: '/smartpos/settings', icon: HiCog, label: 'Settings' }
 ];
 
 export default function Sidebar() {
@@ -29,35 +30,70 @@ export default function Sidebar() {
 
   return (
     <>
-      {mobileSidebarOpen && <div className="fixed inset-0 z-40 bg-black/50 lg:hidden" onClick={() => setMobileSidebarOpen(false)} />}
-      <aside className={`fixed top-0 left-0 z-50 h-full bg-[var(--sidebar-bg)] border-r border-[var(--border-color)] transition-all duration-300 flex flex-col ${sidebarOpen ? 'w-64' : 'w-20'} ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+      {mobileSidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
+
+      <aside
+        className={`fixed top-0 left-0 z-50 h-full bg-[var(--sidebar-bg)] border-r border-[var(--border-color)] transition-all duration-300 flex flex-col ${
+          sidebarOpen ? 'w-64' : 'w-20'
+        } ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
+      >
         <div className="h-16 flex items-center justify-between px-4 border-b border-[var(--border-color)] bg-blue-600">
           {sidebarOpen && <span className="text-lg font-bold text-white">🛒 SmartPOS</span>}
-          <button onClick={toggleSidebar} className="p-1.5 rounded-lg hover:bg-white/20 text-white hidden lg:block">
+          <button
+            onClick={toggleSidebar}
+            className="p-1.5 rounded-lg hover:bg-white/20 text-white hidden lg:block"
+          >
             {sidebarOpen ? <HiChevronLeft className="w-5 h-5" /> : <HiChevronRight className="w-5 h-5" />}
           </button>
-          <button onClick={() => setMobileSidebarOpen(false)} className="p-1.5 rounded-lg hover:bg-white/20 text-white lg:hidden"><HiX className="w-5 h-5" /></button>
+          <button
+            onClick={() => setMobileSidebarOpen(false)}
+            className="p-1.5 rounded-lg hover:bg-white/20 text-white lg:hidden"
+          >
+            <HiX className="w-5 h-5" />
+          </button>
         </div>
+
         <nav className="flex-1 overflow-y-auto py-4 px-3">
           <ul className="space-y-1">
-            {navItems.map(item => (
+            {navItems.map((item) => (
               <li key={item.to}>
-                <NavLink to={item.to} end={item.end} onClick={() => setMobileSidebarOpen(false)}
-                  className={({ isActive }) => `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                    isActive
-                      ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                      : 'text-[var(--text-secondary)] hover:bg-[var(--sidebar-hover)]'
-                  }`}>
-                  <item.icon className="w-5 h-5 flex-shrink-0" />{sidebarOpen && <span>{item.label}</span>}
+                <NavLink
+                  to={item.to}
+                  end={item.end}
+                  onClick={() => setMobileSidebarOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                      isActive
+                        ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                        : 'text-[var(--text-secondary)] hover:bg-[var(--sidebar-hover)]'
+                    }`
+                  }
+                >
+                  <item.icon className="w-5 h-5 flex-shrink-0" />
+                  {sidebarOpen && <span>{item.label}</span>}
                 </NavLink>
               </li>
             ))}
           </ul>
         </nav>
-        <Link to="/" className="mx-3 mb-2 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-[var(--text-secondary)] hover:bg-[var(--sidebar-hover)] transition-colors">
+
+        <Link
+          to="/"
+          className="mx-3 mb-2 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-[var(--text-secondary)] hover:bg-[var(--sidebar-hover)] transition-colors"
+        >
           <HiHome className="w-4 h-4 flex-shrink-0" /> {sidebarOpen && 'Return Home'}
         </Link>
-        {sidebarOpen && <div className="p-4 border-t border-[var(--border-color)] text-xs text-[var(--text-muted)] text-center">SmartPOS v1.0</div>}
+
+        {sidebarOpen && (
+          <div className="p-4 border-t border-[var(--border-color)] text-xs text-[var(--text-muted)] text-center">
+            SmartPOS v1.0
+          </div>
+        )}
       </aside>
     </>
   );

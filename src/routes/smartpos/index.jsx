@@ -6,6 +6,7 @@ import Subscriptions from '../../pages/smartpos/Subscriptions';
 import Payments from '../../pages/smartpos/Payments';
 import Plans from '../../pages/smartpos/Plans';
 import PaymentMethods from '../../pages/smartpos/PaymentMethods';
+import Ai from '../../pages/smartpos/Ai';
 import Analytics from '../../pages/smartpos/Analytics';
 import Revenue from '../../pages/smartpos/Revenue';
 import Notifications from '../../pages/smartpos/Notifications';
@@ -26,6 +27,7 @@ const routes = (
     <Route path="payments" element={<Payments />} />
     <Route path="plans" element={<Plans />} />
     <Route path="payment-methods" element={<PaymentMethods />} />
+    <Route path="ai" element={<Ai />} />
     <Route path="analytics" element={<Analytics />} />
     <Route path="revenue" element={<Revenue />} />
     <Route path="notifications" element={<Notifications />} />

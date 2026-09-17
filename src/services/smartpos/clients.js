@@ -5,13 +5,13 @@ export async function getClients(params) {
   return res.data;
 }
 
-export async function getPendingClients() {
-  const res = await api.get('/clients/pending');
+export async function getClient(id) {
+  const res = await api.get(`/clients/${id}`);
   return res.data;
 }
 
-export async function getClient(id) {
-  const res = await api.get(`/clients/${id}`);
+export async function getPendingApprovals() {
+  const res = await api.get('/clients/pending');
   return res.data;
 }
 

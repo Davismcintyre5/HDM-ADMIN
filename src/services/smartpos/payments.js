@@ -24,3 +24,8 @@ export async function refundPayment(id, data) {
   const res = await api.post(`/payments/${id}/refund`, data);
   return res.data;
 }
+
+export async function deletePayment(id) {
+  const res = await api.delete(`/payments/${id}`);
+  return res.data;
+}

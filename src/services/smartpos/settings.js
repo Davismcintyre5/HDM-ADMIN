@@ -109,3 +109,33 @@ export async function updateSmsSettings(data) {
   const res = await api.put('/settings/sms', data);
   return res.data;
 }
+
+export async function getDownloads() {
+  const res = await api.get('/settings/downloads');
+  return res.data;
+}
+
+export async function addDownload(data) {
+  const res = await api.post('/settings/downloads', data);
+  return res.data;
+}
+
+export async function updateDownload(id, data) {
+  const res = await api.put(`/settings/downloads/${id}`, data);
+  return res.data;
+}
+
+export async function toggleDownload(id) {
+  const res = await api.post(`/settings/downloads/${id}/toggle`);
+  return res.data;
+}
+
+export async function reorderDownloads(ids) {
+  const res = await api.post('/settings/downloads/reorder', { ids });
+  return res.data;
+}
+
+export async function deleteDownload(id) {
+  const res = await api.delete(`/settings/downloads/${id}`);
+  return res.data;
+}

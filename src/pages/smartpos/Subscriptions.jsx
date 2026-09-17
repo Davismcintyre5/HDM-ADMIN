@@ -1,119 +1,276 @@
 import { useState, useEffect } from 'react';
-import { getSubscriptions, getRenewals, extendSubscription, renewSubscription, suspendSubscription, expireSubscription } from '../../services/smartpos/subscriptions';
+import {
+  getPendingApprovals,
+  approveClient,
+  rejectClient
+} from '../../services/smartpos/clients';
 import Card from '../../components/smartpos/ui/Card';
 import Table from '../../components/smartpos/ui/Table';
 import Badge from '../../components/smartpos/ui/Badge';
 import Button from '../../components/smartpos/ui/Button';
 import Input from '../../components/smartpos/ui/Input';
 import Modal from '../../components/smartpos/ui/Modal';
-import Pagination from '../../components/smartpos/ui/Pagination';
 import { formatDate } from '../../utils/smartpos/formatDate';
-
-const TABS = [
-  { key: 'all', label: 'All' },
-  { key: 'renewals', label: 'Renewals' },
-];
-
-const statusVariant = { active: 'success', expired: 'danger', suspended: 'danger', cancelled: 'default' };
+import { formatMoney } from '../../utils/smartpos/formatMoney';
+import { HiCheck, HiX, HiEye } from 'react-icons/hi';
 
 export default function Subscriptions() {
-  const [activeTab, setActiveTab] = useState('all');
   const [items, setItems] = useState([]);
-  const [renewals, setRenewals] = useState({ upcoming: [], grace: [], suspended: [] });
-  const [pagination, setPagination] = useState({ page: 1, pages: 1 });
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
   const [actionLoading, setActionLoading] = useState(false);
-  const [extendModal, setExtendModal] = useState({ open: false, id: null });
-  const [extendDays, setExtendDays] = useState(30);
+
+  const [viewModal, setViewModal] = useState({ open: false, client: null });
+  const [rejectModal, setRejectModal] = useState({ open: false, client: null });
+  const [rejectReason, setRejectReason] = useState('');
 
   const fetchData = () => {
     setLoading(true);
-    if (activeTab === 'renewals') {
-      getRenewals()
-        .then(res => setRenewals(res?.data || { upcoming: [], grace: [], suspended: [] }))
-        .catch(console.error).finally(() => setLoading(false));
-    } else {
-      getSubscriptions({ page, limit: 20 })
-        .then(res => {
-          setItems(res?.data || []);
-          setPagination(res?.meta || { page: 1, pages: 1 });
-        })
-        .catch(console.error).finally(() => setLoading(false));
-    }
+    getPendingApprovals()
+      .then((res) => setItems(res?.data || []))
+      .catch(console.error)
+      .finally(() => setLoading(false));
   };
 
-  useEffect(() => { fetchData(); }, [page, activeTab]);
+  useEffect(() => { fetchData(); }, []);
 
-  const handleExtend = async () => {
+  const handleApprove = async (id) => {
+    if (!window.confirm('Approve this client? They will be activated and can log in.')) return;
     setActionLoading(true);
-    try { await extendSubscription(extendModal.id, { days: extendDays }); setExtendModal({ open: false, id: null }); fetchData(); }
-    catch (err) { alert(err.message); }
+    try {
+      await approveClient(id);
+      fetchData();
+    } catch (err) {
+      alert(err.message);
+    }
     setActionLoading(false);
   };
 
-  const handleRenew = async (id) => { if (!window.confirm('Force renew?')) return; setActionLoading(true); try { await renewSubscription(id); fetchData(); } catch (err) { alert(err.message); } setActionLoading(false); };
-  const handleSuspend = async (id) => { if (!window.confirm('Suspend this subscription?')) return; setActionLoading(true); try { await suspendSubscription(id); fetchData(); } catch (err) { alert(err.message); } setActionLoading(false); };
-  const handleExpire = async (id) => { if (!window.confirm('Force into renewal state?')) return; setActionLoading(true); try { await expireSubscription(id); fetchData(); } catch (err) { alert(err.message); } setActionLoading(false); };
+  const handleReject = async () => {
+    if (!rejectModal.client) return;
+    setActionLoading(true);
+    try {
+      await rejectClient(rejectModal.client._id || rejectModal.client.id, {
+        reason: rejectReason
+      });
+      setRejectModal({ open: false, client: null });
+      setRejectReason('');
+      fetchData();
+    } catch (err) {
+      alert(err.message);
+    }
+    setActionLoading(false);
+  };
 
   const columns = [
-    { key: 'client', label: 'Client', render: row => <span className="text-sm font-medium">{row.clientName || row.client?.name || '—'}</span> },
-    { key: 'plan', label: 'Plan', render: row => <Badge variant="info">{row.plan || '—'}</Badge> },
-    { key: 'status', label: 'Status', render: row => <Badge variant={statusVariant[row.status] || 'default'}>{row.status}</Badge> },
-    { key: 'periodEnd', label: 'Period End', render: row => row.periodEnd ? formatDate(row.periodEnd) : '—' },
-    { key: 'actions', label: '', render: row => (
-      <div className="flex gap-1">
-        <Button size="sm" variant="secondary" onClick={() => { setExtendDays(30); setExtendModal({ open: true, id: row._id || row.id }); }}>Extend</Button>
-        <Button size="sm" variant="success" onClick={() => handleRenew(row._id || row.id)}>Renew</Button>
-        <Button size="sm" variant="warning" onClick={() => handleSuspend(row._id || row.id)}>Suspend</Button>
-      </div>
-    )},
+    {
+      key: 'name',
+      label: 'Store',
+      render: (row) => (
+        <button
+          onClick={() => setViewModal({ open: true, client: row })}
+          className="text-[var(--accent)] hover:underline font-medium text-sm"
+        >
+          {row.name}
+        </button>
+      )
+    },
+    {
+      key: 'owner',
+      label: 'Owner',
+      render: (row) => (
+        <div className="text-sm">
+          <p className="text-[var(--text-primary)]">{row.ownerName}</p>
+          <p className="text-xs text-[var(--text-muted)]">{row.ownerEmail}</p>
+        </div>
+      )
+    },
+    {
+      key: 'plan',
+      label: 'Plan',
+      render: (row) => <Badge variant="info">{row.plan}</Badge>
+    },
+    {
+      key: 'currency',
+      label: 'Billing',
+      render: (row) => (
+        <span className="text-xs text-[var(--text-secondary)]">
+          {row.subscriptionCurrency} · {row.storeCurrency}
+        </span>
+      )
+    },
+    {
+      key: 'createdAt',
+      label: 'Signed up',
+      render: (row) => formatDate(row.createdAt)
+    },
+    {
+      key: 'actions',
+      label: '',
+      render: (row) => {
+        const id = row._id || row.id;
+        return (
+          <div className="flex gap-1">
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => setViewModal({ open: true, client: row })}
+              title="View"
+            >
+              <HiEye className="w-3 h-3" />
+            </Button>
+            <Button
+              size="sm"
+              variant="success"
+              onClick={() => handleApprove(id)}
+              title="Approve"
+            >
+              <HiCheck className="w-3 h-3" />
+            </Button>
+            <Button
+              size="sm"
+              variant="danger"
+              onClick={() => {
+                setRejectReason('');
+                setRejectModal({ open: true, client: row });
+              }}
+              title="Reject"
+            >
+              <HiX className="w-3 h-3" />
+            </Button>
+          </div>
+        );
+      }
+    }
   ];
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-6">Subscriptions</h1>
-
-      <div className="flex gap-2 mb-4 border-b border-[var(--border-color)]">
-        {TABS.map(t => (
-          <button key={t.key} onClick={() => { setActiveTab(t.key); setPage(1); }}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === t.key ? 'border-blue-600 text-blue-600' : 'border-transparent text-[var(--text-secondary)]'}`}>
-            {t.label}
-          </button>
-        ))}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Pending Approvals</h1>
+          <p className="text-sm text-[var(--text-secondary)] mt-1">
+            Paid signups awaiting review. Approve to activate.
+          </p>
+        </div>
+        <Badge variant={items.length > 0 ? 'warning' : 'success'}>
+          {items.length} pending
+        </Badge>
       </div>
 
-      {activeTab === 'all' && (
-        <Card>
-          <Table columns={columns} data={items} loading={loading} emptyMessage="No subscriptions." />
-          <Pagination page={pagination.page} totalPages={pagination.pages} onPageChange={setPage} />
-        </Card>
-      )}
+      <Card>
+        <Table
+          columns={columns}
+          data={items}
+          loading={loading}
+          emptyMessage="No pending approvals. You're all caught up."
+        />
+      </Card>
 
-      {activeTab === 'renewals' && (
-        <div className="space-y-6">
-          <Card>
-            <h2 className="font-semibold text-[var(--text-primary)] mb-3">Upcoming ({renewals.upcoming?.length || 0})</h2>
-            <Table columns={columns} data={renewals.upcoming || []} loading={loading} emptyMessage="No upcoming renewals." />
-          </Card>
-          <Card>
-            <h2 className="font-semibold text-[var(--text-primary)] mb-3">Grace Period ({renewals.grace?.length || 0})</h2>
-            <Table columns={columns} data={renewals.grace || []} loading={loading} emptyMessage="No grace period." />
-          </Card>
-          <Card>
-            <h2 className="font-semibold text-[var(--text-primary)] mb-3">Suspended ({renewals.suspended?.length || 0})</h2>
-            <Table columns={columns} data={renewals.suspended || []} loading={loading} emptyMessage="No suspended." />
-          </Card>
-        </div>
-      )}
+      {/* View modal */}
+      <Modal
+        open={viewModal.open}
+        onClose={() => setViewModal({ open: false, client: null })}
+        title="Client Details"
+        size="md"
+      >
+        {viewModal.client && (
+          <div className="space-y-3 text-sm">
+            <div className="bg-[var(--bg-secondary)] rounded-[var(--radius)] p-4 space-y-2">
+              <Row label="Store" value={viewModal.client.name} bold />
+              <Row label="Slug" value={viewModal.client.slug} mono />
+              <Row label="Plan" value={viewModal.client.plan} />
+              <Row label="Status" value={viewModal.client.status} />
+              <Row label="Subscription currency" value={viewModal.client.subscriptionCurrency} />
+              <Row label="Store currency" value={viewModal.client.storeCurrency} />
+              <Row label="Signed up" value={formatDate(viewModal.client.createdAt)} />
+            </div>
 
-      <Modal open={extendModal.open} onClose={() => setExtendModal({ open: false, id: null })} title="Extend Subscription" size="sm">
-        <Input label="Days" type="number" value={extendDays} onChange={e => setExtendDays(+e.target.value)} />
+            <div className="bg-[var(--bg-secondary)] rounded-[var(--radius)] p-4 space-y-2">
+              <Row label="Owner" value={viewModal.client.ownerName} />
+              <Row label="Email" value={viewModal.client.ownerEmail} />
+              <Row label="Phone" value={viewModal.client.ownerPhone || '—'} />
+              <Row label="Country" value={viewModal.client.country || '—'} />
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <Button
+                variant="secondary"
+                onClick={() => setViewModal({ open: false, client: null })}
+              >
+                Close
+              </Button>
+              <Button
+                variant="danger"
+                onClick={() => {
+                  const c = viewModal.client;
+                  setViewModal({ open: false, client: null });
+                  setRejectReason('');
+                  setRejectModal({ open: true, client: c });
+                }}
+              >
+                Reject
+              </Button>
+              <Button
+                variant="success"
+                onClick={() => {
+                  const id = viewModal.client._id || viewModal.client.id;
+                  setViewModal({ open: false, client: null });
+                  handleApprove(id);
+                }}
+              >
+                Approve
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Reject modal */}
+      <Modal
+        open={rejectModal.open}
+        onClose={() => { setRejectModal({ open: false, client: null }); setRejectReason(''); }}
+        title="Reject Signup"
+        size="sm"
+      >
+        <p className="text-sm text-[var(--text-secondary)] mb-4">
+          This will reject <strong>{rejectModal.client?.name}</strong> and trigger a refund.
+        </p>
+        <Input
+          label="Reason (sent to client)"
+          value={rejectReason}
+          onChange={(e) => setRejectReason(e.target.value)}
+          placeholder="Payment could not be verified"
+        />
         <div className="flex justify-end gap-3 mt-6">
-          <Button variant="secondary" onClick={() => setExtendModal({ open: false, id: null })}>Cancel</Button>
-          <Button onClick={handleExtend} loading={actionLoading}>Extend</Button>
+          <Button
+            variant="secondary"
+            onClick={() => { setRejectModal({ open: false, client: null }); setRejectReason(''); }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="danger"
+            onClick={handleReject}
+            loading={actionLoading}
+            disabled={!rejectReason.trim()}
+          >
+            Reject
+          </Button>
         </div>
       </Modal>
+    </div>
+  );
+}
+
+function Row({ label, value, bold, mono }) {
+  return (
+    <div className="flex justify-between gap-4">
+      <span className="text-[var(--text-secondary)] shrink-0">{label}</span>
+      <span
+        className={`text-[var(--text-primary)] text-right break-all ${bold ? 'font-bold' : ''} ${mono ? 'font-mono text-xs' : ''}`}
+      >
+        {value ?? '—'}
+      </span>
     </div>
   );
 }
