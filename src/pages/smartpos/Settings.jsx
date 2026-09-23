@@ -6,6 +6,7 @@ import Input from '../../components/smartpos/ui/Input';
 import Spinner from '../../components/smartpos/ui/Spinner';
 import Toggle from '../../components/smartpos/ui/Toggle';
 import AiTab from './settings/AiTab';
+import MpesaTab from './settings/MpesaTab';
 import DownloadsTab from './settings/DownloadsTab';
 import { useToast } from '../../context/smartpos/ToastContext';
 import {
@@ -19,13 +20,14 @@ const TABS = [
   { key: 'general', label: 'General' },
   { key: 'defaults', label: 'Defaults' },
   { key: 'features', label: 'Features' },
+  { key: 'mpesa', label: 'M-Pesa' },
   { key: 'registration', label: 'Registration' },
   { key: 'limits', label: 'Limits' },
   { key: 'ai', label: 'AI' },
   { key: 'downloads', label: 'Downloads' },
 ];
 
-const SELF_SAVING_TABS = ['ai', 'downloads'];
+const SELF_SAVING_TABS = ['ai', 'downloads', 'mpesa'];
 
 export default function Settings() {
   const toast = useToast();
@@ -195,6 +197,8 @@ export default function Settings() {
           </div>
         </Card>
       )}
+
+      {tab === 'mpesa' && <MpesaTab />}
 
       {tab === 'registration' && (
         <Card title="Registration">

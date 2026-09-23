@@ -24,3 +24,13 @@ export async function updateFeatures(data) {
   const res = await api.patch('/settings/features', data);
   return res.data;
 }
+
+export async function getMpesaConfig() {
+  const res = await api.get('/settings/mpesa');
+  return res.data;
+}
+
+export async function updateMpesaConfig(data) {
+  const res = await api.patch('/settings/mpesa', data);
+  return res.data;
+}
