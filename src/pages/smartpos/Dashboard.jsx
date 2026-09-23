@@ -1,71 +1,212 @@
-import { useEffect, useState } from 'react';
-import { getOverview } from '../../services/smartpos/dashboard';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  HiUsers,
+  HiClock,
+  HiUserGroup,
+  HiSparkles,
+  HiRefresh,
+  HiArrowRight,
+} from 'react-icons/hi';
 import Card from '../../components/smartpos/ui/Card';
+import Table from '../../components/smartpos/ui/Table';
+import Badge from '../../components/smartpos/ui/Badge';
+import Button from '../../components/smartpos/ui/Button';
 import Spinner from '../../components/smartpos/ui/Spinner';
 import StatCard from '../../components/smartpos/ui/StatCard';
-import { HiUsers, HiCheckCircle, HiClock, HiCash, HiArrowRight, HiSparkles } from 'react-icons/hi';
+import { getOverview } from '../../services/smartpos/dashboard';
+import { getPendingList } from '../../services/smartpos/pending';
+import { relativeTime } from '../../utils/smartpos/formatDate';
+import { statusVariant } from '../../utils/smartpos/constants';
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [data, setData] = useState(null);
+  const [overview, setOverview] = useState(null);
+  const [pending, setPending] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    getOverview()
-      .then(res => setData(res?.data || res))
-      .catch(console.error).finally(() => setLoading(false));
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [o, p] = await Promise.all([
+        getOverview(),
+        getPendingList({ page: 1, limit: 5 }),
+      ]);
+      setOverview(o?.data || o);
+      const pendingRes = p?.data || p;
+      setPending(pendingRes?.data || pendingRes || []);
+    } catch (err) {
+      setError(err.message || 'Could not load dashboard');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  if (loading) return <div className="flex justify-center py-20"><Spinner size="lg" /></div>;
+  useEffect(() => {
+    load();
+  }, [load]);
 
-  const d = data || {};
-  const clients = d.clients || {};
-  const revenue = d.revenue || {};
+  if (loading && !overview) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
 
-  const formatMinor = (minor, currency) => {
-    if (minor == null) return '—';
-    return `${currency || ''} ${(minor / 100).toLocaleString()}`;
-  };
+  if (error && !overview) {
+    return (
+      <div className="max-w-lg mx-auto py-20 text-center">
+        <h1 className="text-xl font-semibold text-[var(--text-primary)]">
+          Could not load dashboard
+        </h1>
+        <p className="text-sm text-[var(--text-muted)] mt-2">{error}</p>
+        <Button
+          className="mt-6"
+          icon={<HiRefresh className="w-4 h-4" />}
+          onClick={load}
+          loading={loading}
+        >
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
+  const d = overview || {};
+  const tenants = d.tenants || {};
+
+  const columns = [
+    {
+      key: 'tenant',
+      label: 'Business',
+      render: (row) => (
+        <div>
+          <p className="font-medium text-[var(--text-primary)]">
+            {row.tenant?.name || '—'}
+          </p>
+          <p className="text-xs text-[var(--text-muted)] capitalize">
+            {row.tenant?.businessType}
+          </p>
+        </div>
+      ),
+    },
+    {
+      key: 'owner',
+      label: 'Owner',
+      render: (row) => (
+        <div>
+          <p className="text-sm text-[var(--text-primary)]">
+            {row.owner?.fullName || '—'}
+          </p>
+          <p className="text-xs text-[var(--text-muted)]">{row.owner?.email}</p>
+        </div>
+      ),
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      render: (row) => (
+        <Badge variant={statusVariant(row.status)} dot>
+          {row.status}
+        </Badge>
+      ),
+    },
+    {
+      key: 'registeredAt',
+      label: 'Registered',
+      render: (row) => (
+        <span className="text-sm text-[var(--text-muted)]">
+          {relativeTime(row.registeredAt)}
+        </span>
+      ),
+    },
+    {
+      key: 'actions',
+      label: '',
+      align: 'right',
+      render: () => (
+        <Button size="sm" variant="ghost" onClick={() => navigate('/smartpos/pending')}>
+          Review
+        </Button>
+      ),
+    },
+  ];
 
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Dashboard</h1>
-        <p className="text-sm text-[var(--text-muted)] mt-1">SmartPOS overview</p>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard icon={HiUsers} label="Total Clients" value={clients.total || 0} sub={`${clients.active || 0} active`} color="text-blue-500" />
-        <StatCard icon={HiClock} label="Trials" value={clients.trials || 0} sub={`${clients.renewals || 0} renewals`} color="text-amber-500" />
-        <StatCard icon={HiCheckCircle} label="Pending Approvals" value={clients.pendingApprovals || 0} color="text-orange-500" />
-        <StatCard icon={HiCash} label="Revenue (30d)" value={formatMinor(revenue.last30DaysMinor, revenue.currency)} color="text-emerald-500" />
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <Card><p className="text-sm text-[var(--text-secondary)]">Suspended</p><p className="text-2xl font-bold text-red-500 mt-1">{clients.suspended || 0}</p></Card>
-        <Card><p className="text-sm text-[var(--text-secondary)]">Recent Signups</p><p className="text-2xl font-bold text-emerald-500 mt-1">{clients.recentSignups || 0}</p></Card>
-        <Card><p className="text-sm text-[var(--text-secondary)]">Unread Notifications</p><p className="text-2xl font-bold text-amber-500 mt-1">{d.notifications?.unread || 0}</p></Card>
-      </div>
-
-      <Card>
-        <div className="flex items-center gap-2 mb-4">
-          <HiSparkles className="w-5 h-5 text-blue-500" />
-          <h2 className="font-semibold text-[var(--text-primary)]">Quick Actions</h2>
+    <div className="space-y-6">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Dashboard</h1>
+          <p className="text-sm text-[var(--text-muted)] mt-1">Platform overview</p>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          {[
-            { label: 'Clients', path: '/smartpos/clients' },
-            { label: 'Pending', path: '/smartpos/clients' },
-            { label: 'Payments', path: '/smartpos/payments' },
-            { label: 'Settings', path: '/smartpos/settings' },
-          ].map(link => (
-            <button key={link.path} onClick={() => navigate(link.path)}
-              className="flex items-center justify-between p-3 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--sidebar-hover)] text-sm text-[var(--text-primary)] transition-colors group">
-              {link.label}
-              <HiArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-            </button>
-          ))}
+        <Button
+          variant="outline"
+          size="sm"
+          icon={<HiRefresh className="w-4 h-4" />}
+          onClick={load}
+          loading={loading}
+        >
+          Refresh
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          label="Total clients"
+          value={tenants.total ?? 0}
+          hint={`${tenants.active ?? 0} active`}
+          icon={HiUsers}
+          color="text-blue-500"
+        />
+        <StatCard
+          label="Pending approvals"
+          value={d.pendingQueue ?? 0}
+          hint="Awaiting review"
+          icon={HiClock}
+          color="text-amber-500"
+        />
+        <StatCard
+          label="Total users"
+          value={d.users ?? 0}
+          hint="Active accounts"
+          icon={HiUserGroup}
+          color="text-green-500"
+        />
+        <StatCard
+          label="AI calls (30d)"
+          value={d.aiCalls30d ?? 0}
+          hint="HDM AI"
+          icon={HiSparkles}
+          color="text-purple-500"
+        />
+      </div>
+
+      <Card
+        title="Pending approvals"
+        description="Latest registrations awaiting review"
+        actions={
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => navigate('/smartpos/pending')}
+            icon={<HiArrowRight className="w-4 h-4" />}
+          >
+            View all
+          </Button>
+        }
+        padding={false}
+      >
+        <div className="p-4">
+          <Table
+            columns={columns}
+            data={pending}
+            loading={loading}
+            rowKey={(r) => r._id || r.id}
+            emptyMessage="No pending approvals"
+          />
         </div>
       </Card>
     </div>

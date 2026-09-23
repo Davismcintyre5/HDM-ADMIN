@@ -1,181 +1,256 @@
-import { useState, useEffect } from 'react';
-import { getPaymentMethods, updatePaymentMethod, togglePaymentMethod, testPaymentMethod } from '../../services/smartpos/paymentMethods';
+import { useEffect, useState } from 'react';
+import { HiCog } from 'react-icons/hi';
 import Card from '../../components/smartpos/ui/Card';
 import Badge from '../../components/smartpos/ui/Badge';
 import Button from '../../components/smartpos/ui/Button';
-import Input from '../../components/smartpos/ui/Input';
-import Toggle from '../../components/smartpos/ui/Toggle';
 import Modal from '../../components/smartpos/ui/Modal';
+import Input from '../../components/smartpos/ui/Input';
+import Select from '../../components/smartpos/ui/Select';
 import Spinner from '../../components/smartpos/ui/Spinner';
-import { HiPencil, HiCheckCircle, HiXCircle } from 'react-icons/hi';
+import Toggle from '../../components/smartpos/ui/Toggle';
+import { useToast } from '../../context/smartpos/ToastContext';
+import {
+  getPaymentMethods,
+  updatePaymentMethod,
+} from '../../services/smartpos/paymentMethods';
 
 export default function PaymentMethods() {
+  const toast = useToast();
   const [methods, setMethods] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState(false);
-  const [modal, setModal] = useState({ open: false, method: null });
-  const [form, setForm] = useState({ enabled: true, config: {} });
-  const [testResult, setTestResult] = useState({});
+  const [busyId, setBusyId] = useState(null);
 
-  const fetchMethods = () => {
+  const [editTarget, setEditTarget] = useState(null);
+  const [configDraft, setConfigDraft] = useState({});
+  const [saving, setSaving] = useState(false);
+
+  const load = async () => {
     setLoading(true);
-    getPaymentMethods()
-      .then(res => setMethods(res?.data || []))
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    try {
+      const res = await getPaymentMethods();
+      const data = res?.data || res;
+      setMethods(Array.isArray(data) ? data : data?.data || []);
+    } catch (err) {
+      toast.error(err.message || 'Failed to load');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => { fetchMethods(); }, []);
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const toggle = async (m) => {
+    const id = m._id || m.id;
+    setBusyId(id);
+    try {
+      await updatePaymentMethod(id, { enabled: !m.enabled });
+      toast.success(`${m.label} ${m.enabled ? 'disabled' : 'enabled'}`);
+      load();
+    } catch (err) {
+      toast.error(err.message || 'Failed');
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   const openEdit = (m) => {
-    setForm({ enabled: m.enabled !== false, config: m.config || {} });
-    setModal({ open: true, method: m });
+    setEditTarget(m);
+    setConfigDraft({ ...(m.config || {}) });
   };
 
-  const handleSave = async () => {
-    setActionLoading(true);
-    try {
-      await updatePaymentMethod(modal.method._id || modal.method.id, form);
-      setModal({ open: false, method: null });
-      fetchMethods();
-    } catch (err) { alert(err.message); }
-    setActionLoading(false);
-  };
+  const patchConfig = (key, value) =>
+    setConfigDraft((prev) => ({ ...prev, [key]: value }));
 
-  const handleToggle = async (id) => {
-    setActionLoading(true);
+  const saveConfig = async () => {
+    if (!editTarget) return;
+    setSaving(true);
     try {
-      await togglePaymentMethod(id);
-      setTestResult(prev => { const n = { ...prev }; delete n[id]; return n; });
-      fetchMethods();
-    } catch (err) { alert(err.message); }
-    setActionLoading(false);
-  };
-
-  const handleTest = async (id) => {
-    setActionLoading(true);
-    try {
-      const res = await testPaymentMethod(id);
-      const status = res?.data?.status || res?.status;
-      setTestResult(prev => ({ ...prev, [id]: status }));
+      await updatePaymentMethod(editTarget._id || editTarget.id, {
+        config: configDraft,
+      });
+      toast.success('Config saved');
+      setEditTarget(null);
+      load();
     } catch (err) {
-      setTestResult(prev => ({ ...prev, [id]: 'error' }));
+      toast.error(err.message || 'Failed');
+    } finally {
+      setSaving(false);
     }
-    setActionLoading(false);
   };
 
-  const setConfig = (key, value) =>
-    setForm(prev => ({ ...prev, config: { ...prev.config, [key]: value } }));
+  const renderConfigFields = () => {
+    if (!editTarget) return null;
+    const c = configDraft;
+    const code = editTarget.code || editTarget._id;
 
-  const selectClass = 'w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--input-bg)] text-sm text-[var(--text-primary)]';
-
-  const renderConfigFields = (id) => {
-    switch (id) {
-      case 'mpesa_paybill':
+    switch (code) {
+      case 'stripe':
         return (
-          <div className="space-y-3">
-            <Input
-              label="Business Number"
-              value={form.config.businessNumber || ''}
-              onChange={e => setConfig('businessNumber', e.target.value)}
-              placeholder="247247"
+          <>
+            <Select
+              label="Mode"
+              value={c.mode || 'test'}
+              onChange={(e) => patchConfig('mode', e.target.value)}
+              options={[
+                { value: 'test', label: 'Test' },
+                { value: 'live', label: 'Live' },
+              ]}
             />
             <Input
-              label="Account Prefix"
-              value={form.config.accountPrefix || ''}
-              onChange={e => setConfig('accountPrefix', e.target.value)}
-              placeholder="SMART-"
-            />
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Mode</label>
-              <select
-                value={form.config.mode || 'auto'}
-                onChange={e => setConfig('mode', e.target.value)}
-                className={selectClass}
-              >
-                <option value="auto">Auto (C2B callback)</option>
-                <option value="manual">Manual (admin verifies)</option>
-              </select>
-            </div>
-          </div>
-        );
-
-      case 'mpesa_send':
-        return (
-          <div className="space-y-3">
-            <Input
-              label="Receiving Phone"
-              value={form.config.receivingPhone || ''}
-              onChange={e => setConfig('receivingPhone', e.target.value)}
-              placeholder="0712345678"
+              label="Publishable key"
+              value={c.publishableKey || ''}
+              onChange={(e) => patchConfig('publishableKey', e.target.value)}
+              placeholder="pk_test_..."
             />
             <Input
-              label="Receiving Name"
-              value={form.config.receivingName || ''}
-              onChange={e => setConfig('receivingName', e.target.value)}
-              placeholder="SmartPOS Ltd"
+              label="Secret key"
+              hint="Stored masked"
+              value={c.secretKey || ''}
+              onChange={(e) => patchConfig('secretKey', e.target.value)}
+              placeholder="sk_test_..."
             />
-          </div>
-        );
-
-      case 'mpesa_till':
-        return (
-          <div className="space-y-3">
             <Input
-              label="Till Number"
-              value={form.config.tillNumber || ''}
-              onChange={e => setConfig('tillNumber', e.target.value)}
-              placeholder="5123456"
+              label="Webhook secret"
+              value={c.webhookSecret || ''}
+              onChange={(e) => patchConfig('webhookSecret', e.target.value)}
+              placeholder="whsec_..."
             />
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Mode</label>
-              <select
-                value={form.config.mode || 'auto'}
-                onChange={e => setConfig('mode', e.target.value)}
-                className={selectClass}
-              >
-                <option value="auto">Auto (C2B callback)</option>
-                <option value="manual">Manual (admin verifies)</option>
-              </select>
-            </div>
-          </div>
+          </>
         );
 
       case 'mpesa_stk':
         return (
-          <p className="text-sm text-[var(--text-muted)]">
-            Credentials (Daraja consumer key, secret, passkey, shortcode) are configured on the server via environment variables.
-          </p>
+          <>
+            <Select
+              label="Environment"
+              value={c.env || 'sandbox'}
+              onChange={(e) => patchConfig('env', e.target.value)}
+              options={[
+                { value: 'sandbox', label: 'Sandbox' },
+                { value: 'production', label: 'Production' },
+              ]}
+            />
+            <Input
+              label="Consumer key"
+              value={c.consumerKey || ''}
+              onChange={(e) => patchConfig('consumerKey', e.target.value)}
+            />
+            <Input
+              label="Consumer secret"
+              value={c.consumerSecret || ''}
+              onChange={(e) => patchConfig('consumerSecret', e.target.value)}
+            />
+            <Input
+              label="Shortcode"
+              value={c.shortcode || ''}
+              onChange={(e) => patchConfig('shortcode', e.target.value)}
+            />
+            <Input
+              label="Passkey"
+              value={c.passkey || ''}
+              onChange={(e) => patchConfig('passkey', e.target.value)}
+            />
+            <Input
+              label="Callback URL"
+              value={c.callbackUrl || ''}
+              onChange={(e) => patchConfig('callbackUrl', e.target.value)}
+            />
+          </>
         );
 
-      case 'stripe':
+      case 'cash':
         return (
-          <div>
-            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Mode</label>
-            <select
-              value={form.config.mode || 'test'}
-              onChange={e => setConfig('mode', e.target.value)}
-              className={selectClass}
-            >
-              <option value="test">Test</option>
-              <option value="live">Live</option>
-            </select>
-          </div>
+          <p className="text-sm text-[var(--text-muted)]">No configuration needed.</p>
         );
 
-      case 'paypal':
+      case 'mpesa_send':
         return (
-          <div>
-            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Mode</label>
-            <select
-              value={form.config.mode || 'sandbox'}
-              onChange={e => setConfig('mode', e.target.value)}
-              className={selectClass}
-            >
-              <option value="sandbox">Sandbox</option>
-              <option value="live">Live</option>
-            </select>
-          </div>
+          <>
+            <Input
+              label="Phone number"
+              hint="Safaricom number, e.g. 254712345678"
+              value={c.phone || ''}
+              onChange={(e) => patchConfig('phone', e.target.value)}
+            />
+            <Input
+              label="Display name"
+              value={c.name || ''}
+              onChange={(e) => patchConfig('name', e.target.value)}
+            />
+          </>
+        );
+
+      case 'mpesa_till':
+        return (
+          <>
+            <Input
+              label="Till number"
+              hint="Buy Goods number"
+              value={c.tillNumber || ''}
+              onChange={(e) => patchConfig('tillNumber', e.target.value)}
+            />
+            <Input
+              label="Business name"
+              value={c.name || ''}
+              onChange={(e) => patchConfig('name', e.target.value)}
+            />
+          </>
+        );
+
+      case 'mpesa_paybill':
+        return (
+          <>
+            <Input
+              label="Paybill number"
+              value={c.paybillNumber || ''}
+              onChange={(e) => patchConfig('paybillNumber', e.target.value)}
+            />
+            <Input
+              label="Account number"
+              hint="Use {sale_number} for per-sale accounts"
+              value={c.accountNumber || ''}
+              onChange={(e) => patchConfig('accountNumber', e.target.value)}
+            />
+            <Input
+              label="Business name"
+              value={c.name || ''}
+              onChange={(e) => patchConfig('name', e.target.value)}
+            />
+          </>
+        );
+
+      case 'bank':
+        return (
+          <>
+            <Input
+              label="Bank name"
+              value={c.bankName || ''}
+              onChange={(e) => patchConfig('bankName', e.target.value)}
+            />
+            <Input
+              label="Account name"
+              value={c.accountName || ''}
+              onChange={(e) => patchConfig('accountName', e.target.value)}
+            />
+            <Input
+              label="Account number"
+              value={c.accountNumber || ''}
+              onChange={(e) => patchConfig('accountNumber', e.target.value)}
+            />
+            <Input
+              label="Branch"
+              value={c.branch || ''}
+              onChange={(e) => patchConfig('branch', e.target.value)}
+            />
+            <Input
+              label="SWIFT code"
+              value={c.swift || ''}
+              onChange={(e) => patchConfig('swift', e.target.value)}
+            />
+          </>
         );
 
       default:
@@ -185,51 +260,70 @@ export default function PaymentMethods() {
 
   if (loading) {
     return (
-      <div className="flex justify-center py-20">
+      <div className="flex items-center justify-center py-20">
         <Spinner size="lg" />
       </div>
     );
   }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-6">Payment Methods</h1>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-[var(--text-primary)]">
+          Payment methods
+        </h1>
+        <p className="text-sm text-[var(--text-muted)] mt-1">
+          Platform-wide methods. Clients enable the ones they use.
+        </p>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {methods.map(m => {
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {methods.map((m) => {
           const id = m._id || m.id;
           return (
             <Card key={id}>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-[var(--text-primary)]">{m.name || id}</h3>
-                <Badge variant={m.enabled ? 'success' : 'danger'}>
-                  {m.enabled ? 'Active' : 'Inactive'}
-                </Badge>
-              </div>
-
-              <p className="text-xs text-[var(--text-muted)] mb-3 capitalize">
-                {m.provider} · {m.type}
-              </p>
-
-              {testResult[id] && (
-                <div className="mb-3 flex items-center gap-1 text-xs">
-                  {testResult[id] === 'connected'
-                    ? <HiCheckCircle className="w-3 h-3 text-green-500" />
-                    : <HiXCircle className="w-3 h-3 text-red-500" />}
-                  <span className="text-[var(--text-muted)]">Test: {testResult[id]}</span>
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <p className="font-medium text-[var(--text-primary)]">
+                      {m.label || id}
+                    </p>
+                    <Badge variant={m.mode === 'auto' ? 'info' : 'default'}>
+                      {m.mode}
+                    </Badge>
+                    <Badge variant={m.enabled ? 'success' : 'default'} dot>
+                      {m.enabled ? 'On' : 'Off'}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-[var(--text-muted)] font-mono">
+                    {m.code || id}
+                  </p>
                 </div>
-              )}
 
-              <div className="flex gap-1">
-                <Button size="sm" variant="secondary" onClick={() => openEdit(m)}>
-                  <HiPencil className="w-3 h-3" />
-                </Button>
-                <Button size="sm" variant="secondary" onClick={() => handleToggle(id)}>
-                  {m.enabled ? 'Disable' : 'Enable'}
-                </Button>
-                <Button size="sm" variant="info" onClick={() => handleTest(id)} loading={actionLoading}>
-                  Test
-                </Button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => openEdit(m)}
+                    className="p-2 rounded-lg hover:bg-[var(--sidebar-hover)] text-[var(--text-secondary)]"
+                    type="button"
+                    title="Configure"
+                  >
+                    <HiCog className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => toggle(m)}
+                    disabled={busyId === id}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition disabled:opacity-50 ${
+                      m.enabled ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
+                    }`}
+                    type="button"
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+                        m.enabled ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
               </div>
             </Card>
           );
@@ -237,30 +331,22 @@ export default function PaymentMethods() {
       </div>
 
       <Modal
-        open={modal.open}
-        onClose={() => setModal({ open: false, method: null })}
-        title={`Edit ${modal.method?.name || modal.method?._id || ''}`}
-        size="md"
-      >
-        <div className="space-y-4">
-          <Toggle
-            label="Enabled"
-            checked={form.enabled}
-            onChange={v => setForm({ ...form, enabled: v })}
-          />
-
-          <div className="border-t border-[var(--border-color)] pt-4">
-            <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">Configuration</h3>
-            {renderConfigFields(modal.method?._id || modal.method?.id)}
-          </div>
-
-          <div className="flex justify-end gap-3 pt-2">
-            <Button variant="secondary" onClick={() => setModal({ open: false, method: null })}>
+        open={!!editTarget}
+        onClose={() => setEditTarget(null)}
+        title={`Configure ${editTarget?.label || ''}`}
+        size="lg"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setEditTarget(null)}>
               Cancel
             </Button>
-            <Button onClick={handleSave} loading={actionLoading}>Save</Button>
-          </div>
-        </div>
+            <Button onClick={saveConfig} loading={saving}>
+              Save config
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">{renderConfigFields()}</div>
       </Modal>
     </div>
   );

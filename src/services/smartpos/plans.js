@@ -1,7 +1,7 @@
 import api from './api';
 
-export async function getPlans(params) {
-  const res = await api.get('/plans', { params });
+export async function getPlans() {
+  const res = await api.get('/plans');
   return res.data;
 }
 
@@ -10,17 +10,22 @@ export async function getPlan(id) {
   return res.data;
 }
 
+export async function createPlan(data) {
+  const res = await api.post('/plans', data);
+  return res.data;
+}
+
 export async function updatePlan(id, data) {
-  const res = await api.put(`/plans/${id}`, data);
+  const res = await api.patch(`/plans/${id}`, data);
   return res.data;
 }
 
-export async function togglePlan(id) {
-  const res = await api.post(`/plans/${id}/toggle`);
+export async function deactivatePlan(id) {
+  const res = await api.post(`/plans/${id}/deactivate`);
   return res.data;
 }
 
-export async function syncStripePlan(id) {
-  const res = await api.post(`/plans/${id}/sync-stripe`);
+export async function deletePlan(id) {
+  const res = await api.delete(`/plans/${id}`);
   return res.data;
 }

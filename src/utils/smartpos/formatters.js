@@ -1,33 +1,68 @@
-const EXCHANGE_RATES = {
-  USD: 1,
-  EUR: 0.92,
-  GBP: 0.79,
-  KES: 130,
-  NGN: 1550,
-  ZAR: 18.5,
-  GHS: 15.5,
-  TZS: 2650,
-  UGX: 3750,
-};
-
-const NO_DECIMAL_CURRENCIES = ['KES', 'UGX', 'TZS', 'NGN', 'GHS'];
-
-export function formatCurrency(amount, currency = 'USD') {
-  if (amount === null || amount === undefined) return '—';
-  const num = Number(amount);
-  const rate = EXCHANGE_RATES[currency] || 1;
-  const converted = num * rate;
-
-  if (NO_DECIMAL_CURRENCIES.includes(currency)) {
-    return `${currency} ${Math.round(converted).toLocaleString()}`;
-  }
-
-  return `${currency} ${converted.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+export function capitalize(s) {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
 }
 
-export function formatBytes(bytes) {
-  if (!bytes) return '0 B';
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${sizes[i]}`;
+export function titleCase(s) {
+  return String(s || '')
+    .replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+}
+
+export function truncate(s, len, suffix = '…') {
+  const str = String(s || '');
+  return str.length > len ? str.slice(0, len) + suffix : str;
+}
+
+export function initials(name) {
+  return String(name || '')
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0].toUpperCase())
+    .join('');
+}
+
+export function maskEmail(email) {
+  const [user, domain] = String(email || '').split('@');
+  if (!domain) return '[redacted]';
+  return `${user.slice(0, 2)}***@${domain}`;
+}
+
+export function maskPhone(phone) {
+  const s = String(phone || '');
+  if (s.length < 6) return '[redacted]';
+  return `${s.slice(0, 4)}***${s.slice(-2)}`;
+}
+
+export function bytes(n) {
+  const num = Number(n || 0);
+  if (num < 1024) return `${num} B`;
+  if (num < 1024 * 1024) return `${(num / 1024).toFixed(1)} KB`;
+  if (num < 1024 * 1024 * 1024) return `${(num / 1024 / 1024).toFixed(2)} MB`;
+  return `${(num / 1024 / 1024 / 1024).toFixed(2)} GB`;
+}
+
+export function number(n, locale = 'en-KE') {
+  return new Intl.NumberFormat(locale).format(Number(n || 0));
+}
+
+export function percent(n, digits = 1) {
+  return `${Number(n || 0).toFixed(digits)}%`;
+}
+
+export function pluralize(count, singular, plural) {
+  return `${count} ${count === 1 ? singular : plural || `${singular}s`}`;
+}
+
+export function randomId() {
+  return Math.random().toString(36).slice(2) + Date.now().toString(36);
+}
+
+// "mobile_money" → "Mobile money"
+export function humanizeKey(key) {
+  return String(key || '')
+    .replace(/[_-]/g, ' ')
+    .replace(/([A-Z])/g, ' $1')
+    .toLowerCase()
+    .replace(/^./, (c) => c.toUpperCase())
+    .trim();
 }

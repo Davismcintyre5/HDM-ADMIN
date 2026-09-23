@@ -5,7 +5,7 @@ export async function getAuditLogs(params) {
   return res.data;
 }
 
-export async function getAuditByTarget(targetId) {
-  const res = await api.get(`/audit/target/${targetId}`);
+export async function getAuditByClient(clientId, params) {
+  const res = await api.get(`/audit/tenant/${clientId}`, { params });
   return res.data;
 }

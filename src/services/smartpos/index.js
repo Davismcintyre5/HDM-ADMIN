@@ -1,17 +1,14 @@
-export { default as api, setAuthToken, setupInterceptors } from './api';
+export { default as api, setAuthToken, setupInterceptors, normalizeError } from './api';
+
 export * from './auth';
 export * from './dashboard';
 export * from './clients';
-export * from './subscriptions';
-export * from './payments';
+export * from './pending';
 export * from './plans';
 export * from './paymentMethods';
-export * from './analytics';
-export * from './revenue';
-export * from './notifications';
-export * from './admins';
 export * from './settings';
-export * from './audit';
-export * from './backups';
 export * from './legal';
+export * from './backups';
+export * from './aiUsage';
+export * from './audit';
 export * from './health';

@@ -1,110 +1,258 @@
 import { useEffect, useState } from 'react';
-import { getSettings, updateSettings } from '../../services/smartpos/settings';
+import { HiSave } from 'react-icons/hi';
+import Card from '../../components/smartpos/ui/Card';
+import Button from '../../components/smartpos/ui/Button';
+import Input from '../../components/smartpos/ui/Input';
 import Spinner from '../../components/smartpos/ui/Spinner';
+import Toggle from '../../components/smartpos/ui/Toggle';
+import AiTab from './settings/AiTab';
+import DownloadsTab from './settings/DownloadsTab';
+import { useToast } from '../../context/smartpos/ToastContext';
 import {
-  HiCog, HiColorSwatch, HiCash, HiMail, HiDeviceMobile,
-  HiSwitchHorizontal, HiShieldCheck, HiRefresh, HiUserGroup, HiDownload
-} from 'react-icons/hi';
-import GeneralSettings from './settings/GeneralSettings';
-import BrandingSettings from './settings/BrandingSettings';
-import TaxSettings from './settings/TaxSettings';
-import EmailSettings from './settings/EmailSettings';
-import SmsSettings from './settings/SmsSettings';
-import FeatureFlagsSettings from './settings/FeatureFlagsSettings';
-import SecuritySettings from './settings/SecuritySettings';
-import SyncSettings from './settings/SyncSettings';
-import OnboardingSettings from './settings/OnboardingSettings';
-import CurrenciesSettings from './settings/CurrenciesSettings';
-import DownloadsSettings from './settings/DownloadsSettings';
+  getSettings,
+  updateSettings,
+  getFeatures,
+  updateFeatures,
+} from '../../services/smartpos/settings';
 
 const TABS = [
-  { key: 'general', label: 'General', icon: HiCog },
-  { key: 'branding', label: 'Branding', icon: HiColorSwatch },
-  { key: 'currencies', label: 'Currencies', icon: HiCash },
-  { key: 'tax', label: 'Tax', icon: HiCash },
-  { key: 'email', label: 'Email', icon: HiMail },
-  { key: 'sms', label: 'SMS', icon: HiDeviceMobile },
-  { key: 'flags', label: 'Feature Flags', icon: HiSwitchHorizontal },
-  { key: 'security', label: 'Security', icon: HiShieldCheck },
-  { key: 'sync', label: 'Sync', icon: HiRefresh },
-  { key: 'onboarding', label: 'Onboarding', icon: HiUserGroup },
-  { key: 'downloads', label: 'Downloads', icon: HiDownload }
+  { key: 'general', label: 'General' },
+  { key: 'defaults', label: 'Defaults' },
+  { key: 'features', label: 'Features' },
+  { key: 'registration', label: 'Registration' },
+  { key: 'limits', label: 'Limits' },
+  { key: 'ai', label: 'AI' },
+  { key: 'downloads', label: 'Downloads' },
 ];
 
+const SELF_SAVING_TABS = ['ai', 'downloads'];
+
 export default function Settings() {
+  const toast = useToast();
+  const [tab, setTab] = useState('general');
   const [settings, setSettings] = useState({});
+  const [features, setFeatures] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('general');
   const [saving, setSaving] = useState(false);
-  const [success, setSuccess] = useState('');
 
   useEffect(() => {
-    setLoading(true);
-    getSettings()
-      .then((res) => setSettings(res?.data || res || {}))
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    let cancelled = false;
+    Promise.all([getSettings(), getFeatures()])
+      .then(([s, f]) => {
+        if (cancelled) return;
+        setSettings(s?.data || s || {});
+        setFeatures(f?.data || f || null);
+      })
+      .catch((err) => toast.error(err.message || 'Failed to load'))
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleSave = async (data) => {
+  const patch = (key, value) => setSettings((prev) => ({ ...prev, [key]: value }));
+
+  const save = async () => {
     setSaving(true);
-    setSuccess('');
     try {
-      await updateSettings(data);
-      setSettings((prev) => ({ ...prev, ...data }));
-      setSuccess('Saved!');
-      setTimeout(() => setSuccess(''), 2000);
-    } catch (e) {
-      alert(e.response?.data?.message || e.message);
+      await updateSettings(settings);
+      if (features) await updateFeatures(features);
+      toast.success('Settings saved');
+    } catch (err) {
+      toast.error(err.message || 'Failed to save');
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
   if (loading) {
-    return <div className="flex justify-center py-20"><Spinner size="lg" /></div>;
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Spinner size="lg" />
+      </div>
+    );
   }
 
+  const showGlobalSave = !SELF_SAVING_TABS.includes(tab);
+
   return (
-    <div className="max-w-4xl">
-      <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-6">Settings</h1>
-
-      {success && (
-        <div className="bg-[var(--accent)]/10 text-[var(--accent)] p-3 rounded-[var(--radius)] mb-4 text-sm">
-          {success}
+    <div className="space-y-6">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Settings</h1>
+          <p className="text-sm text-[var(--text-muted)] mt-1">
+            Platform-wide configuration
+          </p>
         </div>
-      )}
+        {showGlobalSave && (
+          <Button
+            icon={<HiSave className="w-4 h-4" />}
+            onClick={save}
+            loading={saving}
+          >
+            Save changes
+          </Button>
+        )}
+      </div>
 
-      <div className="flex gap-0 border-b border-[var(--border-color)] mb-6 overflow-x-auto">
-        {TABS.map((tab) => (
+      <div className="flex gap-1 border-b border-[var(--border-color)] overflow-x-auto">
+        {TABS.map((t) => (
           <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-              activeTab === tab.key
-                ? 'border-[var(--accent)] text-[var(--accent)]'
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={`px-4 py-2 text-sm font-medium whitespace-nowrap border-b-2 transition ${
+              tab === t.key
+                ? 'border-blue-600 text-blue-700 dark:text-blue-400'
                 : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
+            type="button"
           >
-            <tab.icon className="w-4 h-4" /> {tab.label}
+            {t.label}
           </button>
         ))}
       </div>
 
-      {activeTab === 'general' && (
-        <GeneralSettings settings={settings} setSettings={setSettings} onSave={handleSave} saving={saving} />
+      {tab === 'general' && (
+        <Card title="General">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              label="Platform name"
+              value={settings.platform_name || ''}
+              onChange={(e) => patch('platform_name', e.target.value)}
+            />
+            <Input
+              label="Website"
+              value={settings.platform_website || ''}
+              onChange={(e) => patch('platform_website', e.target.value)}
+            />
+            <Input
+              label="Support email"
+              type="email"
+              value={settings.support_email || ''}
+              onChange={(e) => patch('support_email', e.target.value)}
+            />
+            <Input
+              label="Support phone"
+              value={settings.support_phone || ''}
+              onChange={(e) => patch('support_phone', e.target.value)}
+            />
+            <Input
+              label="Logo URL"
+              className="md:col-span-2"
+              value={settings.platform_logo_url || ''}
+              onChange={(e) => patch('platform_logo_url', e.target.value)}
+            />
+          </div>
+        </Card>
       )}
-      {activeTab === 'branding' && (
-        <BrandingSettings settings={settings} setSettings={setSettings} onSave={handleSave} saving={saving} />
+
+      {tab === 'defaults' && (
+        <Card title="Defaults for new clients">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              label="Default currency"
+              value={settings.default_currency || ''}
+              onChange={(e) => patch('default_currency', e.target.value)}
+            />
+            <Input
+              label="Default country code"
+              value={settings.default_country || ''}
+              onChange={(e) => patch('default_country', e.target.value)}
+            />
+            <Input
+              label="Default tax rate (%)"
+              type="number"
+              value={settings.default_tax_rate ?? ''}
+              onChange={(e) => patch('default_tax_rate', Number(e.target.value))}
+            />
+            <Input
+              label="Minimum password length"
+              type="number"
+              value={settings.min_password_length ?? 8}
+              onChange={(e) => patch('min_password_length', Number(e.target.value))}
+            />
+          </div>
+        </Card>
       )}
-      {activeTab === 'currencies' && <CurrenciesSettings />}
-      {activeTab === 'tax' && <TaxSettings />}
-      {activeTab === 'email' && <EmailSettings />}
-      {activeTab === 'sms' && <SmsSettings />}
-      {activeTab === 'flags' && <FeatureFlagsSettings />}
-      {activeTab === 'security' && <SecuritySettings />}
-      {activeTab === 'sync' && <SyncSettings />}
-      {activeTab === 'onboarding' && <OnboardingSettings />}
-      {activeTab === 'downloads' && <DownloadsSettings />}
+
+      {tab === 'features' && features && (
+        <Card title="Feature flags">
+          <div className="space-y-1">
+            {Object.entries(features).map(([key, val]) => (
+              <Toggle
+                key={key}
+                label={key
+                  .replace('feature_', '')
+                  .replace(/_/g, ' ')
+                  .replace(/\b\w/g, (c) => c.toUpperCase())}
+                checked={!!val}
+                onChange={(v) => setFeatures({ ...features, [key]: v })}
+              />
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {tab === 'registration' && (
+        <Card title="Registration">
+          <div className="space-y-1">
+            <Toggle
+              label="Open registration"
+              description="Allow anyone to sign up"
+              checked={settings.registration_open !== false}
+              onChange={(v) => patch('registration_open', v)}
+            />
+            <Toggle
+              label="Maintenance mode"
+              description="Block all client and public API access"
+              checked={settings.maintenance_mode === true}
+              onChange={(v) => patch('maintenance_mode', v)}
+            />
+          </div>
+        </Card>
+      )}
+
+      {tab === 'limits' && (
+        <Card title="Cashier and user limits">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              label="Max owners per client"
+              type="number"
+              value={settings.max_owners_per_tenant ?? 3}
+              onChange={(e) => patch('max_owners_per_tenant', Number(e.target.value))}
+            />
+            <Input
+              label="Cashier discount limit (%)"
+              type="number"
+              value={settings.cashier_discount_limit ?? 10}
+              onChange={(e) =>
+                patch('cashier_discount_limit', Number(e.target.value))
+              }
+            />
+            <Input
+              label="Cashier refund limit"
+              type="number"
+              value={settings.cashier_refund_limit ?? 0}
+              onChange={(e) =>
+                patch('cashier_refund_limit', Number(e.target.value))
+              }
+            />
+            <div className="pt-6">
+              <Toggle
+                label="Manager can invite cashier"
+                checked={settings.manager_can_invite_cashier === true}
+                onChange={(v) => patch('manager_can_invite_cashier', v)}
+              />
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {tab === 'ai' && <AiTab />}
+      {tab === 'downloads' && <DownloadsTab />}
     </div>
   );
 }

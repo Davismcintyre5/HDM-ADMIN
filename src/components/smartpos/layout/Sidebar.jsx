@@ -1,32 +1,43 @@
 import { NavLink, Link } from 'react-router-dom';
 import { useThemeSidebar } from '../../../context/smartpos/SidebarContext';
 import {
-  HiHome, HiUsers, HiCreditCard, HiCube, HiTemplate, HiCash,
-  HiChartBar, HiBell, HiShieldCheck, HiDatabase,
-  HiScale, HiCog, HiHeart, HiChevronLeft, HiChevronRight, HiX,
-  HiSparkles
+  HiHome,
+  HiUsers,
+  HiClock,
+  HiCube,
+  HiCreditCard,
+  HiCog,
+  HiDocumentText,
+  HiDatabase,
+  HiSparkles,
+  HiShieldCheck,
+  HiHeart,
+  HiChevronLeft,
+  HiChevronRight,
+  HiX,
 } from 'react-icons/hi';
 
-const navItems = [
+const NAV = [
   { to: '/smartpos', icon: HiHome, label: 'Dashboard', end: true },
   { to: '/smartpos/clients', icon: HiUsers, label: 'Clients' },
-  { to: '/smartpos/subscriptions', icon: HiCreditCard, label: 'Subscriptions' },
-  { to: '/smartpos/payments', icon: HiCash, label: 'Payments' },
+  { to: '/smartpos/pending', icon: HiClock, label: 'Pending' },
   { to: '/smartpos/plans', icon: HiCube, label: 'Plans' },
-  { to: '/smartpos/payment-methods', icon: HiTemplate, label: 'Payment Methods' },
-  { to: '/smartpos/ai', icon: HiSparkles, label: 'AI' },
-  { to: '/smartpos/analytics', icon: HiChartBar, label: 'Analytics' },
-  { to: '/smartpos/revenue', icon: HiCash, label: 'Revenue' },
-  { to: '/smartpos/notifications', icon: HiBell, label: 'Notifications' },
-  { to: '/smartpos/admins', icon: HiShieldCheck, label: 'Admins' },
+  { to: '/smartpos/payment-methods', icon: HiCreditCard, label: 'Payments' },
+  { to: '/smartpos/settings', icon: HiCog, label: 'Settings' },
+  { to: '/smartpos/legal', icon: HiDocumentText, label: 'Legal' },
   { to: '/smartpos/backups', icon: HiDatabase, label: 'Backups' },
-  { to: '/smartpos/legal', icon: HiScale, label: 'Legal' },
+  { to: '/smartpos/ai-usage', icon: HiSparkles, label: 'AI Usage' },
+  { to: '/smartpos/audit', icon: HiShieldCheck, label: 'Audit' },
   { to: '/smartpos/health', icon: HiHeart, label: 'Health' },
-  { to: '/smartpos/settings', icon: HiCog, label: 'Settings' }
 ];
 
 export default function Sidebar() {
-  const { sidebarOpen, toggleSidebar, mobileSidebarOpen, setMobileSidebarOpen } = useThemeSidebar();
+  const {
+    sidebarOpen,
+    toggleSidebar,
+    mobileSidebarOpen,
+    setMobileSidebarOpen,
+  } = useThemeSidebar();
 
   return (
     <>
@@ -43,16 +54,26 @@ export default function Sidebar() {
         } ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       >
         <div className="h-16 flex items-center justify-between px-4 border-b border-[var(--border-color)] bg-blue-600">
-          {sidebarOpen && <span className="text-lg font-bold text-white">🛒 SmartPOS</span>}
+          {sidebarOpen && (
+            <span className="text-lg font-bold text-white">SmartPOS</span>
+          )}
           <button
             onClick={toggleSidebar}
             className="p-1.5 rounded-lg hover:bg-white/20 text-white hidden lg:block"
+            type="button"
+            aria-label="Toggle sidebar"
           >
-            {sidebarOpen ? <HiChevronLeft className="w-5 h-5" /> : <HiChevronRight className="w-5 h-5" />}
+            {sidebarOpen ? (
+              <HiChevronLeft className="w-5 h-5" />
+            ) : (
+              <HiChevronRight className="w-5 h-5" />
+            )}
           </button>
           <button
             onClick={() => setMobileSidebarOpen(false)}
             className="p-1.5 rounded-lg hover:bg-white/20 text-white lg:hidden"
+            type="button"
+            aria-label="Close menu"
           >
             <HiX className="w-5 h-5" />
           </button>
@@ -60,25 +81,28 @@ export default function Sidebar() {
 
         <nav className="flex-1 overflow-y-auto py-4 px-3">
           <ul className="space-y-1">
-            {navItems.map((item) => (
-              <li key={item.to}>
-                <NavLink
-                  to={item.to}
-                  end={item.end}
-                  onClick={() => setMobileSidebarOpen(false)}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                        : 'text-[var(--text-secondary)] hover:bg-[var(--sidebar-hover)]'
-                    }`
-                  }
-                >
-                  <item.icon className="w-5 h-5 flex-shrink-0" />
-                  {sidebarOpen && <span>{item.label}</span>}
-                </NavLink>
-              </li>
-            ))}
+            {NAV.map((item) => {
+              const Icon = item.icon;
+              return (
+                <li key={item.to}>
+                  <NavLink
+                    to={item.to}
+                    end={item.end}
+                    onClick={() => setMobileSidebarOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                        isActive
+                          ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                          : 'text-[var(--text-secondary)] hover:bg-[var(--sidebar-hover)]'
+                      }`
+                    }
+                  >
+                    <Icon className="w-5 h-5 flex-shrink-0" />
+                    {sidebarOpen && <span>{item.label}</span>}
+                  </NavLink>
+                </li>
+              );
+            })}
           </ul>
         </nav>
 
@@ -86,7 +110,8 @@ export default function Sidebar() {
           to="/"
           className="mx-3 mb-2 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-[var(--text-secondary)] hover:bg-[var(--sidebar-hover)] transition-colors"
         >
-          <HiHome className="w-4 h-4 flex-shrink-0" /> {sidebarOpen && 'Return Home'}
+          <HiHome className="w-4 h-4 flex-shrink-0" />
+          {sidebarOpen && 'Return Home'}
         </Link>
 
         {sidebarOpen && (
