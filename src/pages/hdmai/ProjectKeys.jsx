@@ -11,7 +11,7 @@ import Pagination from '../../components/hdmai/ui/Pagination';
 import { formatDate } from '../../utils/hdmai/formatDate';
 import { HiPlus, HiClipboardCopy, HiTrash, HiUser, HiServer } from 'react-icons/hi';
 
-const PROJECTS = ['general', 'erp', 'smartpos', 'spark', 'vibe', 'vault', 'widget'];
+const PROJECTS = ['chat', 'completion'];
 const TABS = [
   { key: 'user', label: 'User Keys', icon: HiUser },
   { key: 'system', label: 'System Keys', icon: HiServer },
@@ -29,7 +29,7 @@ export default function ProjectKeys() {
 
   // Create modal
   const [createModal, setCreateModal] = useState(false);
-  const [createForm, setCreateForm] = useState({ userId: '', project: 'general', name: '' });
+  const [createForm, setCreateForm] = useState({ userId: '', project: 'chat', name: '' });
 
   // Reveal key
   const [revealModal, setRevealModal] = useState({ open: false, key: '' });
@@ -67,19 +67,19 @@ export default function ProjectKeys() {
       const res = await createProjectKey(createForm);
       const d = res?.data || res;
       setCreateModal(false);
-      setCreateForm({ userId: '', project: 'general', name: '' });
+      setCreateForm({ userId: '', project: 'chat', name: '' });
       setRevealModal({ open: true, key: d.key || d.apiKey || 'Key created' });
       fetchKeys();
     } catch (err) { alert(err.response?.data?.message || err.message); }
     setActionLoading(false);
   };
 
-const handleDelete = async () => {
-  setActionLoading(true);
-  try { await revokeProjectKey(confirm.id); fetchKeys(); } catch (err) { alert(err.message); }
-  setActionLoading(false);
-  setConfirm({ open: false, id: null, name: '' });
-};
+  const handleDelete = async () => {
+    setActionLoading(true);
+    try { await revokeProjectKey(confirm.id); fetchKeys(); } catch (err) { alert(err.message); }
+    setActionLoading(false);
+    setConfirm({ open: false, id: null, name: '' });
+  };
 
   const copyKey = () => {
     navigator.clipboard.writeText(revealModal.key);

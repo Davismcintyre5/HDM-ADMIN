@@ -8,21 +8,21 @@ import Spinner from '../../components/hdmai/ui/Spinner';
 const PROVIDERS = [
   {
     key: 'groq',
-    name: 'Groq',
+    name: 'HDM Nova',
     modelLabel: 'GPT-OSS 20B',
     modelValue: 'openai/gpt-oss-20b',
-    icon: '🦎',
-    bg: 'bg-gradient-to-br from-orange-400 to-rose-500',
-    activeBg: 'bg-orange-50 dark:bg-orange-900/30',
-    activeBorder: 'border-orange-500',
-    activeText: 'text-orange-700 dark:text-orange-400',
-    activeBadge: 'text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/40',
-    dot: 'bg-orange-500',
-    shadow: 'shadow-orange-500/20',
+    icon: '⚡',
+    bg: 'bg-gradient-to-br from-fuchsia-500 to-purple-600',
+    activeBg: 'bg-fuchsia-50 dark:bg-fuchsia-900/30',
+    activeBorder: 'border-fuchsia-500',
+    activeText: 'text-fuchsia-700 dark:text-fuchsia-400',
+    activeBadge: 'text-fuchsia-600 dark:text-fuchsia-400 bg-fuchsia-100 dark:bg-fuchsia-900/40',
+    dot: 'bg-fuchsia-500',
+    shadow: 'shadow-fuchsia-500/20',
   },
   {
     key: 'gemini',
-    name: 'Gemini',
+    name: 'HDM Nova (Alt)',
     modelLabel: 'Gemini 2.5 Flash',
     modelValue: 'gemini-2.5-flash',
     icon: '🌐',
@@ -38,13 +38,12 @@ const PROVIDERS = [
 
 const GEMINI_MODELS = [
   { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (fast)' },
-  { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro (powerful)' },
 ];
 
 const GROQ_MODELS = [
-  { value: 'openai/gpt-oss-20b', label: 'GPT-OSS 20B' },
-  { value: 'llama-3.3-70b-versatile', label: 'Llama 3.3 70B' },
-  { value: 'deepseek-r1-distill-llama-70b', label: 'DeepSeek R1 70B' },
+  { value: 'openai/gpt-oss-20b', label: 'GPT-OSS 20B (fast)' },
+  { value: 'openai/gpt-oss-120b', label: 'GPT-OSS 120B (powerful)' },
+  { value: 'qwen/qwen3.6-27b', label: 'Qwen 3.6 27B' },
 ];
 
 export default function Settings() {
@@ -149,6 +148,7 @@ export default function Settings() {
 
           {/* Provider Cards */}
           <p className="text-sm font-medium text-[var(--text-secondary)] mb-3">Select Provider</p>
+          <p className="text-xs text-[var(--text-muted)] mb-3">This affects the Chat service only.</p>
           <div className="grid grid-cols-2 gap-3 mb-6">
             {PROVIDERS.map(p => {
               const isActive = config.defaultProvider === p.key;

@@ -13,13 +13,13 @@ function formatUptime(seconds) {
   const h = Math.floor((seconds % 86400) / 3600);
   const m = Math.floor((seconds % 3600) / 60);
   const s = Math.floor(seconds % 60);
-  
+
   const parts = [];
   if (d > 0) parts.push(`${d}d`);
   if (h > 0) parts.push(`${h}h`);
   if (m > 0) parts.push(`${m}m`);
   if (s > 0 && parts.length < 3) parts.push(`${s}s`);
-  
+
   return parts.join(' ') || '0s';
 }
 
@@ -111,11 +111,11 @@ export default function Health() {
       fields: [{ label: 'Status', value: health?.redis || 'disabled', badge: true }],
     },
     {
-      key: 'groq_api', title: 'Groq API', icon: () => <span className="text-2xl">🦙</span>, color: 'text-orange-500',
+      key: 'groq_api', title: 'HDM Nova', icon: () => <span className="text-2xl">⚡</span>, color: 'text-fuchsia-500',
       fields: [{ label: 'Status', value: health?.groq_api || 'not configured', badge: true }],
     },
     {
-      key: 'gemini_api', title: 'Gemini API', icon: () => <span className="text-2xl">🌐</span>, color: 'text-blue-500',
+      key: 'gemini_api', title: 'HDM Nova (Alt)', icon: () => <span className="text-2xl">🌐</span>, color: 'text-blue-500',
       fields: [{ label: 'Status', value: health?.gemini_api || 'not configured', badge: true }],
     },
     {

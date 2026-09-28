@@ -32,21 +32,21 @@ export default function Usage() {
     return () => clearInterval(interval);
   }, []);
 
- const handleSwitchProvider = async (provider) => {
-  setSavingProvider(true);
-  try {
-    const p = provider === 'groq' 
-      ? { defaultProvider: 'groq', defaultModel: 'openai/gpt-oss-20b' }
-      : { defaultProvider: 'gemini', defaultModel: 'gemini-2.5-flash' };
-    await updateAIConfig({
-      ...aiConfig,
-      ...p,
-    });
-    const a = await getAIConfig();
-    setAiConfig(a?.data || a);
-  } catch (err) { alert(err.response?.data?.message || err.message); }
-  setSavingProvider(false);
-};
+  const handleSwitchProvider = async (provider) => {
+    setSavingProvider(true);
+    try {
+      const p = provider === 'groq'
+        ? { defaultProvider: 'groq', defaultModel: 'openai/gpt-oss-20b' }
+        : { defaultProvider: 'gemini', defaultModel: 'gemini-2.5-flash' };
+      await updateAIConfig({
+        ...aiConfig,
+        ...p,
+      });
+      const a = await getAIConfig();
+      setAiConfig(a?.data || a);
+    } catch (err) { alert(err.response?.data?.message || err.message); }
+    setSavingProvider(false);
+  };
 
   const getBarColor = (percent) => {
     if (percent > 80) return 'bg-red-500';
@@ -56,8 +56,8 @@ export default function Usage() {
 
   const getModelLabel = () => {
     if (!aiConfig) return '';
-    if (aiConfig.defaultProvider === 'groq') return `Groq (${aiConfig.defaultModel || 'GPT-OSS 20B'})`;
-    if (aiConfig.defaultProvider === 'gemini') return `Gemini (${aiConfig.defaultModel || 'Flash/Pro'})`;
+    if (aiConfig.defaultProvider === 'groq') return `HDM Nova (${aiConfig.defaultModel || 'GPT-OSS 20B'})`;
+    if (aiConfig.defaultProvider === 'gemini') return `HDM Nova Alt (${aiConfig.defaultModel || 'Gemini 2.5 Flash'})`;
     return aiConfig.defaultProvider;
   };
 
@@ -79,8 +79,8 @@ export default function Usage() {
               </p>
             </div>
             <div className="flex gap-2">
-              <Button size="sm" variant={aiConfig.defaultProvider === 'groq' ? 'primary' : 'secondary'} onClick={() => handleSwitchProvider('groq')} loading={savingProvider}>Groq</Button>
-              <Button size="sm" variant={aiConfig.defaultProvider === 'gemini' ? 'primary' : 'secondary'} onClick={() => handleSwitchProvider('gemini')} loading={savingProvider}>Gemini</Button>
+              <Button size="sm" variant={aiConfig.defaultProvider === 'groq' ? 'primary' : 'secondary'} onClick={() => handleSwitchProvider('groq')} loading={savingProvider}>HDM Nova</Button>
+              <Button size="sm" variant={aiConfig.defaultProvider === 'gemini' ? 'primary' : 'secondary'} onClick={() => handleSwitchProvider('gemini')} loading={savingProvider}>HDM Nova Alt</Button>
             </div>
           </div>
         </Card>

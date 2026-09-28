@@ -10,8 +10,23 @@ import ConfirmDialog from '../../components/hdmai/ui/ConfirmDialog';
 import Spinner from '../../components/hdmai/ui/Spinner';
 import { HiPlus, HiPencil, HiTrash } from 'react-icons/hi';
 
-const MODULES = ['general', 'smartpos', 'spark', 'vibe', 'vault', 'erp', 'widget'];
-const PROVIDERS = ['groq', 'gemini'];
+const MODULES = ['chat', 'learn', 'completion'];
+const PROVIDERS = ['groq', 'gemini', 'groq_backup'];
+
+const GROQ_MODELS = [
+  { value: 'openai/gpt-oss-20b', label: 'GPT-OSS 20B' },
+  { value: 'openai/gpt-oss-120b', label: 'GPT-OSS 120B' },
+  { value: 'qwen/qwen3.6-27b', label: 'Qwen 3.6 27B' },
+];
+
+const GEMINI_MODELS = [
+  { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
+];
+
+const getModels = (provider) =>
+  provider === 'gemini' ? GEMINI_MODELS : GROQ_MODELS;
+
+const DEFAULT_MODEL = 'openai/gpt-oss-20b';
 
 export default function AIKeys() {
   const [keys, setKeys] = useState([]);
@@ -19,24 +34,31 @@ export default function AIKeys() {
   const [modal, setModal] = useState({ open: false, mode: 'create', data: null });
   const [confirm, setConfirm] = useState({ open: false, id: null });
   const [actionLoading, setActionLoading] = useState(false);
-  const [form, setForm] = useState({ module: 'general', provider: 'groq', apiKey: '', model: '', isActive: true });
+  const [form, setForm] = useState({ module: 'chat', provider: 'groq', apiKey: '', model: DEFAULT_MODEL, isActive: true });
 
-const fetchKeys = () => {
-  setLoading(true);
-  getAIKeys()
-    .then(res => {
-      const d = res?.data || res;
-      // API returns array directly, or { keys: [] }
-      setKeys(Array.isArray(d) ? d : d.keys || []);
-    })
-    .catch(console.error)
-    .finally(() => setLoading(false));
-};
+  const fetchKeys = () => {
+    setLoading(true);
+    getAIKeys()
+      .then(res => {
+        const d = res?.data || res;
+        // API returns array directly, or { keys: [] }
+        setKeys(Array.isArray(d) ? d : d.keys || []);
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  };
 
   useEffect(() => { fetchKeys(); }, []);
 
-  const openCreate = () => { setForm({ module: 'general', provider: 'groq', apiKey: '', model: '', isActive: true }); setModal({ open: true, mode: 'create', data: null }); };
-  const openEdit = (key) => { setForm({ module: key.module, provider: key.provider, apiKey: '', model: key.model || '', isActive: key.isActive }); setModal({ open: true, mode: 'edit', data: key }); };
+  const openCreate = () => { setForm({ module: 'chat', provider: 'groq', apiKey: '', model: DEFAULT_MODEL, isActive: true }); setModal({ open: true, mode: 'create', data: null }); };
+  const openEdit = (key) => { setForm({ module: key.module, provider: key.provider, apiKey: '', model: key.model || getModels(key.provider)[0].value, isActive: key.isActive }); setModal({ open: true, mode: 'edit', data: key }); };
+
+  const handleProviderChange = (provider) => {
+    const models = getModels(provider);
+    // If current model isn't valid for the new provider, snap to first option
+    const model = models.some(m => m.value === form.model) ? form.model : models[0].value;
+    setForm({ ...form, provider, model });
+  };
 
   const handleSave = async () => {
     setActionLoading(true);
@@ -103,12 +125,17 @@ const fetchKeys = () => {
           </div>
           <div>
             <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Provider</label>
-            <select value={form.provider} onChange={e => setForm({ ...form, provider: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--text-primary)] text-sm">
+            <select value={form.provider} onChange={e => handleProviderChange(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--text-primary)] text-sm">
               {PROVIDERS.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
           </div>
           <Input label="API Key" type="password" value={form.apiKey} onChange={e => setForm({ ...form, apiKey: e.target.value })} placeholder={modal.mode === 'edit' ? 'Leave empty to keep current' : 'Enter API key'} required={modal.mode === 'create'} />
-          <Input label="Model" value={form.model} onChange={e => setForm({ ...form, model: e.target.value })} placeholder="e.g. gemini-2.0-flash" />
+          <div>
+            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Model</label>
+            <select value={form.model} onChange={e => setForm({ ...form, model: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--text-primary)] text-sm">
+              {getModels(form.provider).map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+            </select>
+          </div>
           <Toggle label="Active" checked={form.isActive} onChange={v => setForm({ ...form, isActive: v })} />
           <div className="flex justify-end gap-3 pt-2 border-t border-[var(--border-color)]">
             <Button variant="secondary" onClick={() => setModal({ open: false, mode: 'create', data: null })}>Cancel</Button>
