@@ -11,6 +11,7 @@ import Modal from '../../components/farmvexa/ui/Modal';
 import ConfirmDialog from '../../components/farmvexa/ui/ConfirmDialog';
 import Pagination from '../../components/farmvexa/ui/Pagination';
 import { formatDate } from '../../utils/farmvexa/formatDate';
+import { methodLabel } from '../../utils/farmvexa/paymentLabels';
 import { HiPlus, HiEye, HiTrash, HiKey } from 'react-icons/hi';
 
 const FILTERS = [
@@ -22,7 +23,14 @@ const FILTERS = [
 ];
 
 const statusVariant = { pending: 'warning', approved: 'success', rejected: 'danger', inactive: 'default' };
-const subscriptionVariant = { active: 'success', pending_renewal: 'warning', expired: 'danger', cancelled: 'warning', none: 'default', pending: 'warning' };
+const subscriptionVariant = {
+  active: 'success',
+  pending_renewal: 'warning',
+  expired: 'danger',
+  cancelled: 'warning',
+  none: 'default',
+  pending: 'warning',
+};
 
 export default function Users() {
   const [users, setUsers] = useState([]);
@@ -35,7 +43,16 @@ export default function Users() {
   const [actionLoading, setActionLoading] = useState(false);
   const [viewModal, setViewModal] = useState({ open: false, user: null });
   const [createModal, setCreateModal] = useState(false);
-  const [form, setForm] = useState({ name: '', email: '', phone: '', county: '', subCounty: '', password: '', autoApprove: true, sendWelcome: true });
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    county: '',
+    subCounty: '',
+    password: '',
+    autoApprove: true,
+    sendWelcome: true,
+  });
   const [confirmDelete, setConfirmDelete] = useState({ open: false, id: null, name: '' });
 
   const fetchUsers = () => {
@@ -44,32 +61,51 @@ export default function Users() {
     if (filter) params.status = filter;
     if (search) params.search = search;
     getUsers(params)
-      .then(res => {
+      .then((res) => {
         setUsers(res?.data?.users || []);
         setPagination(res?.data?.pagination || { page: 1, pages: 1 });
         setCounts(res?.data?.counts || {});
       })
-      .catch(console.error).finally(() => setLoading(false));
+      .catch(console.error)
+      .finally(() => setLoading(false));
   };
 
-  useEffect(() => { fetchUsers(); }, [page, filter, search]);
+  useEffect(() => {
+    fetchUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, filter, search]);
 
   const handleToggle = async (id) => {
-    try { await toggleUserStatus(id); fetchUsers(); } catch (err) { alert(err.message); }
+    try {
+      await toggleUserStatus(id);
+      fetchUsers();
+    } catch (err) {
+      alert(err.response?.data?.message || err.message);
+    }
   };
 
   const handleCreate = async () => {
     if (!form.name || !form.email || !form.password) return alert('Name, email, and password are required');
     setActionLoading(true);
-    try { await createUser(form); setCreateModal(false); fetchUsers(); }
-    catch (err) { alert(err.message); }
+    try {
+      await createUser(form);
+      setCreateModal(false);
+      fetchUsers();
+    } catch (err) {
+      alert(err.response?.data?.message || err.message);
+    }
     setActionLoading(false);
   };
 
   const handleDelete = async () => {
     setActionLoading(true);
-    try { await deleteUser(confirmDelete.id); setConfirmDelete({ open: false, id: null, name: '' }); fetchUsers(); }
-    catch (err) { alert(err.message); }
+    try {
+      await deleteUser(confirmDelete.id);
+      setConfirmDelete({ open: false, id: null, name: '' });
+      fetchUsers();
+    } catch (err) {
+      alert(err.response?.data?.message || err.message);
+    }
     setActionLoading(false);
   };
 
@@ -81,30 +117,76 @@ export default function Users() {
   };
 
   const columns = [
-    { key: 'name', label: 'Name', render: row => (
-      <button onClick={() => setViewModal({ open: true, user: row })} className="text-emerald-600 hover:underline font-medium">{row.name}</button>
-    )},
-    { key: 'email', label: 'Email', render: row => <span className="text-sm text-[var(--text-secondary)]">{row.email}</span> },
-    { key: 'phone', label: 'Phone', render: row => <span className="text-sm">{row.phone || '—'}</span> },
-    { key: 'approvalStatus', label: 'Approval', render: row => <Badge variant={statusVariant[row.approvalStatus] || 'default'}>{row.approvalStatus}</Badge> },
-    { key: 'account', label: 'Account', render: row => <Badge variant={row.isActive ? 'success' : 'danger'}>{row.isActive ? 'Active' : 'Blocked'}</Badge> },
-    { key: 'subscription', label: 'Subscription', render: row => (
-      <div className="text-xs">
-        <Badge variant={subscriptionVariant[row.subscriptionStatus] || 'default'}>{row.subscriptionStatus}</Badge>
-        {row.selectedPlan && <span className="text-[var(--text-muted)] ml-1">{row.selectedPlan}</span>}
-      </div>
-    )},
-    { key: 'farms', label: 'Farms', render: row => <span className="text-sm">{row.farmCount || '—'}</span> },
-    { key: 'actions', label: '', render: row => (
-      <div className="flex gap-1">
-        <Button size="sm" variant="secondary" onClick={() => setViewModal({ open: true, user: row })}><HiEye className="w-3 h-3" /></Button>
-        <Button size="sm" variant="secondary" onClick={() => handleToggle(row._id)}>
-          {row.isActive ? 'Deactivate' : 'Activate'}
-        </Button>
-        <Button size="sm" variant="danger" onClick={() => setConfirmDelete({ open: true, id: row._id, name: row.name })}><HiTrash className="w-3 h-3" /></Button>
-      </div>
-    )},
+    {
+      key: 'name',
+      label: 'Name',
+      render: (row) => (
+        <button
+          onClick={() => setViewModal({ open: true, user: row })}
+          className="text-emerald-600 hover:underline font-medium"
+        >
+          {row.name}
+        </button>
+      ),
+    },
+    { key: 'email', label: 'Email', render: (row) => <span className="text-sm text-[var(--text-secondary)]">{row.email}</span> },
+    { key: 'phone', label: 'Phone', render: (row) => <span className="text-sm">{row.phone || '—'}</span> },
+    {
+      key: 'approvalStatus',
+      label: 'Approval',
+      render: (row) => <Badge variant={statusVariant[row.approvalStatus] || 'default'}>{row.approvalStatus}</Badge>,
+    },
+    {
+      key: 'account',
+      label: 'Account',
+      render: (row) => <Badge variant={row.isActive ? 'success' : 'danger'}>{row.isActive ? 'Active' : 'Blocked'}</Badge>,
+    },
+    {
+      key: 'subscription',
+      label: 'Subscription',
+      render: (row) => (
+        <div className="text-xs">
+          <Badge variant={subscriptionVariant[row.subscriptionStatus] || 'default'}>{row.subscriptionStatus}</Badge>
+          {row.selectedPlan && <span className="text-[var(--text-muted)] ml-1">{row.selectedPlan}</span>}
+        </div>
+      ),
+    },
+    { key: 'farms', label: 'Farms', render: (row) => <span className="text-sm">{row.farmCount ?? '—'}</span> },
+    {
+      key: 'actions',
+      label: '',
+      render: (row) => (
+        <div className="flex gap-1">
+          <Button size="sm" variant="secondary" onClick={() => setViewModal({ open: true, user: row })}>
+            <HiEye className="w-3 h-3" />
+          </Button>
+          <Button size="sm" variant="secondary" onClick={() => handleToggle(row._id)}>
+            {row.isActive ? 'Deactivate' : 'Activate'}
+          </Button>
+          <Button size="sm" variant="danger" onClick={() => setConfirmDelete({ open: true, id: row._id, name: row.name })}>
+            <HiTrash className="w-3 h-3" />
+          </Button>
+        </div>
+      ),
+    },
   ];
+
+  // Derive payment field fallbacks from the latest Payment record if the User record is missing them
+  const paymentMethodValue =
+    viewModal.user?.paymentMethod ||
+    viewModal.user?.payment?.method ||
+    null;
+  const paymentReferenceValue =
+    viewModal.user?.paymentReference ||
+    viewModal.user?.payment?.reference ||
+    viewModal.user?.payment?.providerRef ||
+    viewModal.user?.payment?.mpesaReceipt ||
+    null;
+  const paymentDateValue =
+    viewModal.user?.paymentDate ||
+    viewModal.user?.payment?.verifiedAt ||
+    viewModal.user?.payment?.updatedAt ||
+    null;
 
   return (
     <div>
@@ -112,16 +194,40 @@ export default function Users() {
         <h1 className="text-2xl font-bold text-[var(--text-primary)]">Users</h1>
         <div className="flex gap-2">
           <SearchBar value={search} onChange={setSearch} placeholder="Search users..." />
-          <Button onClick={() => { setForm({ name: '', email: '', phone: '', county: '', subCounty: '', password: '', autoApprove: true, sendWelcome: true }); setCreateModal(true); }}>
+          <Button
+            onClick={() => {
+              setForm({
+                name: '',
+                email: '',
+                phone: '',
+                county: '',
+                subCounty: '',
+                password: '',
+                autoApprove: true,
+                sendWelcome: true,
+              });
+              setCreateModal(true);
+            }}
+          >
             <HiPlus className="w-4 h-4 mr-1" /> Add User
           </Button>
         </div>
       </div>
 
       <div className="flex gap-2 mb-4 overflow-x-auto">
-        {FILTERS.map(f => (
-          <button key={f.key} onClick={() => { setFilter(f.key); setPage(1); }}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${filter === f.key ? 'bg-emerald-600 text-white' : 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:bg-[var(--sidebar-hover)]'}`}>
+        {FILTERS.map((f) => (
+          <button
+            key={f.key}
+            onClick={() => {
+              setFilter(f.key);
+              setPage(1);
+            }}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              filter === f.key
+                ? 'bg-emerald-600 text-white'
+                : 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:bg-[var(--sidebar-hover)]'
+            }`}
+          >
             {f.label} {counts[f.key] != null && `(${counts[f.key]})`}
           </button>
         ))}
@@ -133,7 +239,12 @@ export default function Users() {
       </Card>
 
       {/* View User Modal */}
-      <Modal open={viewModal.open} onClose={() => setViewModal({ open: false, user: null })} title="User Details" size="lg">
+      <Modal
+        open={viewModal.open}
+        onClose={() => setViewModal({ open: false, user: null })}
+        title="User Details"
+        size="lg"
+      >
         {viewModal.user && (
           <div className="space-y-4">
             <div className="bg-[var(--bg-secondary)] rounded-lg p-4 space-y-2 text-sm">
@@ -143,13 +254,18 @@ export default function Users() {
               <Row label="County" value={viewModal.user.county} />
               <Row label="Sub-County" value={viewModal.user.subCounty} />
               <Row label="Joined" value={formatDate(viewModal.user.createdAt, 'full')} />
-              <Row label="Last Login" value={viewModal.user.lastLogin ? formatDate(viewModal.user.lastLogin, 'full') : '—'} />
+              <Row
+                label="Last Login"
+                value={viewModal.user.lastLogin ? formatDate(viewModal.user.lastLogin, 'full') : null}
+              />
             </div>
 
             <div className="bg-[var(--bg-secondary)] rounded-lg p-4 space-y-2 text-sm">
               <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">Account Status</h3>
               <Row label="Approval">
-                <Badge variant={statusVariant[viewModal.user.approvalStatus] || 'default'}>{viewModal.user.approvalStatus}</Badge>
+                <Badge variant={statusVariant[viewModal.user.approvalStatus] || 'default'}>
+                  {viewModal.user.approvalStatus}
+                </Badge>
               </Row>
               <Row label="Account">
                 <Badge variant={viewModal.user.isActive ? 'success' : 'danger'}>
@@ -162,30 +278,53 @@ export default function Users() {
                 </Badge>
               </Row>
               <Row label="Plan" value={viewModal.user.selectedPlan} />
-              <Row label="Subscription Start" value={formatDate(viewModal.user.subscriptionStartDate)} />
-              <Row label="Subscription Expiry" value={formatDate(viewModal.user.subscriptionExpiry)} />
-              <Row label="Renewal Count" value={viewModal.user.renewalCount} />
-              {viewModal.user.lastRenewalReminder && <Row label="Renewal Reminder" value={formatDate(viewModal.user.lastRenewalReminder)} />}
+              <Row label="Subscription Start" value={viewModal.user.subscriptionStartDate ? formatDate(viewModal.user.subscriptionStartDate) : null} />
+              <Row label="Subscription Expiry" value={viewModal.user.subscriptionExpiry ? formatDate(viewModal.user.subscriptionExpiry) : 'Lifetime'} />
+              <Row label="Renewal Count" value={viewModal.user.renewalCount ?? 0} />
+              {viewModal.user.lastRenewalReminder && (
+                <Row label="Renewal Reminder" value={formatDate(viewModal.user.lastRenewalReminder)} />
+              )}
             </div>
 
             <div className="bg-[var(--bg-secondary)] rounded-lg p-4 space-y-2 text-sm">
               <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">Payment</h3>
               <Row label="Payment Status">
-                <Badge variant={viewModal.user.paymentStatus === 'paid' ? 'success' : 'warning'}>{viewModal.user.paymentStatus}</Badge>
+                <Badge variant={viewModal.user.paymentStatus === 'paid' ? 'success' : 'warning'}>
+                  {viewModal.user.paymentStatus || 'unpaid'}
+                </Badge>
               </Row>
-              <Row label="Method" value={viewModal.user.paymentMethod} />
-              <Row label="Reference" value={viewModal.user.paymentReference} />
-              <Row label="Paid At" value={formatDate(viewModal.user.paymentDate)} />
+              <Row label="Method" value={methodLabel(paymentMethodValue)} />
+              <Row label="Reference" value={paymentReferenceValue} />
+              <Row label="Paid At" value={paymentDateValue ? formatDate(paymentDateValue) : null} />
+
               {viewModal.user.payment && (
-                <>
-                  <div className="mt-2 pt-2 border-t border-[var(--border-color)]">
-                    <p className="text-xs text-[var(--text-muted)] mb-1">Pending Payment</p>
-                    <Row label="Plan" value={viewModal.user.payment.plan} />
-                    <Row label="Amount" value={viewModal.user.payment.amount} />
-                    <Row label="Method" value={viewModal.user.payment.methodType} />
-                    <Row label="Reference" value={viewModal.user.payment.reference} />
-                  </div>
-                </>
+                <div className="mt-2 pt-2 border-t border-[var(--border-color)]">
+                  <p className="text-xs text-[var(--text-muted)] mb-1">Latest Payment Record</p>
+                  <Row label="Purpose" value={viewModal.user.payment.purpose} />
+                  <Row label="Amount" value={`KES ${viewModal.user.payment.amount || 0}`} />
+                  <Row label="Method" value={methodLabel(viewModal.user.payment.method)} />
+                  <Row
+                    label="Reference"
+                    value={
+                      viewModal.user.payment.reference ||
+                      viewModal.user.payment.providerRef ||
+                      viewModal.user.payment.mpesaReceipt
+                    }
+                  />
+                  <Row label="Status">
+                    <Badge
+                      variant={
+                        viewModal.user.payment.status === 'success'
+                          ? 'success'
+                          : viewModal.user.payment.status === 'failed'
+                          ? 'danger'
+                          : 'warning'
+                      }
+                    >
+                      {viewModal.user.payment.status || 'pending'}
+                    </Badge>
+                  </Row>
+                </div>
               )}
             </div>
           </div>
@@ -196,28 +335,30 @@ export default function Users() {
       <Modal open={createModal} onClose={() => setCreateModal(false)} title="Add New User" size="lg">
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <Input label="Full Name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required />
-            <Input label="Email" type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} required />
+            <Input label="Full Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+            <Input label="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <Input label="Phone" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="+254..." />
-            <Input label="County" value={form.county} onChange={e => setForm({ ...form, county: e.target.value })} />
+            <Input label="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+254..." />
+            <Input label="County" value={form.county} onChange={(e) => setForm({ ...form, county: e.target.value })} />
           </div>
-          <Input label="Sub-County" value={form.subCounty} onChange={e => setForm({ ...form, subCounty: e.target.value })} />
+          <Input label="Sub-County" value={form.subCounty} onChange={(e) => setForm({ ...form, subCounty: e.target.value })} />
 
           <div className="border-t border-[var(--border-color)] pt-4">
             <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">Account Security</h3>
             <div className="flex gap-2 items-end">
               <div className="flex-1">
-                <Input label="Password" type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} required />
+                <Input label="Password" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
               </div>
-              <Button variant="secondary" size="sm" onClick={generatePassword}><HiKey className="w-4 h-4 mr-1" /> Generate</Button>
+              <Button variant="secondary" size="sm" onClick={generatePassword}>
+                <HiKey className="w-4 h-4 mr-1" /> Generate
+              </Button>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Toggle label="Auto-approve account" checked={form.autoApprove} onChange={v => setForm({ ...form, autoApprove: v })} />
-            <Toggle label="Send welcome email with credentials" checked={form.sendWelcome} onChange={v => setForm({ ...form, sendWelcome: v })} />
+            <Toggle label="Auto-approve account" checked={form.autoApprove} onChange={(v) => setForm({ ...form, autoApprove: v })} />
+            <Toggle label="Send welcome email with credentials" checked={form.sendWelcome} onChange={(v) => setForm({ ...form, sendWelcome: v })} />
           </div>
 
           <div className="flex justify-end gap-3 pt-2">
@@ -227,17 +368,29 @@ export default function Users() {
         </div>
       </Modal>
 
-      <ConfirmDialog open={confirmDelete.open} onClose={() => setConfirmDelete({ open: false, id: null, name: '' })} onConfirm={handleDelete}
-        title="Delete User" message={`Delete ${confirmDelete.name}? This will also delete all associated farms.`} confirmLabel="Delete" variant="danger" loading={actionLoading} />
+      <ConfirmDialog
+        open={confirmDelete.open}
+        onClose={() => setConfirmDelete({ open: false, id: null, name: '' })}
+        onConfirm={handleDelete}
+        title="Delete User"
+        message={`Delete ${confirmDelete.name}? This will also delete all associated farms.`}
+        confirmLabel="Delete"
+        variant="danger"
+        loading={actionLoading}
+      />
     </div>
   );
 }
 
 function Row({ label, value, bold, children }) {
   return (
-    <div className="flex justify-between">
-      <span className="text-[var(--text-secondary)]">{label}</span>
-      {children || <span className={`text-[var(--text-primary)] ${bold ? 'font-bold' : ''}`}>{value || '—'}</span>}
+    <div className="flex justify-between gap-3">
+      <span className="text-[var(--text-secondary)] shrink-0">{label}</span>
+      {children || (
+        <span className={`text-[var(--text-primary)] text-right ${bold ? 'font-bold' : ''}`}>
+          {value ?? '—'}
+        </span>
+      )}
     </div>
   );
 }

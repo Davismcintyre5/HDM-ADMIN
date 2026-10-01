@@ -6,6 +6,7 @@ import Plans from '../../pages/bizhub/Plans';
 import Payments from '../../pages/bizhub/Payments';
 import Analytics from '../../pages/bizhub/Analytics';
 import Communication from '../../pages/bizhub/Communication';
+import Health from '../../pages/bizhub/Health';
 import Settings from '../../pages/bizhub/Settings';
 
 const routes = (
@@ -18,6 +19,7 @@ const routes = (
     <Route path="payments" element={<Payments />} />
     <Route path="analytics" element={<Analytics />} />
     <Route path="communication" element={<Communication />} />
+    <Route path="health" element={<Health />} />
     <Route path="settings" element={<Settings />} />
   </>
 );

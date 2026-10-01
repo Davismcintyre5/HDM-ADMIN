@@ -40,15 +40,36 @@ export function setAuthToken(token) {
 let isRefreshing = false;
 let refreshSubscribers = [];
 
-function onRefreshed(token) { refreshSubscribers.forEach(cb => cb(token)); refreshSubscribers = []; }
-function addRefreshSubscriber(cb) { refreshSubscribers.push(cb); }
+function onRefreshed(token) {
+  refreshSubscribers.forEach((cb) => cb(token));
+  refreshSubscribers = [];
+}
+function addRefreshSubscriber(cb) {
+  refreshSubscribers.push(cb);
+}
 
 export function setupInterceptors(logoutFn) {
   api.interceptors.response.use(
-    (response) => response,
+    (response) => {
+      const body = response.data;
+
+      if (body && typeof body === 'object' && 'success' in body) {
+        return {
+          ...response,
+          data: body.data,
+          pagination: body.pagination,
+          message: body.message,
+          success: body.success,
+          error: body.error,
+        };
+      }
+
+      return response;
+    },
     async (error) => {
       const originalRequest = error.config;
       if (error.response?.status !== 401 || originalRequest._retry) return Promise.reject(error);
+
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           addRefreshSubscriber((token) => {
@@ -58,24 +79,37 @@ export function setupInterceptors(logoutFn) {
           });
         });
       }
+
       originalRequest._retry = true;
       isRefreshing = true;
+
       try {
         const refreshToken = localStorage.getItem('bizhub_refresh_token');
         if (!refreshToken) throw new Error('No refresh token');
+
         const res = await axios.post(`${BASE_URL}/auth/refresh`, { refreshToken });
-        const { accessToken, refreshToken: newRefresh } = res.data;
+        const accessToken = res.data?.data?.accessToken || res.data?.accessToken;
+        const newRefresh = res.data?.data?.refreshToken || res.data?.refreshToken;
+
+        if (!accessToken) throw new Error('No access token in refresh response');
+
         localStorage.setItem('bizhub_token', accessToken);
-        localStorage.setItem('bizhub_refresh_token', newRefresh);
+        if (newRefresh) localStorage.setItem('bizhub_refresh_token', newRefresh);
+
         setAuthToken(accessToken);
         onRefreshed(accessToken);
         originalRequest.headers['Authorization'] = `Bearer ${accessToken}`;
         return api(originalRequest);
       } catch (refreshErr) {
         onRefreshed(null);
-        logoutFn();
+        localStorage.removeItem('bizhub_token');
+        localStorage.removeItem('bizhub_refresh_token');
+        localStorage.removeItem('bizhub_admin');
+        if (typeof logoutFn === 'function') logoutFn();
         return Promise.reject(new Error('Session expired'));
-      } finally { isRefreshing = false; }
+      } finally {
+        isRefreshing = false;
+      }
     }
   );
 }
