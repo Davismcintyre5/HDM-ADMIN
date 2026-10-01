@@ -39,13 +39,6 @@ const statusVariant = {
   auto_rejected: 'default',
 };
 
-const CYCLE_COLORS = {
-  trial: 'info',
-  monthly: 'success',
-  yearly: 'info',
-  permanent: 'warning',
-};
-
 const MODULE_NAMES = {
   pharmacy: 'PharmaSys',
   restaurant: 'RestoManagerKE',
@@ -431,6 +424,49 @@ export default function Tenants() {
                 <p className="text-[var(--text-muted)] text-xs">No subscription yet</p>
               )}
             </div>
+
+            {/* ── ACTIVITY ─────────────────────────────────────── */}
+            {viewModal.tenant.stats && (
+              <div className="bg-[var(--bg-secondary)] rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-medium text-[var(--text-primary)]">Activity</h3>
+                  <Badge variant="teal">
+                    {viewModal.tenant.moduleName || viewModal.tenant.businessType}
+                  </Badge>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {viewModal.tenant.stats.stats?.map((s) => (
+                    <div
+                      key={s.key}
+                      className="bg-[var(--bg-tertiary)] rounded-lg p-3 text-center"
+                    >
+                      <p className="text-2xl font-bold text-[var(--text-primary)]">
+                        {Number(s.count || 0).toLocaleString()}
+                      </p>
+                      <p className="text-xs text-[var(--text-secondary)] mt-1">
+                        {s.label}
+                      </p>
+                    </div>
+                  ))}
+
+                  <div className="bg-[var(--bg-tertiary)] rounded-lg p-3 text-center border border-teal-200 dark:border-teal-800">
+                    <p className="text-2xl font-bold text-teal-600">
+                      {Number(viewModal.tenant.stats.aiRequests || 0).toLocaleString()}
+                    </p>
+                    <p className="text-xs text-[var(--text-secondary)] mt-1">
+                      AI Requests
+                    </p>
+                  </div>
+                </div>
+
+                {viewModal.tenant.stats.stats?.length === 0 && (
+                  <p className="text-[var(--text-muted)] text-xs mt-3">
+                    No activity recorded yet.
+                  </p>
+                )}
+              </div>
+            )}
 
             <div className="bg-[var(--bg-secondary)] rounded-lg p-4">
               <h3 className="font-medium text-[var(--text-primary)] mb-3">Modules</h3>
