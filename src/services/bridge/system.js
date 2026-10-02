@@ -34,3 +34,8 @@ export async function getSystemHealth() {
   const res = await api.get('/system/health');
   return res.data;
 }
+
+export async function getHealthFull() {
+  const res = await api.get('/system/health/full');
+  return res.data;
+}

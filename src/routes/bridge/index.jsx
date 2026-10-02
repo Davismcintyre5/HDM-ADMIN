@@ -3,10 +3,12 @@ import Dashboard from '../../pages/bridge/Dashboard';
 import Users from '../../pages/bridge/Users';
 import Organizations from '../../pages/bridge/Organizations';
 import Payments from '../../pages/bridge/Payments';
+import Invoices from '../../pages/bridge/Invoices';
 import Plans from '../../pages/bridge/Plans';
 import PaymentMethods from '../../pages/bridge/PaymentMethods';
 import Analytics from '../../pages/bridge/Analytics';
 import Notifications from '../../pages/bridge/Notifications';
+import Health from '../../pages/bridge/Health';
 import Settings from '../../pages/bridge/Settings';
 import SystemSettings from '../../pages/bridge/settings/System';
 import CurrencySettings from '../../pages/bridge/settings/Currency';
@@ -15,7 +17,6 @@ import LegalSettings from '../../pages/bridge/settings/Legal';
 import BackupSettings from '../../pages/bridge/settings/Backup';
 import AdminsSettings from '../../pages/bridge/settings/Admins';
 import AuditLogsSettings from '../../pages/bridge/settings/AuditLogs';
-import HealthSettings from '../../pages/bridge/settings/Health';
 
 const routes = (
   <>
@@ -24,10 +25,12 @@ const routes = (
     <Route path="users" element={<Users />} />
     <Route path="organizations" element={<Organizations />} />
     <Route path="payments" element={<Payments />} />
+    <Route path="invoices" element={<Invoices />} />
     <Route path="plans" element={<Plans />} />
     <Route path="payment-methods" element={<PaymentMethods />} />
     <Route path="analytics" element={<Analytics />} />
     <Route path="notifications" element={<Notifications />} />
+    <Route path="health" element={<Health />} />
     <Route path="settings" element={<Settings />}>
       <Route index element={<SystemSettings />} />
       <Route path="system" element={<SystemSettings />} />
@@ -37,7 +40,6 @@ const routes = (
       <Route path="backup" element={<BackupSettings />} />
       <Route path="admins" element={<AdminsSettings />} />
       <Route path="audit" element={<AuditLogsSettings />} />
-      <Route path="health" element={<HealthSettings />} />
     </Route>
   </>
 );

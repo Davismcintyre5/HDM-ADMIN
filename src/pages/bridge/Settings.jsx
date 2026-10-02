@@ -10,7 +10,6 @@ const tabs = [
   { key: 'backup', label: 'Backup' },
   { key: 'admins', label: 'Admins' },
   { key: 'audit', label: 'Audit Logs' },
-  { key: 'health', label: 'Health' },
 ];
 
 export default function Settings() {

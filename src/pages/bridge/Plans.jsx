@@ -1,71 +1,162 @@
 import { useEffect, useState } from 'react';
 import { getPlans, createPlan, updatePlan, deletePlan, togglePlan } from '../../services/bridge/plans';
+import { getCurrencies } from '../../services/bridge/currency';
 import Card from '../../components/bridge/ui/Card';
 import Table from '../../components/bridge/ui/Table';
 import Badge from '../../components/bridge/ui/Badge';
 import Button from '../../components/bridge/ui/Button';
 import Modal from '../../components/bridge/ui/Modal';
 import Input from '../../components/bridge/ui/Input';
-import Toggle from '../../components/bridge/ui/Toggle';
 import ConfirmDialog from '../../components/bridge/ui/ConfirmDialog';
 import { HiPencil, HiTrash, HiPlus } from 'react-icons/hi';
 
+const TIERS = [
+  { value: 'free', label: 'Free' },
+  { value: 'pro', label: 'Pro' },
+  { value: 'proplus', label: 'Pro+' },
+  { value: 'enterprise', label: 'Enterprise' },
+];
+
+const INTERVALS = [
+  { value: 'month', label: 'Monthly' },
+  { value: 'year', label: 'Yearly' },
+];
+
+function formatPrice(amount, currencyCode, currencies) {
+  const c = currencies.find((x) => x.code === currencyCode);
+  const symbol = c?.symbol || currencyCode || '$';
+  const decimals = c?.decimalPlaces ?? 2;
+  const thousands = c?.thousandsSeparator ?? ',';
+  const decimal = c?.decimalSeparator ?? '.';
+  const num = Number(amount || 0);
+  const parts = num.toFixed(decimals).split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, thousands);
+  const formatted = parts.join(decimal);
+  return c?.symbolPosition === 'after' ? `${formatted}${symbol}` : `${symbol}${formatted}`;
+}
+
 export default function Plans() {
   const [plans, setPlans] = useState([]);
+  const [currencies, setCurrencies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState({ open: false, plan: null });
   const [form, setForm] = useState({ name: '', description: '', tier: 'pro', price: { amount: 0, currency: 'USD', interval: 'month' } });
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState({ open: false, id: null });
 
-  const fetchPlans = () => {
-    setLoading(true);
-    getPlans()
-      .then(res => setPlans(res.plans || res.data || []))
-      .catch(console.error)
-      .finally(() => setLoading(false));
+  const defaultCurrencyCode = () => {
+    const def = currencies.find((c) => c.isDefault && c.isActive);
+    if (def) return def.code;
+    const first = currencies.find((c) => c.isActive);
+    return first?.code || 'USD';
   };
 
-  useEffect(() => { fetchPlans(); }, []);
+  const emptyForm = () => ({
+    name: '',
+    description: '',
+    tier: 'pro',
+    price: { amount: 0, currency: defaultCurrencyCode(), interval: 'month' },
+  });
 
-  const openCreate = () => { setForm({ name: '', description: '', tier: 'pro', price: { amount: 0, currency: 'USD', interval: 'month' } }); setModal({ open: true, plan: null }); };
-  const openEdit = (p) => { setForm({ name: p.name, description: p.description, tier: p.tier, price: p.price }); setModal({ open: true, plan: p }); };
+  const fetchAll = async () => {
+    setLoading(true);
+    try {
+      const [plansRes, currenciesRes] = await Promise.all([
+        getPlans().catch(() => ({ plans: [] })),
+        getCurrencies().catch(() => ({ currencies: [] })),
+      ]);
+      setPlans(plansRes.plans || plansRes.data || []);
+      setCurrencies(currenciesRes.currencies || currenciesRes.data || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchAll(); }, []);
+
+  const openCreate = () => {
+    setForm(emptyForm());
+    setModal({ open: true, plan: null });
+  };
+
+  const openEdit = (p) => {
+    setForm({
+      name: p.name,
+      description: p.description,
+      tier: p.tier,
+      price: p.price || { amount: 0, currency: defaultCurrencyCode(), interval: 'month' },
+    });
+    setModal({ open: true, plan: p });
+  };
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      if (modal.plan) await updatePlan(modal.plan._id || modal.plan.id, form);
-      else await createPlan(form);
+      const payload = {
+        ...form,
+        price: { ...form.price, amount: Number(form.price.amount) },
+      };
+      if (modal.plan) await updatePlan(modal.plan._id || modal.plan.id, payload);
+      else await createPlan(payload);
       setModal({ open: false, plan: null });
-      fetchPlans();
+      fetchAll();
     } catch (err) { alert(err.message); }
     setSaving(false);
   };
 
   const handleToggle = async (id) => {
-    try { await togglePlan(id); fetchPlans(); } catch (err) { alert(err.message); }
+    try { await togglePlan(id); fetchAll(); } catch (err) { alert(err.message); }
   };
 
   const handleDelete = async () => {
-    try { await deletePlan(confirmDelete.id); setConfirmDelete({ open: false, id: null }); fetchPlans(); }
+    try { await deletePlan(confirmDelete.id); setConfirmDelete({ open: false, id: null }); fetchAll(); }
     catch (err) { alert(err.message); }
+  };
+
+  const activeCurrencies = currencies.filter((c) => c.isActive);
+
+  const currencyOptionsFor = (currentCode) => {
+    const list = activeCurrencies.slice();
+    if (currentCode && !list.some((c) => c.code === currentCode)) {
+      const used = currencies.find((c) => c.code === currentCode);
+      if (used) list.push(used);
+    }
+    return list;
   };
 
   const columns = [
     { key: 'name', label: 'Name', render: (row) => <span className="font-medium">{row.name}</span> },
     { key: 'tier', label: 'Tier', render: (row) => <Badge variant="indigo">{row.tier}</Badge> },
-    { key: 'price.amount', label: 'Price', render: (row) => <span className="font-medium">${row.price?.amount} / {row.price?.interval}</span> },
-    { key: 'isActive', label: 'Status', render: (row) => (
-      <button onClick={() => handleToggle(row._id || row.id)}>
-        {row.isActive ? <Badge variant="success">Active</Badge> : <Badge variant="default">Inactive</Badge>}
-      </button>
-    )},
-    { key: 'actions', label: 'Actions', render: (row) => (
-      <div className="flex gap-1">
-        <Button size="sm" variant="secondary" onClick={() => openEdit(row)}><HiPencil className="w-4 h-4" /></Button>
-        <Button size="sm" variant="danger" onClick={() => setConfirmDelete({ open: true, id: row._id || row.id })}><HiTrash className="w-4 h-4" /></Button>
-      </div>
-    )},
+    {
+      key: 'price.amount',
+      label: 'Price',
+      render: (row) => (
+        <span className="font-medium">
+          {formatPrice(row.price?.amount, row.price?.currency, currencies)} / {row.price?.interval}
+        </span>
+      ),
+    },
+    {
+      key: 'isActive',
+      label: 'Status',
+      render: (row) => (
+        <button onClick={() => handleToggle(row._id || row.id)}>
+          {row.isActive ? <Badge variant="success">Active</Badge> : <Badge variant="default">Inactive</Badge>}
+        </button>
+      ),
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: (row) => (
+        <div className="flex gap-1">
+          <Button size="sm" variant="secondary" onClick={() => openEdit(row)}><HiPencil className="w-4 h-4" /></Button>
+          <Button size="sm" variant="danger" onClick={() => setConfirmDelete({ open: true, id: row._id || row.id })}><HiTrash className="w-4 h-4" /></Button>
+        </div>
+      ),
+    },
   ];
 
   return (
@@ -89,21 +180,23 @@ export default function Plans() {
           <div>
             <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Tier</label>
             <select value={form.tier} onChange={(e) => setForm(p => ({ ...p, tier: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--input-bg)] text-sm">
-              <option value="free">Free</option><option value="starter">Starter</option><option value="pro">Pro</option><option value="enterprise">Enterprise</option>
+              {TIERS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
             </select>
           </div>
           <div className="grid grid-cols-3 gap-3">
-            <Input label="Price" type="number" value={form.price.amount} onChange={(e) => setForm(p => ({ ...p, price: { ...p.price, amount: Number(e.target.value) } }))} />
+            <Input label="Price" type="number" value={form.price.amount} onChange={(e) => setForm(p => ({ ...p, price: { ...p.price, amount: e.target.value } }))} />
             <div>
               <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Currency</label>
               <select value={form.price.currency} onChange={(e) => setForm(p => ({ ...p, price: { ...p.price, currency: e.target.value } }))} className="w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--input-bg)] text-sm">
-                <option value="USD">USD</option><option value="KES">KES</option><option value="EUR">EUR</option><option value="GBP">GBP</option>
+                {currencyOptionsFor(form.price.currency).map(c => (
+                  <option key={c.code} value={c.code}>{c.code} — {c.name}</option>
+                ))}
               </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Interval</label>
               <select value={form.price.interval} onChange={(e) => setForm(p => ({ ...p, price: { ...p.price, interval: e.target.value } }))} className="w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--input-bg)] text-sm">
-                <option value="month">Monthly</option><option value="year">Yearly</option>
+                {INTERVALS.map(i => <option key={i.value} value={i.value}>{i.label}</option>)}
               </select>
             </div>
           </div>

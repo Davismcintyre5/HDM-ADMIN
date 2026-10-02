@@ -1,169 +1,326 @@
 import { useEffect, useState } from 'react';
-import { getPaymentMethods, updatePaymentMethod, togglePaymentMethod } from '../../services/bridge/system';
+import { HiCog } from 'react-icons/hi';
 import Card from '../../components/bridge/ui/Card';
 import Badge from '../../components/bridge/ui/Badge';
 import Button from '../../components/bridge/ui/Button';
 import Modal from '../../components/bridge/ui/Modal';
 import Input from '../../components/bridge/ui/Input';
-import Toggle from '../../components/bridge/ui/Toggle';
+import Select from '../../components/bridge/ui/Select';
 import Spinner from '../../components/bridge/ui/Spinner';
+import {
+  getPaymentMethods,
+  updatePaymentMethod,
+} from '../../services/bridge/system';
 
 export default function PaymentMethods() {
   const [methods, setMethods] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState({ open: false, method: null });
-  const [form, setForm] = useState({});
+  const [busyId, setBusyId] = useState(null);
+
+  const [editTarget, setEditTarget] = useState(null);
+  const [configDraft, setConfigDraft] = useState({});
   const [saving, setSaving] = useState(false);
 
-  const fetchMethods = () => {
+  const load = async () => {
     setLoading(true);
-    getPaymentMethods()
-      .then(res => setMethods(res.methods || res.data || []))
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    try {
+      const res = await getPaymentMethods();
+      const data = res?.methods || res?.data || res;
+      setMethods(Array.isArray(data) ? data : []);
+    } catch (err) {
+      alert(err.message || 'Failed to load');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => { fetchMethods(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
-  const handleToggle = async (id) => {
-    try { await togglePaymentMethod(id); fetchMethods(); } catch (err) { alert(err.message); }
+  const toggle = async (m) => {
+    const id = m._id || m.code;
+    setBusyId(id);
+    try {
+      const nextEnabled = !m.enabled;
+      await updatePaymentMethod(id, { enabled: nextEnabled });
+      setMethods((prev) =>
+        prev.map((x) =>
+          (x._id || x.code) === id ? { ...x, enabled: nextEnabled } : x
+        )
+      );
+    } catch (err) {
+      alert(err.message || 'Failed');
+    } finally {
+      setBusyId(null);
+    }
   };
 
   const openEdit = (m) => {
-    setForm({
-      isEnabled: m.isEnabled,
-      configuration: m.configuration ? JSON.parse(JSON.stringify(m.configuration)) : {},
-    });
-    setModal({ open: true, method: m });
+    setEditTarget(m);
+    setConfigDraft({ ...(m.config || {}) });
   };
 
-  const updateConfig = (key, field, value) => {
-    setForm(prev => ({
-      ...prev,
-      configuration: {
-        ...prev.configuration,
-        [key]: { ...prev.configuration[key], [field]: value },
-      },
-    }));
-  };
+  const patchConfig = (key, value) =>
+    setConfigDraft((prev) => ({ ...prev, [key]: value }));
 
-  const handleSave = async () => {
+  const saveConfig = async () => {
+    if (!editTarget) return;
+    if (editTarget.envSourced) {
+      setEditTarget(null);
+      return;
+    }
     setSaving(true);
     try {
-      await updatePaymentMethod(modal.method._id || modal.method.id, form);
-      setModal({ open: false, method: null });
-      fetchMethods();
-    } catch (err) { alert(err.message); }
-    setSaving(false);
+      const id = editTarget._id || editTarget.code;
+      await updatePaymentMethod(id, { config: configDraft });
+      setEditTarget(null);
+      await load();
+    } catch (err) {
+      alert(err.message || 'Failed');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  if (loading) return <div className="flex justify-center py-10"><Spinner size="lg" /></div>;
+  const renderEnvFields = (code) => {
+    const c = configDraft;
 
-const mpesaSubMethods = [
-    { key: 'paybill', label: 'Paybill', fields: [{ key: 'paybillNumber', label: 'Paybill Number', placeholder: '247247' }] },
-    { key: 'till', label: 'Till Number', fields: [{ key: 'tillNumber', label: 'Till Number', placeholder: '123456' }] },
-    { key: 'stkPush', label: 'STK Push', fields: [{ key: 'shortcode', label: 'Shortcode', placeholder: '174379' }] },
-    { key: 'sendMoney', label: 'Send Money', fields: [{ key: 'phoneNumber', label: 'Phone Number', placeholder: '0712345678' }] },
-  ];
+    if (code === 'stripe') {
+      return (
+        <>
+          <Input label="Mode" value={c.mode || ''} readOnly />
+          <Input label="Publishable key" value={c.publishableKey || ''} readOnly />
+          <Input label="Secret key" value={c.secretKey || ''} readOnly />
+          <Input label="Webhook secret" value={c.webhookSecret || ''} readOnly />
+        </>
+      );
+    }
+
+    if (code === 'mpesa_stk') {
+      return (
+        <>
+          <Input label="Environment" value={c.env || ''} readOnly />
+          <Input label="Consumer key" value={c.consumerKey || ''} readOnly />
+          <Input label="Consumer secret" value={c.consumerSecret || ''} readOnly />
+          <Input label="Shortcode" value={c.shortcode || ''} readOnly />
+          <Input label="Passkey" value={c.passkey || ''} readOnly />
+          <Input label="Callback URL" value={c.callbackUrl || ''} readOnly />
+        </>
+      );
+    }
+
+    if (code === 'paypal') {
+      return (
+        <p className="text-sm text-[var(--text-muted)]">
+          PayPal keys are configured in the server .env file.
+        </p>
+      );
+    }
+
+    return null;
+  };
+
+  const renderConfigFields = () => {
+    if (!editTarget) return null;
+    const c = configDraft;
+    const code = editTarget.code || editTarget._id;
+
+    if (editTarget.envSourced) {
+      return (
+        <>
+          <div className="rounded-lg border border-[var(--border-color)] bg-[var(--sidebar-hover)] px-3 py-2 text-xs text-[var(--text-muted)]">
+            These values are read from the server .env file and cannot be edited here.
+          </div>
+          {renderEnvFields(code)}
+        </>
+      );
+    }
+
+    switch (code) {
+      case 'mpesa_send':
+        return (
+          <>
+            <Input
+              label="Phone number"
+              hint="Safaricom number, e.g. 254712345678"
+              value={c.phone || ''}
+              onChange={(e) => patchConfig('phone', e.target.value)}
+            />
+            <Input
+              label="Display name"
+              value={c.name || ''}
+              onChange={(e) => patchConfig('name', e.target.value)}
+            />
+          </>
+        );
+
+      case 'mpesa_till':
+        return (
+          <>
+            <Input
+              label="Till number"
+              hint="Buy Goods number"
+              value={c.tillNumber || ''}
+              onChange={(e) => patchConfig('tillNumber', e.target.value)}
+            />
+            <Input
+              label="Business name"
+              value={c.name || ''}
+              onChange={(e) => patchConfig('name', e.target.value)}
+            />
+          </>
+        );
+
+      case 'mpesa_paybill':
+        return (
+          <>
+            <Input
+              label="Paybill number"
+              value={c.paybillNumber || ''}
+              onChange={(e) => patchConfig('paybillNumber', e.target.value)}
+            />
+            <Input
+              label="Account number"
+              hint="Use {sale_number} for per-sale accounts"
+              value={c.accountNumber || ''}
+              onChange={(e) => patchConfig('accountNumber', e.target.value)}
+            />
+            <Input
+              label="Business name"
+              value={c.name || ''}
+              onChange={(e) => patchConfig('name', e.target.value)}
+            />
+          </>
+        );
+
+      case 'bank':
+        return (
+          <>
+            <Input
+              label="Bank name"
+              value={c.bankName || ''}
+              onChange={(e) => patchConfig('bankName', e.target.value)}
+            />
+            <Input
+              label="Account name"
+              value={c.accountName || ''}
+              onChange={(e) => patchConfig('accountName', e.target.value)}
+            />
+            <Input
+              label="Account number"
+              value={c.accountNumber || ''}
+              onChange={(e) => patchConfig('accountNumber', e.target.value)}
+            />
+            <Input
+              label="Branch"
+              value={c.branch || ''}
+              onChange={(e) => patchConfig('branch', e.target.value)}
+            />
+            <Input
+              label="SWIFT code"
+              value={c.swift || ''}
+              onChange={(e) => patchConfig('swift', e.target.value)}
+            />
+          </>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-6">Payment Methods</h1>
-
-      <div className="space-y-4">
-        {methods.map(m => (
-          <Card key={m._id || m.id}>
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-semibold text-[var(--text-primary)]">{m.name}</h3>
-                <p className="text-xs text-[var(--text-muted)] capitalize">{m.type?.replace(/_/g, ' ')}</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <Badge variant={m.isEnabled ? 'success' : 'default'}>
-                  {m.isEnabled ? 'Enabled' : 'Disabled'}
-                </Badge>
-                <Toggle checked={m.isEnabled || false} onChange={() => handleToggle(m._id || m.id)} />
-                <Button size="sm" variant="secondary" onClick={() => openEdit(m)}>Configure</Button>
-              </div>
-            </div>
-          </Card>
-        ))}
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-[var(--text-primary)]">
+          Payment methods
+        </h1>
+        <p className="text-sm text-[var(--text-muted)] mt-1">
+          Platform-wide methods. Clients enable the ones they use.
+        </p>
       </div>
 
-      {/* Configure Modal */}
-      <Modal
-        open={modal.open}
-        onClose={() => setModal({ open: false, method: null })}
-        title={`Configure ${modal.method?.name || ''}`}
-        size="lg"
-      >
-        {modal.method && (
-          <div className="space-y-6">
-            <Toggle
-              label={`Enable ${modal.method.name}`}
-              checked={form.isEnabled || false}
-              onChange={(v) => setForm(p => ({ ...p, isEnabled: v }))}
-            />
-
-            {/* Stripe / PayPal — keys in .env */}
-            {['stripe', 'paypal'].includes(modal.method.slug) && (
-              <p className="text-xs text-[var(--text-muted)]">API keys are configured in server .env file.</p>
-            )}
-
-            {/* M-Pesa — 4 independent sub-methods */}
-            {modal.method.slug === 'mpesa' && form.isEnabled && (
-              <div className="space-y-4 ml-4 pl-4 border-l-2 border-indigo-300 dark:border-indigo-700">
-                <h4 className="font-medium text-sm text-[var(--text-primary)]">M-Pesa Sub-Methods</h4>
-                {mpesaSubMethods.map(sub => (
-                  <div key={sub.key} className="p-3 rounded-lg border border-[var(--border-color)] space-y-2">
-                    <Toggle
-                      label={sub.label}
-                      checked={form.configuration?.[sub.key]?.enabled || false}
-                      onChange={(v) => updateConfig(sub.key, 'enabled', v)}
-                    />
-                    {form.configuration?.[sub.key]?.enabled && (
-                      <div className="ml-6 space-y-2">
-                        {sub.fields.map(f => (
-                          <Input
-                            key={f.key}
-                            label={f.label}
-                            value={form.configuration?.[sub.key]?.[f.key] || ''}
-                            onChange={(e) => updateConfig(sub.key, f.key, e.target.value)}
-                            placeholder={f.placeholder}
-                          />
-                        ))}
-                        <Input
-                          label="Passkey"
-                          type="password"
-                          value={form.configuration?.[sub.key]?.passkey || ''}
-                          onChange={(e) => updateConfig(sub.key, 'passkey', e.target.value)}
-                          placeholder="bfb279f9a..."
-                        />
-                      </div>
-                    )}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {methods.map((m) => {
+          const id = m._id || m.code;
+          return (
+            <Card key={id}>
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <p className="font-medium text-[var(--text-primary)]">
+                      {m.label || id}
+                    </p>
+                    <Badge variant={m.mode === 'auto' ? 'info' : 'default'}>
+                      {m.mode}
+                    </Badge>
+                    <Badge variant={m.enabled ? 'success' : 'default'} dot>
+                      {m.enabled ? 'On' : 'Off'}
+                    </Badge>
                   </div>
-                ))}
-              </div>
-            )}
+                  <p className="text-xs text-[var(--text-muted)] font-mono">
+                    {m.code || id}
+                  </p>
+                </div>
 
-            {/* Bank Transfer */}
-            {modal.method.slug === 'bank_transfer' && form.isEnabled && (
-              <div className="ml-4 pl-4 border-l-2 border-indigo-300 dark:border-indigo-700 space-y-3">
-                <Input label="Bank Name" value={form.configuration?.bankName || ''}
-                  onChange={(e) => setForm(p => ({ ...p, configuration: { ...p.configuration, bankName: e.target.value } }))} />
-                <Input label="Account Number" value={form.configuration?.accountNumber || ''}
-                  onChange={(e) => setForm(p => ({ ...p, configuration: { ...p.configuration, accountNumber: e.target.value } }))} />
-                <Input label="Account Name" value={form.configuration?.accountName || ''}
-                  onChange={(e) => setForm(p => ({ ...p, configuration: { ...p.configuration, accountName: e.target.value } }))} />
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => openEdit(m)}
+                    className="p-2 rounded-lg hover:bg-[var(--sidebar-hover)] text-[var(--text-secondary)]"
+                    type="button"
+                    title="Configure"
+                  >
+                    <HiCog className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => toggle(m)}
+                    disabled={busyId === id}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition disabled:opacity-50 ${
+                      m.enabled ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
+                    }`}
+                    type="button"
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+                        m.enabled ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
               </div>
-            )}
+            </Card>
+          );
+        })}
+      </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button variant="secondary" onClick={() => setModal({ open: false, method: null })}>Cancel</Button>
-              <Button onClick={handleSave} loading={saving}>Save Configuration</Button>
-            </div>
-          </div>
-        )}
+      <Modal
+        open={!!editTarget}
+        onClose={() => setEditTarget(null)}
+        title={`Configure ${editTarget?.label || ''}`}
+        size="lg"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setEditTarget(null)}>
+              {editTarget?.envSourced ? 'Close' : 'Cancel'}
+            </Button>
+            {!editTarget?.envSourced && (
+              <Button onClick={saveConfig} loading={saving}>
+                Save config
+              </Button>
+            )}
+          </>
+        }
+      >
+        <div className="space-y-4">{renderConfigFields()}</div>
       </Modal>
     </div>
   );
