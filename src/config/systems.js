@@ -1,7 +1,8 @@
 import {
   HiShoppingCart, HiOfficeBuilding, HiShieldCheck, HiSparkles,
   HiLightningBolt, HiMusicNote, HiDocumentText, HiBriefcase,
-  HiGlobe, HiMail, HiWifi, HiCash, HiShoppingBag,HiAcademicCap
+  HiGlobe, HiMail, HiWifi, HiCash, HiShoppingBag, HiAcademicCap,
+  HiPlus,
 } from 'react-icons/hi'
 
 export const systems = [
@@ -16,6 +17,18 @@ export const systems = [
     borderColor: 'border-blue-200 dark:border-blue-800',
     hoverBg: 'hover:bg-blue-600',
     stats: { transactions: '12,456', revenue: '$234K', uptime: '99.9%' }
+  },
+  {
+    id: 'pharmasys',
+    name: 'PharmaSys',
+    description: 'Pharmacy management system',
+    icon: HiPlus,
+    bgGradient: 'from-rose-500 to-pink-600',
+    bgLight: 'bg-rose-50 dark:bg-rose-950',
+    textColor: 'text-rose-600 dark:text-rose-400',
+    borderColor: 'border-rose-200 dark:border-rose-800',
+    hoverBg: 'hover:bg-rose-600',
+    stats: { pharmacies: '500', branches: '1.2K', uptime: '99.9%' }
   },
   {
     id: 'hdmerp',
@@ -149,7 +162,6 @@ export const systems = [
     hoverBg: 'hover:bg-cyan-600',
     stats: { owners: '156', networks: '423', revenue: '$45K' }
   },
-
   {
     id: 'marketbridge',
     name: 'MarketBridge',
@@ -163,11 +175,41 @@ export const systems = [
     stats: { stores: '234', products: '12K', revenue: 'KES 5M' }
   },
   {
-  id: 'eduprime', name: 'EduPrime', description: 'School management & administration',
-  icon: HiAcademicCap, bgGradient: 'from-amber-500 to-orange-600', bgLight: 'bg-amber-50 dark:bg-amber-950',
-  textColor: 'text-amber-600 dark:text-amber-400', borderColor: 'border-amber-200 dark:border-amber-800',
-  hoverBg: 'hover:bg-amber-600', stats: { schools: '45', students: '12K', teachers: '890' }
-}
+    id: 'eduprime',
+    name: 'EduPrime',
+    description: 'School management & administration',
+    icon: HiAcademicCap,
+    bgGradient: 'from-amber-500 to-orange-600',
+    bgLight: 'bg-amber-50 dark:bg-amber-950',
+    textColor: 'text-amber-600 dark:text-amber-400',
+    borderColor: 'border-amber-200 dark:border-amber-800',
+    hoverBg: 'hover:bg-amber-600',
+    stats: { schools: '45', students: '12K', teachers: '890' }
+  },
+  {
+    id: 'farmvexa',
+    name: 'FarmVexa',
+    description: 'AI-Powered Farm Intelligence',
+    icon: HiGlobe,
+    bgGradient: 'from-emerald-500 to-green-600',
+    bgLight: 'bg-emerald-50 dark:bg-emerald-950',
+    textColor: 'text-emerald-600 dark:text-emerald-400',
+    borderColor: 'border-emerald-200 dark:border-emerald-800',
+    hoverBg: 'hover:bg-emerald-600',
+    stats: { farmers: '50', farms: '120', devices: '3/5' }
+  },
+  {
+    id: 'rvnp',
+    name: 'RVNP Hub',
+    description: 'Campus community & digital quad',
+    icon: HiAcademicCap,
+    bgGradient: 'from-emerald-500 to-green-600',
+    bgLight: 'bg-emerald-50 dark:bg-emerald-950',
+    textColor: 'text-emerald-600 dark:text-emerald-400',
+    borderColor: 'border-emerald-200 dark:border-emerald-800',
+    hoverBg: 'hover:bg-emerald-600',
+    stats: { users: '1,250', posts: '4.5K', groups: '28' }
+  }
 ]
 
 export function getSystem(id) {

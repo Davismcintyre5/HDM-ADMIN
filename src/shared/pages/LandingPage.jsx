@@ -2,7 +2,8 @@ import { useNavigate } from 'react-router-dom'
 import {
   HiShoppingCart, HiOfficeBuilding, HiShieldCheck, HiSparkles,
   HiLightningBolt, HiMusicNote, HiDocumentText, HiBriefcase, HiGlobe,
-  HiMail, HiWifi, HiCash, HiShoppingBag, HiArrowRight,HiAcademicCap,HiChip
+  HiMail, HiWifi, HiCash, HiShoppingBag, HiArrowRight, HiAcademicCap, HiChip,
+  HiPlus,
 } from 'react-icons/hi'
 
 const systems = [
@@ -11,6 +12,12 @@ const systems = [
     icon: HiShoppingCart, bgGradient: 'from-blue-500 to-blue-600', bgLight: 'bg-blue-50 dark:bg-blue-950',
     textColor: 'text-blue-600 dark:text-blue-400', borderColor: 'border-blue-200 dark:border-blue-800',
     hoverBg: 'hover:bg-blue-600', stats: { transactions: '12,456', revenue: '$234K', uptime: '99.9%' }
+  },
+  {
+    id: 'pharmasys', name: 'PharmaSys', description: 'Pharmacy management system',
+    icon: HiPlus, bgGradient: 'from-rose-500 to-pink-600', bgLight: 'bg-rose-50 dark:bg-rose-950',
+    textColor: 'text-rose-600 dark:text-rose-400', borderColor: 'border-rose-200 dark:border-rose-800',
+    hoverBg: 'hover:bg-rose-600', stats: { pharmacies: '500', branches: '1.2K', uptime: '99.9%' }
   },
   {
     id: 'hdmerp', name: 'HDM ERP', description: 'Enterprise resource planning',
@@ -30,14 +37,12 @@ const systems = [
     textColor: 'text-fuchsia-600 dark:text-fuchsia-400', borderColor: 'border-fuchsia-200 dark:border-fuchsia-800',
     hoverBg: 'hover:bg-fuchsia-600', stats: { models: '234', accuracy: '97.8%', predictions: '1.2M' }
   },
-
   {
-  id: 'hdmai2', name: 'HDM AI v2', description: 'AI model management & monitoring',
-  icon: HiChip, bgGradient: 'from-blue-500 to-blue-600', bgLight: 'bg-blue-50 dark:bg-blue-950',
-  textColor: 'text-blue-600 dark:text-blue-400', borderColor: 'border-blue-200 dark:border-blue-800',
-  hoverBg: 'hover:bg-blue-600', stats: { models: '12', jobs: '45', users: '234' }
-},
-
+    id: 'hdmai2', name: 'HDM AI v2', description: 'AI model management & monitoring',
+    icon: HiChip, bgGradient: 'from-blue-500 to-blue-600', bgLight: 'bg-blue-50 dark:bg-blue-950',
+    textColor: 'text-blue-600 dark:text-blue-400', borderColor: 'border-blue-200 dark:border-blue-800',
+    hoverBg: 'hover:bg-blue-600', stats: { models: '12', jobs: '45', users: '234' }
+  },
   {
     id: 'spark', name: 'Spark', description: 'Privacy-first messaging by HDM',
     icon: HiLightningBolt, bgGradient: 'from-sky-500 to-sky-600', bgLight: 'bg-sky-50 dark:bg-sky-950',
@@ -86,35 +91,30 @@ const systems = [
     textColor: 'text-cyan-600 dark:text-cyan-400', borderColor: 'border-cyan-200 dark:border-cyan-800',
     hoverBg: 'hover:bg-cyan-600', stats: { owners: '156', networks: '423', revenue: '$45K' }
   },
-
   {
-  id: 'farmvexa', name: 'FarmVexa', description: 'AI-Powered Farm Intelligence',
-  icon: HiGlobe, bgGradient: 'from-emerald-500 to-green-600', bgLight: 'bg-emerald-50 dark:bg-emerald-950',
-  textColor: 'text-emerald-600 dark:text-emerald-400', borderColor: 'border-emerald-200 dark:border-emerald-800',
-  hoverBg: 'hover:bg-emerald-600', stats: { farmers: '50', farms: '120', devices: '3/5' }
-},
-
+    id: 'farmvexa', name: 'FarmVexa', description: 'AI-Powered Farm Intelligence',
+    icon: HiGlobe, bgGradient: 'from-emerald-500 to-green-600', bgLight: 'bg-emerald-50 dark:bg-emerald-950',
+    textColor: 'text-emerald-600 dark:text-emerald-400', borderColor: 'border-emerald-200 dark:border-emerald-800',
+    hoverBg: 'hover:bg-emerald-600', stats: { farmers: '50', farms: '120', devices: '3/5' }
+  },
   {
     id: 'marketbridge', name: 'MarketBridge', description: 'Multi-vendor marketplace',
     icon: HiShoppingBag, bgGradient: 'from-violet-500 to-purple-600', bgLight: 'bg-violet-50 dark:bg-violet-950',
     textColor: 'text-violet-600 dark:text-violet-400', borderColor: 'border-violet-200 dark:border-violet-800',
     hoverBg: 'hover:bg-violet-700', stats: { stores: '234', products: '12K', revenue: 'KES 5M' }
   },
-
   {
-  id: 'rvnp', name: 'RVNP Hub', description: 'Campus community & digital quad',
-  icon: HiAcademicCap, bgGradient: 'from-emerald-500 to-green-600', bgLight: 'bg-emerald-50 dark:bg-emerald-950',
-  textColor: 'text-emerald-600 dark:text-emerald-400', borderColor: 'border-emerald-200 dark:border-emerald-800',
-  hoverBg: 'hover:bg-emerald-600', stats: { users: '1,250', posts: '4.5K', groups: '28' }
-},
-
-{
-  id: 'eduprime', name: 'EduPrime', description: 'School management & administration',
-  icon: HiAcademicCap, bgGradient: 'from-amber-500 to-orange-600', bgLight: 'bg-amber-50 dark:bg-amber-950',
-  textColor: 'text-amber-600 dark:text-amber-400', borderColor: 'border-amber-200 dark:border-amber-800',
-  hoverBg: 'hover:bg-amber-600', stats: { schools: '45', students: '12K', teachers: '890' }
-}
-
+    id: 'rvnp', name: 'RVNP Hub', description: 'Campus community & digital quad',
+    icon: HiAcademicCap, bgGradient: 'from-emerald-500 to-green-600', bgLight: 'bg-emerald-50 dark:bg-emerald-950',
+    textColor: 'text-emerald-600 dark:text-emerald-400', borderColor: 'border-emerald-200 dark:border-emerald-800',
+    hoverBg: 'hover:bg-emerald-600', stats: { users: '1,250', posts: '4.5K', groups: '28' }
+  },
+  {
+    id: 'eduprime', name: 'EduPrime', description: 'School management & administration',
+    icon: HiAcademicCap, bgGradient: 'from-amber-500 to-orange-600', bgLight: 'bg-amber-50 dark:bg-amber-950',
+    textColor: 'text-amber-600 dark:text-amber-400', borderColor: 'border-amber-200 dark:border-amber-800',
+    hoverBg: 'hover:bg-amber-600', stats: { schools: '45', students: '12K', teachers: '890' }
+  }
 ]
 
 export default function LandingPage() {

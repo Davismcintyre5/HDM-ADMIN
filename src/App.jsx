@@ -4,6 +4,7 @@ import ComingSoon from './shared/pages/ComingSoon'
 import HDMERPApp from './apps/HDMERPApp'
 import HDMAIApp from './apps/HDMAIApp'
 import SmartPOSApp from './apps/SmartPOSApp'
+import PharmaSysApp from './apps/PharmaSysApp'
 import SparkApp from './apps/SparkApp'
 import NexGuardApp from './apps/NexGuardApp'
 import DocusoftApp from './apps/DocusoftApp'
@@ -22,6 +23,7 @@ const routerFuture = { v7_startTransition: true, v7_relativeSplatPath: true }
 
 const systemConfig = {
   smartpos: true,
+  pharmasys: true,
   hdmerp: true,
   hdmai: true,
   nexguard: true,
@@ -33,7 +35,7 @@ const systemConfig = {
   bridge: true,
   flax: true,
   hdmnet: true,
-   farmvexa: true,
+  farmvexa: true,
   marketbridge: true,
   rvnp: true,
   eduprime: true,
@@ -46,6 +48,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/smartpos/*" element={systemConfig.smartpos ? <SmartPOSApp /> : <ComingSoon />} />
+        <Route path="/pharmasys/*" element={systemConfig.pharmasys ? <PharmaSysApp /> : <ComingSoon />} />
         <Route path="/hdmerp/*" element={systemConfig.hdmerp ? <HDMERPApp /> : <ComingSoon />} />
         <Route path="/hdmai/*" element={systemConfig.hdmai ? <HDMAIApp /> : <ComingSoon />} />
         <Route path="/nexguard/*" element={systemConfig.nexguard ? <NexGuardApp /> : <ComingSoon />} />
@@ -56,7 +59,7 @@ function App() {
         <Route path="/bizhub/*" element={systemConfig.bizhub ? <BizhubApp /> : <ComingSoon />} />
         <Route path="/bridge/*" element={systemConfig.bridge ? <BridgeApp /> : <ComingSoon />} />
         <Route path="/flax/*" element={systemConfig.flax ? <FlaxApp /> : <ComingSoon />} />
-        <Route path="/hdmnet/*" element={systemConfig.hdmnet ? <HDMNetApp /> : <ComingSoon />} />      
+        <Route path="/hdmnet/*" element={systemConfig.hdmnet ? <HDMNetApp /> : <ComingSoon />} />
         <Route path="/farmvexa/*" element={systemConfig.farmvexa ? <FarmVexaApp /> : <ComingSoon />} />
         <Route path="/marketbridge/*" element={systemConfig.marketbridge ? <MarketBridgeApp /> : <ComingSoon />} />
         <Route path="/rvnp/*" element={systemConfig.rvnp ? <RVNPApp /> : <ComingSoon />} />
