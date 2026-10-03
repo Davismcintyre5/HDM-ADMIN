@@ -5,6 +5,7 @@ import {
   HiRefresh,
   HiTrash,
   HiPlus,
+  HiCog,
 } from 'react-icons/hi';
 import Card from '../../components/smartpos/ui/Card';
 import Table from '../../components/smartpos/ui/Table';
@@ -22,6 +23,8 @@ import {
   emailBackup,
   restoreBackup,
   deleteBackup,
+  getBackupSettings,
+  updateBackupSettings,
 } from '../../services/smartpos/backups';
 import { formatDateTime } from '../../utils/smartpos/formatDate';
 import { bytes } from '../../utils/smartpos/formatters';
@@ -31,6 +34,46 @@ const STATUS_VARIANT = {
   running: 'warning',
   failed: 'danger',
   expired: 'default',
+};
+
+const FREQUENCIES = [
+  { value: 'hourly', label: 'Every hour' },
+  { value: 'daily', label: 'Daily' },
+  { value: 'weekly', label: 'Weekly' },
+  { value: 'monthly', label: 'Monthly' },
+];
+
+const RETENTION_OPTIONS = [
+  { value: 7, label: '7 days' },
+  { value: 14, label: '14 days' },
+  { value: 30, label: '30 days' },
+  { value: 90, label: '90 days' },
+  { value: 180, label: '180 days' },
+  { value: 365, label: '1 year' },
+  { value: 0, label: 'Keep forever' },
+];
+
+const DAYS_OF_WEEK = [
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+];
+
+const DEFAULT_SETTINGS = {
+  enabled: false,
+  frequency: 'daily',
+  hour: 2,
+  minute: 0,
+  dayOfWeek: 1,
+  dayOfMonth: 1,
+  retentionDays: 90,
+  emailTo: '',
+  emailOnSuccess: false,
+  emailOnFailure: true,
 };
 
 export default function Backups() {
@@ -50,6 +93,11 @@ export default function Backups() {
 
   const [deleteTarget, setDeleteTarget] = useState(null);
 
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsLoading, setSettingsLoading] = useState(false);
+  const [settingsSaving, setSettingsSaving] = useState(false);
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+
   const load = async (p = 1) => {
     setLoading(true);
     try {
@@ -68,6 +116,38 @@ export default function Backups() {
     load(page);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
+
+  const openSettings = async () => {
+    setSettingsOpen(true);
+    setSettingsLoading(true);
+    try {
+      const res = await getBackupSettings();
+      const data = res?.data || res;
+      setSettings({ ...DEFAULT_SETTINGS, ...(data || {}) });
+    } catch (err) {
+      toast.error(err.message || 'Failed to load settings');
+      setSettings(DEFAULT_SETTINGS);
+    } finally {
+      setSettingsLoading(false);
+    }
+  };
+
+  const saveSettings = async () => {
+    setSettingsSaving(true);
+    try {
+      const res = await updateBackupSettings(settings);
+      const data = res?.data || res;
+      setSettings({ ...DEFAULT_SETTINGS, ...(data || {}) });
+      toast.success('Settings saved');
+      setSettingsOpen(false);
+    } catch (err) {
+      toast.error(err.message || 'Failed to save settings');
+    } finally {
+      setSettingsSaving(false);
+    }
+  };
+
+  const patchSettings = (patch) => setSettings((s) => ({ ...s, ...patch }));
 
   const createNow = async () => {
     setBusy(true);
@@ -236,13 +316,22 @@ export default function Backups() {
             {meta.total} backups stored
           </p>
         </div>
-        <Button
-          icon={<HiPlus className="w-4 h-4" />}
-          onClick={createNow}
-          loading={busy}
-        >
-          Create backup
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="secondary"
+            icon={<HiCog className="w-4 h-4" />}
+            onClick={openSettings}
+          >
+            Auto settings
+          </Button>
+          <Button
+            icon={<HiPlus className="w-4 h-4" />}
+            onClick={createNow}
+            loading={busy}
+          >
+            Create backup
+          </Button>
+        </div>
       </div>
 
       <Card padding={false}>
@@ -339,6 +428,179 @@ export default function Backups() {
           Permanently delete{' '}
           <strong className="font-mono">{deleteTarget?.filename}</strong>?
         </p>
+      </Modal>
+
+      <Modal
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        title="Automatic backup settings"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setSettingsOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={saveSettings} loading={settingsSaving} disabled={settingsLoading}>
+              Save
+            </Button>
+          </>
+        }
+      >
+        {settingsLoading ? (
+          <div className="py-8 flex items-center justify-center">
+            <Spinner />
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <label className="flex items-center justify-between gap-3 cursor-pointer">
+              <div>
+                <p className="text-sm font-medium text-[var(--text-primary)]">
+                  Enable automatic backups
+                </p>
+                <p className="text-xs text-[var(--text-muted)]">
+                  Scheduled backups run in the background.
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={settings.enabled}
+                onChange={(e) => patchSettings({ enabled: e.target.checked })}
+                className="w-5 h-5 accent-[var(--accent)]"
+              />
+            </label>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">
+                  Frequency
+                </label>
+                <select
+                  value={settings.frequency}
+                  onChange={(e) => patchSettings({ frequency: e.target.value })}
+                  className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-elevated)] px-3 py-2 text-sm text-[var(--text-primary)]"
+                >
+                  {FREQUENCIES.map((f) => (
+                    <option key={f.value} value={f.value}>
+                      {f.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">
+                  Retention
+                </label>
+                <select
+                  value={settings.retentionDays}
+                  onChange={(e) =>
+                    patchSettings({ retentionDays: Number(e.target.value) })
+                  }
+                  className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-elevated)] px-3 py-2 text-sm text-[var(--text-primary)]"
+                >
+                  {RETENTION_OPTIONS.map((r) => (
+                    <option key={r.value} value={r.value}>
+                      {r.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <Input
+                label={settings.frequency === 'hourly' ? 'Minute (0–59)' : 'Hour (0–23)'}
+                type="number"
+                min={settings.frequency === 'hourly' ? 0 : 0}
+                max={settings.frequency === 'hourly' ? 59 : 23}
+                value={settings.frequency === 'hourly' ? settings.minute : settings.hour}
+                onChange={(e) =>
+                  settings.frequency === 'hourly'
+                    ? patchSettings({ minute: Number(e.target.value) })
+                    : patchSettings({ hour: Number(e.target.value) })
+                }
+              />
+              {settings.frequency !== 'hourly' && (
+                <Input
+                  label="Minute (0–59)"
+                  type="number"
+                  min={0}
+                  max={59}
+                  value={settings.minute}
+                  onChange={(e) => patchSettings({ minute: Number(e.target.value) })}
+                />
+              )}
+              {settings.frequency === 'hourly' && (
+                <div />
+              )}
+            </div>
+
+            {settings.frequency === 'weekly' && (
+              <div>
+                <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">
+                  Day of week
+                </label>
+                <select
+                  value={settings.dayOfWeek}
+                  onChange={(e) =>
+                    patchSettings({ dayOfWeek: Number(e.target.value) })
+                  }
+                  className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-elevated)] px-3 py-2 text-sm text-[var(--text-primary)]"
+                >
+                  {DAYS_OF_WEEK.map((d, i) => (
+                    <option key={i} value={i}>
+                      {d}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {settings.frequency === 'monthly' && (
+              <Input
+                label="Day of month (1–28)"
+                type="number"
+                min={1}
+                max={28}
+                value={settings.dayOfMonth}
+                onChange={(e) =>
+                  patchSettings({ dayOfMonth: Number(e.target.value) })
+                }
+              />
+            )}
+
+            <div className="border-t border-[var(--border)] pt-4 space-y-3">
+              <Input
+                label="Email notifications to"
+                type="email"
+                value={settings.emailTo}
+                onChange={(e) => patchSettings({ emailTo: e.target.value })}
+                placeholder="admin@smartpos.co.ke"
+              />
+              <label className="flex items-center gap-2 text-sm text-[var(--text-secondary)] cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.emailOnSuccess}
+                  onChange={(e) =>
+                    patchSettings({ emailOnSuccess: e.target.checked })
+                  }
+                  className="accent-[var(--accent)]"
+                />
+                Email on success
+              </label>
+              <label className="flex items-center gap-2 text-sm text-[var(--text-secondary)] cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.emailOnFailure}
+                  onChange={(e) =>
+                    patchSettings({ emailOnFailure: e.target.checked })
+                  }
+                  className="accent-[var(--accent)]"
+                />
+                Email on failure
+              </label>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );
