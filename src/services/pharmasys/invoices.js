@@ -15,6 +15,11 @@ export async function markInvoicePaid(id, data) {
   return res.data;
 }
 
+export async function approveInvoice(id) {
+  const res = await api.post(`/invoices/${id}/approve`);
+  return res.data;
+}
+
 export async function cancelInvoice(id, data) {
   const res = await api.post(`/invoices/${id}/cancel`, data);
   return res.data;

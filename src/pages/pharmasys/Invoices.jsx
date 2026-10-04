@@ -20,12 +20,28 @@ const STATUS_OPTIONS = [
   { value: 'cancelled', label: 'Cancelled' },
 ];
 
+const PURPOSE_OPTIONS = [
+  { value: '', label: 'All purposes' },
+  { value: 'registration', label: 'Registration' },
+  { value: 'renewal', label: 'Renewal' },
+  { value: 'upgrade', label: 'Upgrade' },
+  { value: 'sale', label: 'Sale' },
+];
+
+const PURPOSE_VARIANT = {
+  registration: 'info',
+  renewal: 'success',
+  upgrade: 'warning',
+  sale: 'default',
+};
+
 export default function Invoices() {
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [meta, setMeta] = useState({ page: 1, pages: 1, total: 0 });
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState('');
+  const [purpose, setPurpose] = useState('');
   const [page, setPage] = useState(1);
 
   useEffect(() => {
@@ -35,6 +51,7 @@ export default function Invoices() {
       page,
       limit: 20,
       status: status || undefined,
+      purpose: purpose || undefined,
     })
       .then((res) => {
         if (cancelled) return;
@@ -48,23 +65,34 @@ export default function Invoices() {
     return () => {
       cancelled = true;
     };
-  }, [page, status]);
+  }, [page, status, purpose]);
 
   const columns = [
     {
       key: 'invoiceNumber',
       label: 'Invoice',
       render: (row) => (
-        <div>
-          <p className="font-mono text-xs font-medium text-[var(--text-primary)]">
-            {row.invoiceNumber || row._id?.slice(-8) || '—'}
-          </p>
-          {row.tenant?.name && (
-            <p className="text-xs text-[var(--text-muted)]">
-              {row.tenant.name}
-            </p>
-          )}
-        </div>
+        <span className="font-mono text-xs font-medium text-[var(--text-primary)]">
+          {row.invoiceNumber || row._id?.slice(-8) || '—'}
+        </span>
+      ),
+    },
+    {
+      key: 'business',
+      label: 'Business',
+      render: (row) => (
+        <span className="text-sm text-[var(--text-primary)]">
+          {row.tenant?.name || '—'}
+        </span>
+      ),
+    },
+    {
+      key: 'purpose',
+      label: 'Purpose',
+      render: (row) => (
+        <Badge variant={PURPOSE_VARIANT[row.purpose] || 'default'}>
+          {statusLabel(row.purpose || '—')}
+        </Badge>
       ),
     },
     {
@@ -78,37 +106,12 @@ export default function Invoices() {
       ),
     },
     {
-      key: 'amountDue',
-      label: 'Amount due',
-      align: 'right',
-      render: (row) => (
-        <span
-          className={
-            row.amountDue > 0
-              ? 'font-medium text-rose-600'
-              : 'text-[var(--text-muted)]'
-          }
-        >
-          {formatMoneyMajor(row.amountDue || 0, row.currency || 'KES')}
-        </span>
-      ),
-    },
-    {
       key: 'status',
       label: 'Status',
       render: (row) => (
         <Badge variant={statusVariant(row.status)} dot>
           {statusLabel(row.status)}
         </Badge>
-      ),
-    },
-    {
-      key: 'dueDate',
-      label: 'Due',
-      render: (row) => (
-        <span className="text-xs text-[var(--text-muted)]">
-          {row.dueDate ? formatDate(row.dueDate) : '—'}
-        </span>
       ),
     },
     {
@@ -160,6 +163,16 @@ export default function Invoices() {
                 setPage(1);
               }}
               options={STATUS_OPTIONS}
+            />
+          </div>
+          <div className="w-full sm:w-48">
+            <Select
+              value={purpose}
+              onChange={(e) => {
+                setPurpose(e.target.value);
+                setPage(1);
+              }}
+              options={PURPOSE_OPTIONS}
             />
           </div>
         </div>

@@ -4,16 +4,10 @@ import Card from '../../components/pharmasys/ui/Card';
 import Table from '../../components/pharmasys/ui/Table';
 import Badge from '../../components/pharmasys/ui/Badge';
 import Button from '../../components/pharmasys/ui/Button';
-import SearchBar from '../../components/pharmasys/ui/SearchBar';
 import Select from '../../components/pharmasys/ui/Select';
 import Pagination from '../../components/pharmasys/ui/Pagination';
 import StatCard from '../../components/pharmasys/ui/StatCard';
-import {
-  HiCash,
-  HiCheckCircle,
-  HiXCircle,
-  HiClock,
-} from 'react-icons/hi';
+import { HiCheckCircle, HiClock, HiXCircle, HiRefresh } from 'react-icons/hi';
 import { getPayments, getPaymentStats } from '../../services/pharmasys/payments';
 import { formatDateTime } from '../../utils/pharmasys/formatDate';
 import { formatMoneyMajor } from '../../utils/pharmasys/formatMoney';
@@ -74,23 +68,16 @@ export default function Payments() {
   const columns = [
     {
       key: 'reference',
-      label: 'Reference',
+      label: 'Ref',
       render: (row) => (
-        <div>
-          <p className="font-mono text-xs text-[var(--text-primary)]">
-            {row.reference || row._id?.slice(-8) || '—'}
-          </p>
-          {row.invoiceNumber && (
-            <p className="text-xs text-[var(--text-muted)]">
-              Invoice {row.invoiceNumber}
-            </p>
-          )}
-        </div>
+        <span className="font-mono text-xs text-[var(--text-primary)]">
+          {row.providerRef || row.reference || row._id?.slice(-8) || '—'}
+        </span>
       ),
     },
     {
       key: 'tenant',
-      label: 'Tenant',
+      label: 'Business',
       render: (row) => (
         <span className="text-sm text-[var(--text-primary)]">
           {row.tenant?.name || row.tenantName || '—'}
@@ -125,7 +112,7 @@ export default function Payments() {
     },
     {
       key: 'createdAt',
-      label: 'Date',
+      label: 'When',
       render: (row) => (
         <span className="text-xs text-[var(--text-muted)]">
           {row.createdAt ? formatDateTime(row.createdAt) : '—'}
@@ -154,53 +141,61 @@ export default function Payments() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Payments</h1>
+        <h1 className="text-2xl font-bold text-[var(--text-primary)]">
+          Payments
+        </h1>
         <p className="text-sm text-[var(--text-muted)] mt-1">
           {meta.total} total payments
         </p>
       </div>
 
       {stats && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
-            label="Succeeded"
+            label="Success"
             value={stats?.byStatus?.success ?? 0}
+            hint={formatMoneyMajor(
+              stats?.byStatusAmount?.success ?? 0,
+              'KES'
+            )}
             icon={HiCheckCircle}
             color="text-green-500"
           />
           <StatCard
             label="Pending"
             value={stats?.byStatus?.pending ?? 0}
+            hint={formatMoneyMajor(
+              stats?.byStatusAmount?.pending ?? 0,
+              'KES'
+            )}
             icon={HiClock}
             color="text-amber-500"
           />
           <StatCard
             label="Failed"
             value={stats?.byStatus?.failed ?? 0}
+            hint={formatMoneyMajor(
+              stats?.byStatusAmount?.failed ?? 0,
+              'KES'
+            )}
             icon={HiXCircle}
             color="text-red-500"
           />
           <StatCard
-            label="Total amount"
-            value={formatMoneyMajor(stats?.totals?.amount ?? 0, 'KES')}
-            icon={HiCash}
-            color="text-rose-500"
+            label="Refunded"
+            value={stats?.byStatus?.refunded ?? 0}
+            hint={formatMoneyMajor(
+              stats?.byStatusAmount?.refunded ?? 0,
+              'KES'
+            )}
+            icon={HiRefresh}
+            color="text-blue-500"
           />
         </div>
       )}
 
       <Card padding={false}>
         <div className="p-4 border-b border-[var(--border-color)] flex flex-col sm:flex-row gap-3">
-          <div className="flex-1">
-            <SearchBar
-              value={status}
-              onChange={(v) => {
-                setStatus(v);
-                setPage(1);
-              }}
-              placeholder="Filter by status..."
-            />
-          </div>
           <div className="w-full sm:w-48">
             <Select
               value={status}

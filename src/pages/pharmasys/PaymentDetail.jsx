@@ -152,7 +152,7 @@ export default function PaymentDetail() {
             Payment
           </h1>
           <p className="text-sm text-[var(--text-muted)] mt-1 font-mono">
-            {payment.reference || payment._id}
+            {payment.reference || payment.providerRef || payment._id}
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -186,9 +186,31 @@ export default function PaymentDetail() {
             <div>
               <dt className="text-[var(--text-secondary)]">Invoice</dt>
               <dd className="font-mono text-[var(--text-primary)]">
-                {payment.invoiceNumber || '—'}
+                {payment.invoice?.invoiceNumber || payment.invoiceNumber || '—'}
               </dd>
             </div>
+            <div>
+              <dt className="text-[var(--text-secondary)]">Purpose</dt>
+              <dd className="text-[var(--text-primary)] capitalize">
+                {payment.purpose || '—'}
+              </dd>
+            </div>
+            {payment.mpesaReceipt && (
+              <div>
+                <dt className="text-[var(--text-secondary)]">M-Pesa receipt</dt>
+                <dd className="font-mono text-[var(--text-primary)]">
+                  {payment.mpesaReceipt}
+                </dd>
+              </div>
+            )}
+            {payment.failureReason && (
+              <div className="col-span-2">
+                <dt className="text-[var(--text-secondary)]">Failure reason</dt>
+                <dd className="text-[var(--text-primary)]">
+                  {payment.failureReason}
+                </dd>
+              </div>
+            )}
             <div>
               <dt className="text-[var(--text-secondary)]">Created</dt>
               <dd className="text-[var(--text-primary)]">
@@ -264,8 +286,13 @@ export default function PaymentDetail() {
                     </span>
                   </div>
                   <p className="text-xs font-mono text-[var(--text-muted)] mt-1 truncate">
-                    {a.reference || a._id}
+                    {a.mpesaReceipt || a.providerRef || a._id}
                   </p>
+                  {a.failureReason && (
+                    <p className="text-xs text-[var(--text-muted)] mt-1">
+                      {a.failureReason}
+                    </p>
+                  )}
                 </li>
               ))}
             </ul>

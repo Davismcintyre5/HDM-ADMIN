@@ -4,8 +4,8 @@ import {
   HiArrowLeft,
   HiBan,
   HiCheckCircle,
+  HiTrash,
   HiUser,
-  HiOfficeBuilding,
   HiUserGroup,
 } from 'react-icons/hi';
 import Card from '../../components/pharmasys/ui/Card';
@@ -13,19 +13,23 @@ import Badge from '../../components/pharmasys/ui/Badge';
 import Button from '../../components/pharmasys/ui/Button';
 import Spinner from '../../components/pharmasys/ui/Spinner';
 import Modal from '../../components/pharmasys/ui/Modal';
+import Input from '../../components/pharmasys/ui/Input';
 import Textarea from '../../components/pharmasys/ui/Textarea';
 import { useToast } from '../../context/pharmasys/ToastContext';
 import {
   getTenant,
+  getTenantStats,
   suspendTenant,
   reactivateTenant,
   impersonateTenant,
+  deleteTenant,
 } from '../../services/pharmasys/tenants';
 import {
   formatDate,
   formatDateTime,
   relativeTime,
 } from '../../utils/pharmasys/formatDate';
+import { formatMoneyMajor } from '../../utils/pharmasys/formatMoney';
 import { statusVariant, statusLabel } from '../../utils/pharmasys/constants';
 
 export default function TenantDetail() {
@@ -39,6 +43,11 @@ export default function TenantDetail() {
 
   const [suspendOpen, setSuspendOpen] = useState(false);
   const [suspendReason, setSuspendReason] = useState('');
+
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [confirmName, setConfirmName] = useState('');
+  const [deleteHard, setDeleteHard] = useState(false);
+  const [deleteStats, setDeleteStats] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -108,6 +117,32 @@ export default function TenantDetail() {
     }
   };
 
+  const openDeleteModal = async () => {
+    setConfirmName('');
+    setDeleteHard(false);
+    setDeleteOpen(true);
+    setDeleteStats(null);
+    try {
+      const res = await getTenantStats(id);
+      setDeleteStats(res?.data?.stats || res?.stats || null);
+    } catch {
+      /* stats are optional */
+    }
+  };
+
+  const doDelete = async () => {
+    setBusy(true);
+    try {
+      await deleteTenant(id, { hard: deleteHard });
+      toast.success(deleteHard ? 'Tenant permanently deleted' : 'Tenant deleted');
+      navigate('/pharmasys/tenants');
+    } catch (err) {
+      toast.error(err.message || 'Failed to delete');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -118,7 +153,8 @@ export default function TenantDetail() {
 
   if (!data?.tenant) return null;
 
-  const { tenant, owner, branches = [], counts } = data;
+  const { tenant, owner, pending, counts, staffByRole, salesSummary, lastSale, invoices } =
+    data;
 
   return (
     <div className="space-y-6">
@@ -163,7 +199,7 @@ export default function TenantDetail() {
               Suspend
             </Button>
           )}
-          {(tenant.status === 'suspended' || tenant.status === 'rejected') && (
+          {tenant.status === 'suspended' && (
             <Button
               variant="success"
               size="sm"
@@ -174,29 +210,68 @@ export default function TenantDetail() {
               Reactivate
             </Button>
           )}
+          <Button
+            variant="danger"
+            size="sm"
+            icon={<HiTrash className="w-4 h-4" />}
+            onClick={openDeleteModal}
+            disabled={busy}
+          >
+            Delete
+          </Button>
         </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <MiniStat
-          icon={HiOfficeBuilding}
-          label="Branches"
-          value={counts?.branches ?? branches.length ?? 0}
+          label="Drugs"
+          value={(counts?.drugs ?? 0).toLocaleString()}
         />
         <MiniStat
-          icon={HiUserGroup}
+          label="Customers"
+          value={(counts?.customers ?? 0).toLocaleString()}
+        />
+        <MiniStat
+          label="Sales"
+          value={(counts?.sales ?? 0).toLocaleString()}
+          hint={
+            lastSale ? `Last: ${relativeTime(lastSale.createdAt)}` : 'No sales yet'
+          }
+        />
+        <MiniStat
           label="Staff"
-          value={counts?.staff ?? 0}
+          value={(counts?.staff ?? 0).toLocaleString()}
+          hint={
+            staffByRole
+              ? `${staffByRole.owners}o · ${staffByRole.managers}m · ${staffByRole.cashiers}c`
+              : undefined
+          }
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <MiniStat
+          label="Sales total"
+          value={
+            salesSummary
+              ? formatMoneyMajor(salesSummary.total, salesSummary.currency)
+              : '—'
+          }
+          hint={`${salesSummary?.count ?? 0} transactions`}
         />
         <MiniStat
-          icon={HiOfficeBuilding}
-          label="Plan"
-          value={tenant.planCode || tenant.planId || '—'}
+          label="Invoices"
+          value={(invoices?.total ?? 0).toLocaleString()}
+          hint={`${invoices?.paid ?? 0} paid`}
         />
         <MiniStat
-          icon={HiCheckCircle}
-          label="Status"
-          value={statusLabel(tenant.status)}
+          label="Last sale"
+          value={
+            lastSale
+              ? formatMoneyMajor(lastSale.grandTotal, lastSale.currency)
+              : '—'
+          }
+          hint={lastSale?.invoiceNo || 'No sales yet'}
         />
       </div>
 
@@ -242,9 +317,6 @@ export default function TenantDetail() {
                   <Badge variant="default">{owner.status}</Badge>
                 </Row>
               )}
-              {owner.lastLoginAt && (
-                <Row label="Last login">{relativeTime(owner.lastLoginAt)}</Row>
-              )}
             </dl>
           ) : (
             <p className="text-sm text-[var(--text-muted)]">
@@ -253,32 +325,30 @@ export default function TenantDetail() {
           )}
         </Card>
 
-        <Card title="Branches">
-          {branches.length > 0 ? (
-            <ul className="divide-y divide-[var(--border-color)]">
-              {branches.map((b, i) => (
-                <li
-                  key={b._id || b.code || i}
-                  className="py-3 flex items-center justify-between gap-3"
-                >
-                  <div>
-                    <p className="text-sm font-medium text-[var(--text-primary)]">
-                      {b.name}
-                    </p>
-                    {b.code && (
-                      <p className="text-xs text-[var(--text-muted)] font-mono">
-                        {b.code}
-                      </p>
-                    )}
-                  </div>
-                  <Badge variant={b.isActive ? 'success' : 'default'} dot>
-                    {b.isActive ? 'Active' : 'Inactive'}
-                  </Badge>
-                </li>
-              ))}
-            </ul>
+        <Card title="Pending activation">
+          {pending ? (
+            <dl className="space-y-3 text-sm">
+              <Row label="Status">
+                <Badge variant="warning">{pending.status}</Badge>
+              </Row>
+              {pending.priority && (
+                <Row label="Priority">
+                  <span className="capitalize">{pending.priority}</span>
+                </Row>
+              )}
+              {pending.registeredAt && (
+                <Row label="Registered">
+                  {formatDateTime(pending.registeredAt)}
+                </Row>
+              )}
+              {pending.slaDeadline && (
+                <Row label="SLA">{formatDateTime(pending.slaDeadline)}</Row>
+              )}
+            </dl>
           ) : (
-            <p className="text-sm text-[var(--text-muted)]">No branches yet.</p>
+            <p className="text-sm text-[var(--text-muted)]">
+              No pending record.
+            </p>
           )}
         </Card>
       </div>
@@ -310,6 +380,90 @@ export default function TenantDetail() {
           rows={3}
         />
       </Modal>
+
+      <Modal
+        open={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        title={deleteHard ? 'Permanently delete tenant' : 'Delete tenant'}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setDeleteOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              onClick={doDelete}
+              disabled={confirmName !== tenant.name}
+              loading={busy}
+            >
+              {deleteHard ? 'Delete permanently' : 'Delete'}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div className="text-sm text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+            {deleteHard ? (
+              <>
+                <p className="font-medium mb-1">This cannot be undone.</p>
+                <p>
+                  Permanently deletes <strong>{tenant.name}</strong> and all
+                  related data.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="font-medium mb-1">Soft delete</p>
+                <p>
+                  The tenant is marked as deleted and all users are suspended.
+                  Data is preserved.
+                </p>
+              </>
+            )}
+          </div>
+
+          {deleteHard && deleteStats && (
+            <div className="text-xs bg-[var(--bg-secondary)] rounded-lg p-3">
+              <p className="font-medium text-[var(--text-primary)] mb-2">
+                Will destroy:
+              </p>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                {Object.entries(deleteStats)
+                  .filter(([, v]) => typeof v === 'number' && v > 0)
+                  .map(([k, v]) => (
+                    <div key={k} className="flex justify-between">
+                      <span className="text-[var(--text-muted)] capitalize">
+                        {k}
+                      </span>
+                      <span className="text-[var(--text-primary)] font-medium">
+                        {v.toLocaleString()}
+                      </span>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={deleteHard}
+              onChange={(e) => setDeleteHard(e.target.checked)}
+              className="w-4 h-4 accent-red-600"
+            />
+            <span className="text-sm text-[var(--text-primary)]">
+              Permanently delete (cannot be undone)
+            </span>
+          </label>
+
+          <Input
+            label="Type the business name to confirm"
+            value={confirmName}
+            onChange={(e) => setConfirmName(e.target.value)}
+            placeholder={tenant.name}
+          />
+        </div>
+      </Modal>
     </div>
   );
 }
@@ -323,20 +477,14 @@ function Row({ label, children }) {
   );
 }
 
-function MiniStat({ icon: Icon, label, value }) {
+function MiniStat({ label, value, hint }) {
   return (
     <Card>
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-rose-50 dark:bg-rose-950 flex items-center justify-center">
-          <Icon className="w-5 h-5 text-rose-600 dark:text-rose-400" />
-        </div>
-        <div className="min-w-0">
-          <p className="text-xs text-[var(--text-muted)]">{label}</p>
-          <p className="text-lg font-semibold text-[var(--text-primary)] capitalize truncate">
-            {value}
-          </p>
-        </div>
-      </div>
+      <p className="text-xs text-[var(--text-muted)]">{label}</p>
+      <p className="text-lg font-semibold text-[var(--text-primary)] mt-1 truncate">
+        {value}
+      </p>
+      {hint && <p className="text-xs text-[var(--text-muted)] mt-0.5">{hint}</p>}
     </Card>
   );
 }

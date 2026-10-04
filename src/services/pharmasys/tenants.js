@@ -10,6 +10,11 @@ export async function getTenant(id) {
   return res.data;
 }
 
+export async function getTenantStats(id) {
+  const res = await api.get(`/tenants/${id}/stats`);
+  return res.data;
+}
+
 export async function updateTenant(id, patch) {
   const res = await api.patch(`/tenants/${id}`, patch);
   return res.data;
@@ -23,6 +28,18 @@ export async function suspendTenant(id, data) {
 export async function reactivateTenant(id) {
   const res = await api.post(`/tenants/${id}/reactivate`);
   return res.data;
+}
+
+export async function deleteTenant(id, { hard = false } = {}) {
+  const res = await api.delete(`/tenants/${id}`, {
+    params: hard ? { hard: 'true' } : undefined,
+  });
+  return res.data;
+}
+
+// Back-compat alias
+export async function deleteClient(id) {
+  return deleteTenant(id, { hard: false });
 }
 
 export async function impersonateTenant(id) {

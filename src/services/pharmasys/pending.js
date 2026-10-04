@@ -1,5 +1,10 @@
 import api from './api';
 
+export async function getApprovals(filter = 'all') {
+  const res = await api.get('/pending', { params: { filter } });
+  return res.data;
+}
+
 export async function getPendingList(params) {
   const res = await api.get('/pending', { params });
   return res.data;
