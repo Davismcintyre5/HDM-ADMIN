@@ -12,6 +12,7 @@ import Company from '../../pages/portfolio/Company';
 import Settings from '../../pages/portfolio/Settings';
 import Health from '../../pages/portfolio/Health';
 import SmartGenUsers from '../../pages/portfolio/SmartGenUsers';
+import PaymentRequests from '../../pages/portfolio/PaymentRequests';
 
 const routes = (
   <>
@@ -22,6 +23,7 @@ const routes = (
     <Route path="projects" element={<Projects />} />
     <Route path="photos" element={<Photos />} />
     <Route path="contacts" element={<Contacts />} />
+    <Route path="payment-requests" element={<PaymentRequests />} />
     <Route path="cloudinary" element={<Cloudinary />} />
     <Route path="mongodb" element={<MongoDB />} />
     <Route path="backups" element={<Backups />} />

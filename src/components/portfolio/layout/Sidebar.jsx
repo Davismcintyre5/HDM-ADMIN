@@ -1,6 +1,6 @@
 import { NavLink, Link } from 'react-router-dom';
 import { useThemeSidebar } from '../../../context/portfolio/ThemeSidebarContext';
-import { HiViewGrid, HiCode, HiClipboardList, HiPhotograph, HiHeart ,HiMail, HiCloud,HiUsers, HiServer, HiDatabase, HiOfficeBuilding, HiCog, HiChevronLeft, HiChevronRight, HiX, HiHome, HiBriefcase } from 'react-icons/hi';
+import { HiViewGrid, HiCode, HiClipboardList, HiPhotograph,HiCreditCard, HiHeart ,HiMail, HiCloud,HiUsers, HiServer, HiDatabase, HiOfficeBuilding, HiCog, HiChevronLeft, HiChevronRight, HiX, HiHome, HiBriefcase } from 'react-icons/hi';
 
 const navItems = [
   { to: '/portfolio', icon: HiViewGrid, label: 'Dashboard', end: true },
@@ -9,11 +9,11 @@ const navItems = [
   { to: '/portfolio/projects', icon: HiClipboardList, label: 'Projects' },
   { to: '/portfolio/photos', icon: HiPhotograph, label: 'Photos' },
   { to: '/portfolio/contacts', icon: HiMail, label: 'Messages' },
+  { to: '/portfolio/payment-requests', icon: HiCreditCard, label: 'Payment Requests' },
   { to: '/portfolio/cloudinary', icon: HiCloud, label: 'Cloudinary' },
   { to: '/portfolio/mongodb', icon: HiServer, label: 'MongoDB' },
   { to: '/portfolio/backups', icon: HiDatabase, label: 'Backups' },
   { to: '/portfolio/company', icon: HiOfficeBuilding, label: 'Company' },
-  { to: '/portfolio/smartgen-users', icon: HiUsers, label: 'SmartGen Users' },
   { to: '/portfolio/health', icon: HiHeart, label: 'Health' },
   { to: '/portfolio/settings', icon: HiCog, label: 'Settings' },
 ];
