@@ -1,7 +1,7 @@
 import {
-  HiShoppingCart, HiOfficeBuilding, HiShieldCheck, HiSparkles,
-  HiLightningBolt, HiMusicNote, HiDocumentText, HiBriefcase,
-  HiGlobe, HiMail, HiWifi, HiCash, HiShoppingBag, HiAcademicCap,
+  HiShoppingCart, HiShieldCheck, HiSparkles,
+  HiBriefcase, HiGlobe,
+  HiMail, HiWifi, HiCash, HiShoppingBag, HiAcademicCap,
   HiPlus,
 } from 'react-icons/hi'
 
@@ -31,18 +31,6 @@ export const systems = [
     stats: { pharmacies: '500', branches: '1.2K', uptime: '99.9%' }
   },
   {
-    id: 'hdmerp',
-    name: 'HDM ERP',
-    description: 'Enterprise resource planning',
-    icon: HiOfficeBuilding,
-    bgGradient: 'from-green-500 to-green-600',
-    bgLight: 'bg-green-50 dark:bg-green-950',
-    textColor: 'text-green-600 dark:text-green-400',
-    borderColor: 'border-green-200 dark:border-green-800',
-    hoverBg: 'hover:bg-green-600',
-    stats: { employees: '1,234', projects: '89', efficiency: '94%' }
-  },
-  {
     id: 'nexguard',
     name: 'NexGuard',
     description: 'Cybersecurity & threat protection',
@@ -67,30 +55,6 @@ export const systems = [
     stats: { models: '234', accuracy: '97.8%', predictions: '1.2M' }
   },
   {
-    id: 'spark',
-    name: 'Spark',
-    description: 'Privacy-first messaging by HDM',
-    icon: HiLightningBolt,
-    bgGradient: 'from-sky-500 to-sky-600',
-    bgLight: 'bg-sky-50 dark:bg-sky-950',
-    textColor: 'text-sky-600 dark:text-sky-400',
-    borderColor: 'border-sky-200 dark:border-sky-800',
-    hoverBg: 'hover:bg-sky-600',
-    stats: { users: '8,901', messages: '1.2M', uptime: '99.9%' }
-  },
-  {
-    id: 'docusoft',
-    name: 'Docusoft',
-    description: 'Document & software marketplace',
-    icon: HiDocumentText,
-    bgGradient: 'from-purple-500 to-purple-600',
-    bgLight: 'bg-purple-50 dark:bg-purple-950',
-    textColor: 'text-purple-600 dark:text-purple-400',
-    borderColor: 'border-purple-200 dark:border-purple-800',
-    hoverBg: 'hover:bg-purple-600',
-    stats: { products: '1,234', downloads: '45K', sellers: '567' }
-  },
-  {
     id: 'portfolio',
     name: 'HDM Portfolio',
     description: 'Company portfolio & showcase',
@@ -101,18 +65,6 @@ export const systems = [
     borderColor: 'border-emerald-200 dark:border-emerald-800',
     hoverBg: 'hover:bg-emerald-600',
     stats: { apps: '45', projects: '120', services: '12' }
-  },
-  {
-    id: 'vibe',
-    name: 'Vibe',
-    description: 'Creative collaboration platform',
-    icon: HiMusicNote,
-    bgGradient: 'from-purple-500 via-violet-500 to-blue-500',
-    bgLight: 'bg-purple-50 dark:bg-purple-950',
-    textColor: 'text-purple-600 dark:text-purple-400',
-    borderColor: 'border-purple-200 dark:border-purple-800',
-    hoverBg: 'hover:bg-purple-600',
-    stats: { users: '8,901', sessions: '23K', engagement: '87%' }
   },
   {
     id: 'bizhub',
@@ -175,18 +127,6 @@ export const systems = [
     stats: { stores: '234', products: '12K', revenue: 'KES 5M' }
   },
   {
-    id: 'eduprime',
-    name: 'EduPrime',
-    description: 'School management & administration',
-    icon: HiAcademicCap,
-    bgGradient: 'from-amber-500 to-orange-600',
-    bgLight: 'bg-amber-50 dark:bg-amber-950',
-    textColor: 'text-amber-600 dark:text-amber-400',
-    borderColor: 'border-amber-200 dark:border-amber-800',
-    hoverBg: 'hover:bg-amber-600',
-    stats: { schools: '45', students: '12K', teachers: '890' }
-  },
-  {
     id: 'farmvexa',
     name: 'FarmVexa',
     description: 'AI-Powered Farm Intelligence',
@@ -209,6 +149,18 @@ export const systems = [
     borderColor: 'border-emerald-200 dark:border-emerald-800',
     hoverBg: 'hover:bg-emerald-600',
     stats: { users: '1,250', posts: '4.5K', groups: '28' }
+  },
+  {
+    id: 'eduprime',
+    name: 'EduPrime',
+    description: 'School management & administration',
+    icon: HiAcademicCap,
+    bgGradient: 'from-amber-500 to-orange-600',
+    bgLight: 'bg-amber-50 dark:bg-amber-950',
+    textColor: 'text-amber-600 dark:text-amber-400',
+    borderColor: 'border-amber-200 dark:border-amber-800',
+    hoverBg: 'hover:bg-amber-600',
+    stats: { schools: '45', students: '12K', teachers: '890' }
   }
 ]
 
