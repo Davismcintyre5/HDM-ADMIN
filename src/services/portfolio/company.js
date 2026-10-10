@@ -16,3 +16,17 @@ export async function uploadLogo(formData) {
   });
   return res.data;
 }
+
+export async function uploadLogoDark(formData) {
+  const res = await api.post('/company/logo-dark', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return res.data;
+}
+
+export async function uploadFavicon(formData) {
+  const res = await api.post('/company/favicon', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return res.data;
+}

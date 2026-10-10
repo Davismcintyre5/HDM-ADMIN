@@ -11,3 +11,5 @@ export * from './company';
 export * from './settings';
 export * from './cloudinary';
 export * from './mongodb';
+export * from './health';
+export * from './smartgenUsers';

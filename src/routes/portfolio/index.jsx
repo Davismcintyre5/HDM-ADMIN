@@ -10,6 +10,8 @@ import MongoDB from '../../pages/portfolio/MongoDB';
 import Backups from '../../pages/portfolio/Backups';
 import Company from '../../pages/portfolio/Company';
 import Settings from '../../pages/portfolio/Settings';
+import Health from '../../pages/portfolio/Health';
+import SmartGenUsers from '../../pages/portfolio/SmartGenUsers';
 
 const routes = (
   <>
@@ -25,6 +27,8 @@ const routes = (
     <Route path="backups" element={<Backups />} />
     <Route path="company" element={<Company />} />
     <Route path="settings" element={<Settings />} />
+    <Route path="health" element={<Health />} />
+    <Route path="smartgen-users" element={<SmartGenUsers />} />
   </>
 );
 
