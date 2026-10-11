@@ -7,6 +7,9 @@ import {
   HiBan,
   HiMail,
   HiEye,
+  HiDocumentDownload,
+  HiReceiptTax,
+  HiDocumentReport,
 } from 'react-icons/hi';
 import Card from '../../components/portfolio/ui/Card';
 import Table from '../../components/portfolio/ui/Table';
@@ -25,6 +28,9 @@ import {
   initiatePaymentRequest,
   cancelPaymentRequest,
   deletePaymentRequest,
+  downloadInvoicePdf,
+  downloadReceiptPdf,
+  downloadStatementPdf,
 } from '../../services/portfolio/paymentRequests';
 import { formatDate, relativeTime } from '../../utils/portfolio/formatDate';
 
@@ -74,6 +80,14 @@ const EMPTY_FORM = {
   amount: '',
 };
 
+const EMPTY_STATEMENT = {
+  mode: 'full',
+  month: '',
+  from: '',
+  to: '',
+  status: '',
+};
+
 export default function PaymentRequests() {
   const toast = useToast();
 
@@ -89,10 +103,15 @@ export default function PaymentRequests() {
   const [filter, setFilter] = useState('');
   const [search, setSearch] = useState('');
   const [actionLoading, setActionLoading] = useState(null);
+  const [pdfLoading, setPdfLoading] = useState(null);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [creating, setCreating] = useState(false);
+
+  const [statementOpen, setStatementOpen] = useState(false);
+  const [statementFilters, setStatementFilters] = useState(EMPTY_STATEMENT);
+  const [downloadingStatement, setDownloadingStatement] = useState(false);
 
   const [detailId, setDetailId] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState({
@@ -165,6 +184,11 @@ export default function PaymentRequests() {
   const openCreate = () => {
     setForm(EMPTY_FORM);
     setCreateOpen(true);
+  };
+
+  const openStatement = () => {
+    setStatementFilters(EMPTY_STATEMENT);
+    setStatementOpen(true);
   };
 
   const handleRefresh = async () => {
@@ -262,6 +286,51 @@ export default function PaymentRequests() {
       toast.error(err.message || 'Failed to delete');
     } finally {
       setActionLoading(null);
+    }
+  };
+
+  const handleDownloadInvoice = async (row) => {
+    const id = row._id || row.id;
+    setPdfLoading(`invoice-${id}`);
+    try {
+      await downloadInvoicePdf(row);
+      toast.success('Invoice downloaded');
+    } catch (err) {
+      toast.error(err.message || 'Failed to download invoice');
+    } finally {
+      setPdfLoading(null);
+    }
+  };
+
+  const handleDownloadReceipt = async (row) => {
+    const id = row._id || row.id;
+    setPdfLoading(`receipt-${id}`);
+    try {
+      await downloadReceiptPdf(row);
+      toast.success('Receipt downloaded');
+    } catch (err) {
+      toast.error(err.message || 'Failed to download receipt');
+    } finally {
+      setPdfLoading(null);
+    }
+  };
+
+  const handleDownloadStatement = async () => {
+    setDownloadingStatement(true);
+    try {
+      const f = statementFilters;
+      await downloadStatementPdf({
+        month: f.mode === 'month' ? f.month : undefined,
+        from: f.mode === 'range' ? f.from : undefined,
+        to: f.mode === 'range' ? f.to : undefined,
+        status: f.status || undefined,
+      });
+      toast.success('Statement downloaded');
+      setStatementOpen(false);
+    } catch (err) {
+      toast.error(err.message || 'Failed to download statement');
+    } finally {
+      setDownloadingStatement(false);
     }
   };
 
@@ -416,6 +485,44 @@ export default function PaymentRequests() {
           );
         }
 
+        // Invoice PDF — available for all statuses
+        buttons.push(
+          <Button
+            key="invoice"
+            size="sm"
+            variant="outline"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDownloadInvoice(row);
+            }}
+            loading={pdfLoading === `invoice-${id}`}
+            disabled={pdfLoading === `receipt-${id}`}
+            title="Download invoice"
+          >
+            <HiDocumentDownload className="w-3.5 h-3.5" />
+          </Button>
+        );
+
+        // Receipt PDF — success only
+        if (row.status === 'success') {
+          buttons.push(
+            <Button
+              key="receipt"
+              size="sm"
+              variant="outline"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDownloadReceipt(row);
+              }}
+              loading={pdfLoading === `receipt-${id}`}
+              disabled={pdfLoading === `invoice-${id}`}
+              title="Download receipt"
+            >
+              <HiReceiptTax className="w-3.5 h-3.5" />
+            </Button>
+          );
+        }
+
         if (['pending', 'processing', 'failed'].includes(row.status)) {
           buttons.push(
             <Button
@@ -467,7 +574,14 @@ export default function PaymentRequests() {
             {stats.failed > 0 && ` · ${stats.failed} failed`}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <Button
+            variant="outline"
+            icon={<HiDocumentReport className="w-4 h-4" />}
+            onClick={openStatement}
+          >
+            Statement
+          </Button>
           <Button
             variant="secondary"
             icon={
@@ -553,6 +667,7 @@ export default function PaymentRequests() {
         </div>
       </Card>
 
+      {/* ─────────── Create Modal ─────────── */}
       <Modal
         open={createOpen}
         onClose={() => setCreateOpen(false)}
@@ -609,12 +724,134 @@ export default function PaymentRequests() {
         </div>
       </Modal>
 
+      {/* ─────────── Statement Modal ─────────── */}
+      <Modal
+        open={statementOpen}
+        onClose={() => setStatementOpen(false)}
+        title="Download Statement"
+        size="md"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setStatementOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDownloadStatement}
+              loading={downloadingStatement}
+              icon={<HiDocumentReport className="w-4 h-4" />}
+            >
+              Download PDF
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <p className="text-xs text-[var(--text-muted)] bg-[var(--bg-secondary)] rounded-lg p-3">
+            Generate a PDF statement of payment requests. Default is full history.
+          </p>
+
+          <div>
+            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-2">
+              Period
+            </label>
+            <div className="flex gap-2">
+              {[
+                { k: 'full', l: 'Full history' },
+                { k: 'month', l: 'By month' },
+                { k: 'range', l: 'By date range' },
+              ].map((o) => (
+                <button
+                  key={o.k}
+                  type="button"
+                  onClick={() =>
+                    setStatementFilters({ ...statementFilters, mode: o.k })
+                  }
+                  className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium border transition ${
+                    statementFilters.mode === o.k
+                      ? 'bg-[var(--accent)] text-white border-[var(--accent)]'
+                      : 'border-[var(--border-color)] text-[var(--text-secondary)] hover:border-[var(--accent)]'
+                  }`}
+                >
+                  {o.l}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {statementFilters.mode === 'month' && (
+            <Input
+              label="Month"
+              type="month"
+              value={statementFilters.month}
+              onChange={(e) =>
+                setStatementFilters({
+                  ...statementFilters,
+                  month: e.target.value,
+                })
+              }
+            />
+          )}
+
+          {statementFilters.mode === 'range' && (
+            <div className="grid grid-cols-2 gap-3">
+              <Input
+                label="From"
+                type="date"
+                value={statementFilters.from}
+                onChange={(e) =>
+                  setStatementFilters({
+                    ...statementFilters,
+                    from: e.target.value,
+                  })
+                }
+              />
+              <Input
+                label="To"
+                type="date"
+                value={statementFilters.to}
+                onChange={(e) =>
+                  setStatementFilters({
+                    ...statementFilters,
+                    to: e.target.value,
+                  })
+                }
+              />
+            </div>
+          )}
+
+          <div>
+            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-2">
+              Status filter
+            </label>
+            <select
+              value={statementFilters.status}
+              onChange={(e) =>
+                setStatementFilters({
+                  ...statementFilters,
+                  status: e.target.value,
+                })
+              }
+              className="w-full px-3 py-2 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-color)] text-sm outline-none"
+            >
+              <option value="">All statuses</option>
+              <option value="success">Success only</option>
+              <option value="pending">Pending only</option>
+              <option value="processing">Processing only</option>
+              <option value="failed">Failed only</option>
+              <option value="cancelled">Cancelled only</option>
+            </select>
+          </div>
+        </div>
+      </Modal>
+
+      {/* ─────────── Detail Modal ─────────── */}
       <DetailModal
         id={detailId}
         onClose={() => setDetailId(null)}
         onChanged={() => load(true)}
       />
 
+      {/* ─────────── Confirm Dialogs ─────────── */}
       <ConfirmDialog
         open={confirmCancel.open}
         onClose={() => setConfirmCancel({ open: false, request: null })}
@@ -652,11 +889,15 @@ export default function PaymentRequests() {
   );
 }
 
-function DetailModal({ id, onClose }) {
+/* ============================================================
+   Detail Modal
+   ============================================================ */
+function DetailModal({ id, onClose, onChanged }) {
   const toast = useToast();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(null);
   const pollRef = useRef(null);
 
   const load = useCallback(
@@ -681,6 +922,32 @@ function DetailModal({ id, onClose }) {
       await load(true);
     } finally {
       setRefreshing(false);
+    }
+  };
+
+  const handleInvoice = async () => {
+    if (!data) return;
+    setPdfLoading('invoice');
+    try {
+      await downloadInvoicePdf(data);
+      toast.success('Invoice downloaded');
+    } catch (err) {
+      toast.error(err.message || 'Failed to download invoice');
+    } finally {
+      setPdfLoading(null);
+    }
+  };
+
+  const handleReceipt = async () => {
+    if (!data) return;
+    setPdfLoading('receipt');
+    try {
+      await downloadReceiptPdf(data);
+      toast.success('Receipt downloaded');
+    } catch (err) {
+      toast.error(err.message || 'Failed to download receipt');
+    } finally {
+      setPdfLoading(null);
     }
   };
 
@@ -722,6 +989,26 @@ function DetailModal({ id, onClose }) {
       size="lg"
       footer={
         <>
+          <Button
+            variant="outline"
+            onClick={handleInvoice}
+            loading={pdfLoading === 'invoice'}
+            disabled={pdfLoading === 'receipt'}
+            icon={<HiDocumentDownload className="w-4 h-4" />}
+          >
+            Invoice PDF
+          </Button>
+          {data?.status === 'success' && (
+            <Button
+              variant="outline"
+              onClick={handleReceipt}
+              loading={pdfLoading === 'receipt'}
+              disabled={pdfLoading === 'invoice'}
+              icon={<HiReceiptTax className="w-4 h-4" />}
+            >
+              Receipt PDF
+            </Button>
+          )}
           <Button
             variant="secondary"
             onClick={handleRefresh}
@@ -843,6 +1130,9 @@ function DetailModal({ id, onClose }) {
   );
 }
 
+/* ============================================================
+   Row helper
+   ============================================================ */
 function Row({ label, children }) {
   return (
     <div className="flex justify-between gap-3">
