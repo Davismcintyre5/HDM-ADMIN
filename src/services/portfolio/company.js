@@ -30,3 +30,17 @@ export async function uploadFavicon(formData) {
   });
   return res.data;
 }
+
+export async function uploadStamp(formData) {
+  const res = await api.post('/company/stamp', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return res.data;
+}
+
+export async function uploadSeal(formData) {
+  const res = await api.post('/company/seal', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return res.data;
+}

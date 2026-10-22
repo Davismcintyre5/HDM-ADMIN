@@ -5,6 +5,8 @@ import {
   uploadLogo,
   uploadLogoDark,
   uploadFavicon,
+  uploadStamp,
+  uploadSeal,
 } from '../../services/portfolio/company';
 import Input from '../../components/portfolio/ui/Input';
 import Toggle from '../../components/portfolio/ui/Toggle';
@@ -59,24 +61,48 @@ export default function Company() {
   const handleUpload = async (type, file) => {
     if (!file) return;
     const formData = new FormData();
-    if (type === 'favicon') formData.append('icon', file);
-    else formData.append('logo', file);
+
+    const fieldByType = {
+      logo: 'logo',
+      logoDark: 'logo',
+      favicon: 'icon',
+      stamp: 'stamp',
+      seal: 'seal',
+    };
+    formData.append(fieldByType[type] || 'file', file);
 
     setUploading((p) => ({ ...p, [type]: true }));
     try {
-      const fn =
-        type === 'logoDark'
-          ? uploadLogoDark
-          : type === 'favicon'
-          ? uploadFavicon
-          : uploadLogo;
+      const fnByType = {
+        logo: uploadLogo,
+        logoDark: uploadLogoDark,
+        favicon: uploadFavicon,
+        stamp: uploadStamp,
+        seal: uploadSeal,
+      };
+      const fn = fnByType[type] || uploadLogo;
       const res = await fn(formData);
-      const url = res.data?.logo || res.data?.icon || res.data?.url;
+
+      const updated = res.data || res;
+      const url =
+        updated[`${type}Url`] ||
+        updated[type] ||
+        updated.logo ||
+        updated.icon ||
+        updated.url;
+
       if (url) {
-        const key = type === 'favicon' ? 'favicon' : type;
+        const key =
+          type === 'favicon'
+            ? 'favicon'
+            : type === 'stamp'
+            ? 'stampUrl'
+            : type === 'seal'
+            ? 'sealUrl'
+            : type;
         setCompany((prev) => ({ ...prev, [key]: url }));
       }
-      toast.success(`${type} uploaded`);
+      toast.success(`${labelFor(type)} uploaded`);
     } catch (err) {
       toast.error(err.message || 'Upload failed');
     } finally {
@@ -152,24 +178,65 @@ export default function Company() {
             onChange={(e) => updateField('whatsappMessage', e.target.value)}
             placeholder="Hello HDM!"
           />
+        </div>
+      </Card>
+
+      <Card>
+        <h3 className="font-semibold mb-4 text-[var(--text-primary)]">
+          Address &amp; Location
+        </h3>
+        <div className="space-y-3">
           <Input
-            label="Address"
+            label="Street / Physical Address"
             value={company.address || ''}
             onChange={(e) => updateField('address', e.target.value)}
+            placeholder="Kenyatta Avenue"
           />
+
           <div className="grid grid-cols-2 gap-4">
             <Input
-              label="City"
+              label="P.O. Box"
+              value={company.poBox || ''}
+              onChange={(e) => updateField('poBox', e.target.value)}
+              placeholder="P.O. Box 2460-20100"
+            />
+            <Input
+              label="Postal Code"
+              value={company.postalCode || ''}
+              onChange={(e) => updateField('postalCode', e.target.value)}
+              placeholder="20100"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="City / Town"
               value={company.city || ''}
               onChange={(e) => updateField('city', e.target.value)}
+              placeholder="Nakuru"
             />
             <Input
               label="Country"
               value={company.country || ''}
               onChange={(e) => updateField('country', e.target.value)}
+              placeholder="Kenya"
             />
           </div>
 
+          <Input
+            label="Website"
+            value={company.website || ''}
+            onChange={(e) => updateField('website', e.target.value)}
+            placeholder="www.hdm.co.ke"
+          />
+        </div>
+      </Card>
+
+      <Card>
+        <h3 className="font-semibold mb-4 text-[var(--text-primary)]">
+          Branding
+        </h3>
+        <div className="space-y-4">
           <div className="grid grid-cols-3 gap-4">
             <ImageUpload
               label="Logo"
@@ -188,6 +255,23 @@ export default function Company() {
               value={company.favicon}
               uploading={uploading.favicon}
               onUpload={(f) => handleUpload('favicon', f)}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <ImageUpload
+              label="Official Stamp"
+              value={company.stampUrl}
+              uploading={uploading.stamp}
+              onUpload={(f) => handleUpload('stamp', f)}
+              hint="PNG with transparent background"
+            />
+            <ImageUpload
+              label="Official Seal"
+              value={company.sealUrl}
+              uploading={uploading.seal}
+              onUpload={(f) => handleUpload('seal', f)}
+              hint="PNG with transparent background"
             />
           </div>
 
@@ -301,9 +385,7 @@ export default function Company() {
                 <Toggle
                   label="Show"
                   checked={show}
-                  onChange={(v) =>
-                    updateSocial(s, { url, show: v })
-                  }
+                  onChange={(v) => updateSocial(s, { url, show: v })}
                 />
               </div>
             );
@@ -318,7 +400,17 @@ export default function Company() {
   );
 }
 
-function ImageUpload({ label, value, onUpload, uploading }) {
+function labelFor(type) {
+  return {
+    logo: 'Logo',
+    logoDark: 'Dark Logo',
+    favicon: 'Favicon',
+    stamp: 'Stamp',
+    seal: 'Seal',
+  }[type] || type;
+}
+
+function ImageUpload({ label, value, onUpload, uploading, hint }) {
   return (
     <div>
       <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
@@ -353,6 +445,9 @@ function ImageUpload({ label, value, onUpload, uploading }) {
           />
         </label>
       </div>
+      {hint && (
+        <p className="text-[10px] text-[var(--text-muted)] mt-1">{hint}</p>
+      )}
     </div>
   );
 }

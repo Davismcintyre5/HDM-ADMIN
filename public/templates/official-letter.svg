@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1100" width="800" height="1100">
+  <rect width="800" height="1100" fill="#ffffff"/>
+
+  <!-- Letterhead with logo circle -->
+  <rect x="0" y="0" width="800" height="6" fill="#0a1628"/>
+
+  <circle cx="100" cy="70" r="32" fill="none" stroke="#0a1628" stroke-width="2.5"/>
+  <text x="100" y="82" text-anchor="middle" font-family="Georgia, serif" font-size="26" font-weight="700" fill="#0a1628">H</text>
+
+  <text x="155" y="55" font-family="Georgia, serif" font-size="22" font-weight="700" fill="#0a1628">HDM TECHNOLOGIES</text>
+  <text x="155" y="78" font-family="Georgia, serif" font-size="11" font-style="italic" fill="#4b5563">Building Digital Solutions for Africa</text>
+  <text x="155" y="96" font-family="Georgia, serif" font-size="10" fill="#374151">P.O. Box 2460-20100, Nakuru, Kenya</text>
+  <text x="155" y="112" font-family="Georgia, serif" font-size="10" fill="#1e6ef0">info@hdmtechnologies.com · www.hdm.co.ke</text>
+  <text x="155" y="128" font-family="Georgia, serif" font-size="10" fill="#374151">+254 768 784 909</text>
+
+  <line x1="60" y1="155" x2="740" y2="155" stroke="#0a1628" stroke-width="1.5"/>
+  <line x1="60" y1="159" x2="740" y2="159" stroke="#1e6ef0" stroke-width="0.5"/>
+
+  <!-- Reference block -->
+  <g font-family="Georgia, serif" font-size="10" fill="#4b5563">
+    <text x="60" y="185">Our Ref: HDM/LET/2026/042</text>
+    <text x="60" y="200">Your Ref: ________________</text>
+    <text x="600" y="185" text-anchor="end">22 October 2026</text>
+  </g>
+
+  <!-- Recipient block -->
+  <g font-family="Georgia, serif" font-size="13" fill="#1f2937">
+    <text x="60" y="260" font-weight="700">The Managing Director</text>
+    <text x="60" y="280">Target Company Ltd.</text>
+    <text x="60" y="300">P.O. Box 1234-00100</text>
+    <text x="60" y="320">Nairobi, Kenya</text>
+  </g>
+
+  <!-- Salutation -->
+  <text x="60" y="370" font-family="Georgia, serif" font-size="13" fill="#1f2937">Dear Sir/Madam,</text>
+
+  <!-- Subject line -->
+  <text x="60" y="410" font-family="Georgia, serif" font-size="13" font-weight="700" fill="#0a1628" text-decoration="underline">RE: OFFICIAL BUSINESS MATTER</text>
+
+  <!-- Body -->
+  <g font-family="Georgia, serif" font-size="13" fill="#1f2937">
+    <text x="60" y="450">We write to formally communicate the following matter</text>
+    <text x="60" y="470">regarding our ongoing partnership with your organization.</text>
+
+    <text x="60" y="510">Following our recent meeting held on 15 October 2026,</text>
+    <text x="60" y="530">we are pleased to confirm the terms discussed and to</text>
+    <text x="60" y="550">officially endorse the proposed collaboration framework.</text>
+
+    <text x="60" y="590">The signed agreement has been attached for your records.</text>
+    <text x="60" y="610">Should you require any clarification, please contact us.</text>
+
+    <text x="60" y="650">We look forward to a continued productive relationship.</text>
+  </g>
+
+  <!-- Sign-off -->
+  <text x="60" y="720" font-family="Georgia, serif" font-size="13" fill="#1f2937">Yours faithfully,</text>
+
+  <!-- Signature area -->
+  <line x1="60" y1="830" x2="240" y2="830" stroke="#0a1628" stroke-width="1"/>
+  <text x="60" y="855" font-family="Georgia, serif" font-size="13" font-weight="700" fill="#0a1628">Davix H. McIntyre</text>
+  <text x="60" y="875" font-family="Georgia, serif" font-size="11" fill="#4b5563">Managing Director</text>
+  <text x="60" y="892" font-family="Georgia, serif" font-size="11" fill="#4b5563">HDM Technologies</text>
+
+  <!-- Stamp placeholder (right side) -->
+  <circle cx="630" cy="820" r="60" fill="none" stroke="#1e6ef0" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.4"/>
+  <text x="630" y="823" text-anchor="middle" font-family="Georgia, serif" font-size="9" fill="#1e6ef0" opacity="0.6">OFFICIAL STAMP</text>
+
+  <!-- Enclosure note -->
+  <text x="60" y="940" font-family="Georgia, serif" font-size="11" font-style="italic" fill="#6b7280">Enc: Signed partnership agreement (1 copy)</text>
+
+  <!-- Footer -->
+  <line x1="60" y1="1000" x2="740" y2="1000" stroke="#e5e7eb" stroke-width="0.5"/>
+  <text x="400" y="1020" text-anchor="middle" font-family="Georgia, serif" font-size="9" fill="#6b7280">© 2026 HDM Technologies. All rights reserved.</text>
+  <text x="400" y="1035" text-anchor="middle" font-family="Georgia, serif" font-size="9" fill="#1e6ef0">www.hdm.co.ke</text>
+</svg>

@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1100" width="800" height="1100">
+  <rect width="800" height="1100" fill="#ffffff"/>
+
+  <!-- Letterhead -->
+  <rect x="0" y="0" width="800" height="6" fill="#0a1628"/>
+  <text x="60" y="60" font-family="Georgia, serif" font-size="22" font-weight="700" fill="#0a1628">HDM TECHNOLOGIES</text>
+  <text x="60" y="82" font-family="Georgia, serif" font-size="11" font-style="italic" fill="#4b5563">Building Digital Solutions for Africa</text>
+  <text x="60" y="100" font-family="Georgia, serif" font-size="10" fill="#374151">P.O. Box 2460-20100, Nakuru, Kenya</text>
+  <text x="60" y="114" font-family="Georgia, serif" font-size="10" fill="#1e6ef0">info@hdmtechnologies.com · www.hdm.co.ke</text>
+
+  <line x1="60" y1="135" x2="740" y2="135" stroke="#0a1628" stroke-width="1.5"/>
+
+  <!-- ANNOUNCEMENT badge -->
+  <rect x="280" y="170" width="240" height="40" fill="#0a1628" rx="4"/>
+  <text x="400" y="196" text-anchor="middle" font-family="Georgia, serif" font-size="14" font-weight="700" fill="#ffffff" letter-spacing="3">ANNOUNCEMENT</text>
+
+  <!-- Headline -->
+  <text x="400" y="260" text-anchor="middle" font-family="Georgia, serif" font-size="26" font-weight="700" fill="#0a1628">Launch of HDM AI Platform</text>
+  <text x="400" y="290" text-anchor="middle" font-family="Georgia, serif" font-size="14" font-style="italic" fill="#4b5563">We are proud to announce a new chapter</text>
+
+  <line x1="300" y1="305" x2="500" y2="305" stroke="#1e6ef0" stroke-width="1"/>
+
+  <!-- Date badge -->
+  <text x="400" y="340" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#1e6ef0" letter-spacing="2">22 OCTOBER 2026 · NAKURU, KENYA</text>
+
+  <!-- Body -->
+  <g font-family="Georgia, serif" font-size="13" fill="#1f2937">
+    <text x="60" y="390">We are excited to officially announce the launch of</text>
+    <text x="60" y="415"><tspan font-weight="700" fill="#0a1628">HDM AI</tspan> — a unified artificial intelligence platform that</text>
+    <text x="60" y="440">will transform how our clients interact with technology.</text>
+
+    <text x="60" y="480">This platform represents months of dedicated work by our</text>
+    <text x="60" y="505">engineering team and marks a major milestone in HDM's</text>
+    <text x="60" y="530">journey to become East Africa's leading tech company.</text>
+
+    <text x="60" y="570">Key highlights:</text>
+    <text x="80" y="595">• Central intelligence across 7+ projects</text>
+    <text x="80" y="615">• Natural language chat interface</text>
+    <text x="80" y="635">• Image generation and code execution</text>
+    <text x="80" y="655">• Available to all verified clients</text>
+  </g>
+
+  <!-- Call to action box -->
+  <rect x="60" y="700" width="680" height="80" fill="#f3f4f6" rx="6"/>
+  <text x="400" y="730" text-anchor="middle" font-family="Georgia, serif" font-size="12" fill="#4b5563">Learn more at</text>
+  <text x="400" y="755" text-anchor="middle" font-family="Georgia, serif" font-size="14" font-weight="700" fill="#1e6ef0">www.hdm.co.ke/ai</text>
+
+  <!-- Signature -->
+  <text x="60" y="850" font-family="Georgia, serif" font-size="13" fill="#1f2937">Sincerely,</text>
+  <line x1="60" y1="920" x2="220" y2="920" stroke="#0a1628" stroke-width="1"/>
+  <text x="60" y="940" font-family="Georgia, serif" font-size="13" font-weight="700" fill="#0a1628">Davix H. McIntyre</text>
+  <text x="60" y="958" font-family="Georgia, serif" font-size="11" fill="#4b5563">Founder &amp; Managing Director</text>
+
+  <!-- Stamp placeholder (right) -->
+  <circle cx="650" cy="900" r="55" fill="none" stroke="#1e6ef0" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.4"/>
+  <text x="650" y="903" text-anchor="middle" font-family="Georgia, serif" font-size="9" fill="#1e6ef0" opacity="0.6">STAMP</text>
+
+  <!-- Footer -->
+  <line x1="60" y1="1000" x2="740" y2="1000" stroke="#e5e7eb" stroke-width="0.5"/>
+  <text x="400" y="1020" text-anchor="middle" font-family="Georgia, serif" font-size="9" fill="#6b7280">© 2026 HDM Technologies. All rights reserved.</text>
+</svg>

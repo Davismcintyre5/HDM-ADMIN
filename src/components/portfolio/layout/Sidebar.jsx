@@ -19,6 +19,7 @@ import {
   HiChevronRight,
   HiX,
   HiHome,
+  HiChat,
 } from 'react-icons/hi';
 
 const navItems = [
@@ -28,6 +29,7 @@ const navItems = [
   { to: '/portfolio/projects', icon: HiClipboardList, label: 'Projects' },
   { to: '/portfolio/photos', icon: HiPhotograph, label: 'Photos' },
   { to: '/portfolio/contacts', icon: HiMail, label: 'Messages' },
+  { to: '/portfolio/communications', icon: HiChat, label: 'Communications' },
   { to: '/portfolio/payment-requests', icon: HiCreditCard, label: 'Payment Requests' },
   { to: '/portfolio/smartgen-users', icon: HiUsers, label: 'SmartGen Users' },
   { to: '/portfolio/cloudinary', icon: HiCloud, label: 'Cloudinary' },
