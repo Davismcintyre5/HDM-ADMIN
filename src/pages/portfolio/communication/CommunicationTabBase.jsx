@@ -1027,8 +1027,16 @@ export default function CommunicationTabBase({
 
         <Card title="Preview" padding={false}>
           <div className="p-4 bg-[var(--bg-tertiary)] overflow-auto">
-            <div className="mx-auto bg-white shadow-md rounded" style={{ width: '794px', maxWidth: '100%' }}>
-              <CommunicationDocument detail={detail} company={company} label={label} />
+            <div
+              className="mx-auto bg-white shadow-md rounded"
+              style={{ width: '794px', maxWidth: '100%' }}
+            >
+              <CommunicationDocument
+                detail={detail}
+                company={company}
+                label={label}
+                type={type}
+              />
             </div>
           </div>
         </Card>
@@ -1174,7 +1182,12 @@ export default function CommunicationTabBase({
           }}
         >
           <div ref={printRef}>
-            <CommunicationDocument detail={detail} company={company} label={label} />
+            <CommunicationDocument
+              detail={detail}
+              company={company}
+              label={label}
+              type={type}
+            />
           </div>
         </div>
       </div>
@@ -1185,17 +1198,14 @@ export default function CommunicationTabBase({
 }
 
 /* ============================================================
-   PRINTABLE DOCUMENT LAYOUT
+   PRINTABLE DOCUMENT LAYOUT (type-aware)
    ============================================================ */
-function CommunicationDocument({ detail, company, label }) {
+function CommunicationDocument({ detail, company, label, type }) {
   const c = company || {};
-  const fieldEntries = Object.entries(detail.fields || {}).filter(
-    ([, v]) => v !== undefined && v !== null && v !== ''
-  );
 
   const showStamp = !!c.stampUrl;
 
-  const dateStr = (() => {
+  const todayStr = (() => {
     const d = new Date();
     const dd = String(d.getDate()).padStart(2, '0');
     const mm = String(d.getMonth() + 1).padStart(2, '0');
@@ -1203,99 +1213,698 @@ function CommunicationDocument({ detail, company, label }) {
     return `${dd}/${mm}/${yyyy}`;
   })();
 
-  return (
+  const docDateStr = (() => {
+    const d = new Date(detail.createdAt || Date.now());
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yyyy = d.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;
+  })();
+
+  const letterhead = (
     <div
       style={{
-        position: 'relative',
-        fontFamily: "'Times New Roman', Georgia, serif",
-        background: '#fff',
-        padding: '2rem 2.5rem',
-        minHeight: '1123px',
-        color: '#111',
-        overflow: 'hidden',
+        borderBottom: '2px solid #0a1628',
+        paddingBottom: '1rem',
+        marginBottom: '1.5rem',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        gap: '1.5rem',
       }}
     >
-      {/* Watermark */}
+      <div>
+        <h1
+          style={{
+            fontSize: '1.5rem',
+            fontWeight: 700,
+            color: '#0a1628',
+            margin: 0,
+            letterSpacing: '0.05em',
+          }}
+        >
+          {c.name || 'HDM TECHNOLOGIES'}
+        </h1>
+        {c.tagline && (
+          <p
+            style={{
+              fontSize: '0.8rem',
+              fontStyle: 'italic',
+              color: '#4b5563',
+              margin: '0.25rem 0',
+            }}
+          >
+            {c.tagline}
+          </p>
+        )}
+        <p style={{ fontSize: '0.72rem', color: '#374151', margin: 0 }}>
+          {[c.poBox, c.city, c.country].filter(Boolean).join(' · ')}
+        </p>
+        <p style={{ fontSize: '0.72rem', color: '#1e6ef0', margin: '0.15rem 0 0' }}>
+          {[c.email, c.website, c.phone].filter(Boolean).join('  ·  ')}
+        </p>
+      </div>
       {c.logo && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            opacity: 0.06,
-            pointerEvents: 'none',
-            zIndex: 0,
-            width: '55%',
-            maxWidth: '420px',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <img
-            src={c.logo}
-            alt=""
-            style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
-          />
-        </div>
+        <img
+          src={c.logo}
+          alt="logo"
+          style={{ maxHeight: '60px', maxWidth: '120px', objectFit: 'contain' }}
+        />
       )}
+    </div>
+  );
 
-      {/* Content */}
-      <div style={{ position: 'relative', zIndex: 1 }}>
-        {/* Letterhead */}
-        <div
-          style={{
-            borderBottom: '2px solid #0a1628',
-            paddingBottom: '1rem',
-            marginBottom: '1.5rem',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            gap: '1.5rem',
-          }}
-        >
-          <div>
-            <h1
+  const watermark = c.logo ? (
+    <div
+      style={{
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        opacity: 0.06,
+        pointerEvents: 'none',
+        zIndex: 0,
+        width: '55%',
+        maxWidth: '420px',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
+      <img
+        src={c.logo}
+        alt=""
+        style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+      />
+    </div>
+  ) : null;
+
+  const stampBlock = showStamp ? (
+    <div style={{ textAlign: 'right', minWidth: '180px' }}>
+      <img
+        src={c.stampUrl}
+        alt="stamp"
+        style={{
+          width: '90px',
+          height: '90px',
+          objectFit: 'contain',
+          display: 'block',
+          marginLeft: 'auto',
+        }}
+      />
+      <div
+        style={{
+          fontSize: '0.8rem',
+          fontWeight: 700,
+          color: '#1e6ef0',
+          marginTop: '0.5rem',
+          letterSpacing: '0.05em',
+        }}
+      >
+        {todayStr}
+      </div>
+      <div
+        style={{
+          borderTop: '1px solid #000',
+          width: '120px',
+          marginTop: '0.25rem',
+          marginLeft: 'auto',
+        }}
+      />
+      <div style={{ fontSize: '0.65rem', color: '#6b7280', marginTop: '0.25rem' }}>
+        Official Stamp
+      </div>
+    </div>
+  ) : null;
+
+  const footer = (
+    <div
+      style={{
+        marginTop: '2rem',
+        borderTop: '1px solid #e5e7eb',
+        paddingTop: '0.75rem',
+        fontSize: '0.72rem',
+        color: '#6b7280',
+        textAlign: 'center',
+      }}
+    >
+      <div>
+        © {new Date().getFullYear()} {c.name || 'HDM Technologies'}. All rights reserved.
+      </div>
+      <div>{[c.email, c.phone, c.website].filter(Boolean).join('  ·  ')}</div>
+    </div>
+  );
+
+  const pageStyle = {
+    position: 'relative',
+    fontFamily: "'Times New Roman', Georgia, serif",
+    background: '#fff',
+    padding: '2rem 2.5rem',
+    minHeight: '1123px',
+    color: '#111',
+    overflow: 'hidden',
+  };
+
+  const contentStyle = { position: 'relative', zIndex: 1 };
+
+  /* ============================================================
+     OFFICIAL LETTER
+     ============================================================ */
+  if (type === 'official-letter') {
+    const f = detail.fields || {};
+
+    return (
+      <div style={pageStyle}>
+        {watermark}
+        <div style={contentStyle}>
+          {letterhead}
+
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              fontSize: '0.75rem',
+              color: '#4b5563',
+              marginBottom: '1.5rem',
+            }}
+          >
+            <div>
+              {f.ourRef && <div>Our Ref: {f.ourRef}</div>}
+              {f.yourRef && <div>Your Ref: {f.yourRef}</div>}
+            </div>
+            <div>{docDateStr}</div>
+          </div>
+
+          {(f.recipientName || f.recipientCompany || f.recipientAddress) && (
+            <div
               style={{
-                fontSize: '1.5rem',
-                fontWeight: 700,
-                color: '#0a1628',
-                margin: 0,
-                letterSpacing: '0.05em',
+                fontSize: '0.85rem',
+                color: '#1f2937',
+                marginBottom: '1.5rem',
+                lineHeight: 1.5,
               }}
             >
-              {c.name || 'HDM TECHNOLOGIES'}
-            </h1>
-            {c.tagline && (
-              <p
-                style={{
-                  fontSize: '0.8rem',
-                  fontStyle: 'italic',
-                  color: '#4b5563',
-                  margin: '0.25rem 0',
-                }}
-              >
-                {c.tagline}
-              </p>
-            )}
-            <p style={{ fontSize: '0.72rem', color: '#374151', margin: 0 }}>
-              {[c.poBox, c.city, c.country].filter(Boolean).join(' · ')}
+              {f.recipientName && <div style={{ fontWeight: 700 }}>{f.recipientName}</div>}
+              {f.recipientCompany && <div>{f.recipientCompany}</div>}
+              {f.recipientAddress && (
+                <div style={{ whiteSpace: 'pre-wrap', color: '#4b5563' }}>
+                  {f.recipientAddress}
+                </div>
+              )}
+            </div>
+          )}
+
+          <p style={{ fontSize: '0.9rem', color: '#1f2937', margin: '0 0 1rem' }}>
+            Dear Sir/Madam,
+          </p>
+
+          {f.subject && (
+            <p
+              style={{
+                fontSize: '0.9rem',
+                fontWeight: 700,
+                color: '#0a1628',
+                textDecoration: 'underline',
+                margin: '0 0 1rem',
+                textTransform: 'uppercase',
+              }}
+            >
+              RE: {f.subject}
             </p>
-            <p style={{ fontSize: '0.72rem', color: '#1e6ef0', margin: '0.15rem 0 0' }}>
-              {[c.email, c.website, c.phone].filter(Boolean).join('  ·  ')}
-            </p>
+          )}
+
+          {detail.body && (
+            <div
+              style={{
+                fontSize: '0.92rem',
+                color: '#1f2937',
+                lineHeight: 1.7,
+                whiteSpace: 'pre-wrap',
+              }}
+            >
+              {detail.body}
+            </div>
+          )}
+
+          <div style={{ marginTop: '2.5rem', fontSize: '0.9rem', color: '#1f2937' }}>
+            <p style={{ margin: '0 0 2.5rem' }}>Yours faithfully,</p>
           </div>
-          {c.logo && (
-            <img
-              src={c.logo}
-              alt="logo"
-              style={{ maxHeight: '60px', maxWidth: '120px', objectFit: 'contain' }}
+
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-end',
+              gap: '2rem',
+            }}
+          >
+            <div style={{ flex: 1 }}>
+              {(f.signatoryName || f.signatoryTitle) && (
+                <>
+                  <div
+                    style={{
+                      borderTop: '1px solid #374151',
+                      width: '180px',
+                      margin: '0 0 0.35rem',
+                    }}
+                  />
+                  {f.signatoryName && (
+                    <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0a1628' }}>
+                      {f.signatoryName}
+                    </div>
+                  )}
+                  {f.signatoryTitle && (
+                    <div style={{ fontSize: '0.75rem', color: '#4b5563' }}>
+                      {f.signatoryTitle}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+            {stampBlock}
+          </div>
+
+          {f.enclosure && (
+            <div
+              style={{
+                marginTop: '1.5rem',
+                fontSize: '0.75rem',
+                fontStyle: 'italic',
+                color: '#6b7280',
+              }}
+            >
+              Enc: {f.enclosure}
+            </div>
+          )}
+
+          {footer}
+        </div>
+      </div>
+    );
+  }
+
+  /* ============================================================
+     MEMO
+     ============================================================ */
+  if (type === 'memo') {
+    const f = detail.fields || {};
+
+    return (
+      <div style={pageStyle}>
+        {watermark}
+        <div style={contentStyle}>
+          {letterhead}
+
+          <h2
+            style={{
+              fontSize: '1.4rem',
+              fontWeight: 700,
+              color: '#0a1628',
+              textAlign: 'center',
+              textTransform: 'uppercase',
+              letterSpacing: '0.2em',
+              margin: '1rem 0 0.5rem',
+            }}
+          >
+            Memorandum
+          </h2>
+          <div style={{ borderTop: '1px solid #cbd5e1', margin: '0 0 1.5rem' }} />
+
+          <table
+            style={{
+              fontSize: '0.88rem',
+              color: '#1f2937',
+              marginBottom: '1.5rem',
+              borderCollapse: 'collapse',
+            }}
+          >
+            <tbody>
+              {[
+                ['To', f.to],
+                ['From', f.from],
+                ['CC', f.cc],
+                ['Date', docDateStr],
+                ['Subject', f.subject],
+              ]
+                .filter(([, v]) => v)
+                .map(([k, v]) => (
+                  <tr key={k}>
+                    <td
+                      style={{
+                        padding: '0.3rem 1rem 0.3rem 0',
+                        fontWeight: 700,
+                        verticalAlign: 'top',
+                        whiteSpace: 'nowrap',
+                        color: '#0a1628',
+                      }}
+                    >
+                      {k}:
+                    </td>
+                    <td style={{ padding: '0.3rem 0', color: '#1f2937' }}>{v}</td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+
+          <div style={{ borderTop: '1px solid #cbd5e1', margin: '0 0 1.5rem' }} />
+
+          {detail.title && (
+            <h3
+              style={{
+                fontSize: '1rem',
+                fontWeight: 700,
+                color: '#0a1628',
+                margin: '0 0 1rem',
+              }}
+            >
+              {detail.title}
+            </h3>
+          )}
+
+          {detail.body && (
+            <div
+              style={{
+                fontSize: '0.92rem',
+                color: '#1f2937',
+                lineHeight: 1.7,
+                whiteSpace: 'pre-wrap',
+              }}
+            >
+              {detail.body}
+            </div>
+          )}
+
+          <div
+            style={{
+              marginTop: '3rem',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-end',
+              gap: '2rem',
+            }}
+          >
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: '0.9rem', color: '#1f2937' }}>Yours faithfully,</div>
+              {(f.signatoryName || f.signatoryTitle) && (
+                <div style={{ marginTop: '2rem' }}>
+                  <div
+                    style={{
+                      borderTop: '1px solid #374151',
+                      width: '180px',
+                      margin: '0 0 0.35rem',
+                    }}
+                  />
+                  {f.signatoryName && (
+                    <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0a1628' }}>
+                      {f.signatoryName}
+                    </div>
+                  )}
+                  {f.signatoryTitle && (
+                    <div style={{ fontSize: '0.75rem', color: '#4b5563' }}>
+                      {f.signatoryTitle}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            {stampBlock}
+          </div>
+
+          {footer}
+        </div>
+      </div>
+    );
+  }
+
+  /* ============================================================
+     ANNOUNCEMENT
+     ============================================================ */
+  if (type === 'announcement') {
+    const f = detail.fields || {};
+
+    return (
+      <div style={pageStyle}>
+        {watermark}
+        <div style={contentStyle}>
+          {letterhead}
+
+          <div style={{ textAlign: 'center', margin: '1.5rem 0' }}>
+            <div
+              style={{
+                display: 'inline-block',
+                background: '#0a1628',
+                color: '#fff',
+                padding: '0.35rem 1.2rem',
+                borderRadius: 4,
+                fontSize: '0.7rem',
+                fontWeight: 700,
+                letterSpacing: '0.2em',
+                textTransform: 'uppercase',
+              }}
+            >
+              Announcement
+            </div>
+          </div>
+
+          {detail.title && (
+            <h2
+              style={{
+                fontSize: '1.6rem',
+                fontWeight: 700,
+                color: '#0a1628',
+                textAlign: 'center',
+                margin: '1rem 0 0.5rem',
+              }}
+            >
+              {detail.title}
+            </h2>
+          )}
+          {detail.subtitle && (
+            <p
+              style={{
+                fontSize: '0.9rem',
+                fontStyle: 'italic',
+                color: '#4b5563',
+                textAlign: 'center',
+                margin: '0 0 1rem',
+              }}
+            >
+              {detail.subtitle}
+            </p>
+          )}
+          <p
+            style={{
+              fontSize: '0.7rem',
+              color: '#1e6ef0',
+              textAlign: 'center',
+              letterSpacing: '0.1em',
+              margin: '0 0 1.5rem',
+            }}
+          >
+            {docDateStr.toUpperCase()}
+          </p>
+          <div style={{ borderTop: '1px solid #cbd5e1', margin: '0 0 1.5rem' }} />
+
+          {detail.body && (
+            <div
+              style={{
+                fontSize: '0.92rem',
+                color: '#1f2937',
+                lineHeight: 1.75,
+                whiteSpace: 'pre-wrap',
+              }}
+            >
+              {detail.body}
+            </div>
+          )}
+
+          {(f.highlight1 || f.highlight2 || f.highlight3) && (
+            <ul
+              style={{
+                marginTop: '1.5rem',
+                paddingLeft: '1.25rem',
+                fontSize: '0.88rem',
+                color: '#1f2937',
+              }}
+            >
+              {[f.highlight1, f.highlight2, f.highlight3]
+                .filter(Boolean)
+                .map((h, i) => (
+                  <li key={i} style={{ marginBottom: '0.35rem' }}>
+                    {h}
+                  </li>
+                ))}
+            </ul>
+          )}
+
+          {f.ctaUrl && (
+            <div
+              style={{
+                marginTop: '1.5rem',
+                background: '#f3f4f6',
+                borderRadius: 6,
+                padding: '1rem',
+                textAlign: 'center',
+                fontSize: '0.85rem',
+                color: '#4b5563',
+              }}
+            >
+              Learn more at <strong style={{ color: '#1e6ef0' }}>{f.ctaUrl}</strong>
+            </div>
+          )}
+
+          <div
+            style={{
+              marginTop: '3rem',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-end',
+              gap: '2rem',
+            }}
+          >
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: '0.9rem', color: '#1f2937' }}>Sincerely,</div>
+              {(f.signatoryName || f.signatoryTitle) && (
+                <div style={{ marginTop: '2rem' }}>
+                  <div
+                    style={{
+                      borderTop: '1px solid #374151',
+                      width: '180px',
+                      margin: '0 0 0.35rem',
+                    }}
+                  />
+                  {f.signatoryName && (
+                    <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0a1628' }}>
+                      {f.signatoryName}
+                    </div>
+                  )}
+                  {f.signatoryTitle && (
+                    <div style={{ fontSize: '0.75rem', color: '#4b5563' }}>
+                      {f.signatoryTitle}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            {stampBlock}
+          </div>
+
+          {footer}
+        </div>
+      </div>
+    );
+  }
+
+  /* ============================================================
+     ADVERT
+     ============================================================ */
+  if (type === 'advert') {
+    const f = detail.fields || {};
+
+    return (
+      <div style={pageStyle}>
+        {watermark}
+        <div style={contentStyle}>
+          {letterhead}
+
+          {detail.title && (
+            <h2
+              style={{
+                fontSize: '1.75rem',
+                fontWeight: 700,
+                color: '#0a1628',
+                textAlign: 'center',
+                margin: '1rem 0 0.5rem',
+                letterSpacing: '0.02em',
+              }}
+            >
+              {detail.title}
+            </h2>
+          )}
+          {detail.subtitle && (
+            <p
+              style={{
+                fontSize: '1rem',
+                fontStyle: 'italic',
+                color: '#4b5563',
+                textAlign: 'center',
+                margin: '0 0 1.5rem',
+              }}
+            >
+              {detail.subtitle}
+            </p>
+          )}
+          <div style={{ borderTop: '1px solid #cbd5e1', margin: '0 0 1.5rem' }} />
+
+          {detail.body && (
+            <div
+              style={{ fontSize: '0.92rem', color: '#1f2937', lineHeight: 1.7 }}
+              dangerouslySetInnerHTML={{ __html: detail.body }}
             />
           )}
-        </div>
 
-        {/* Title */}
+          {detail.images?.length > 0 && (
+            <div
+              style={{
+                marginTop: '2rem',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: '1rem',
+              }}
+            >
+              {detail.images.map((img) => (
+                <img
+                  key={img.publicId}
+                  src={img.url}
+                  alt={img.caption || ''}
+                  style={{ width: '100%', borderRadius: 8 }}
+                />
+              ))}
+            </div>
+          )}
+
+          {(f.ctaUrl || f.contactEmail || f.contactPhone) && (
+            <div
+              style={{
+                marginTop: '2rem',
+                background: '#0a1628',
+                color: '#fff',
+                borderRadius: 8,
+                padding: '1rem 1.5rem',
+                textAlign: 'center',
+              }}
+            >
+              {f.ctaUrl && (
+                <div style={{ fontSize: '1rem', fontWeight: 700, letterSpacing: '0.05em' }}>
+                  {f.ctaUrl}
+                </div>
+              )}
+              {(f.contactEmail || f.contactPhone) && (
+                <div style={{ fontSize: '0.78rem', color: '#93c5fd', marginTop: '0.5rem' }}>
+                  {[f.contactEmail, f.contactPhone].filter(Boolean).join('  ·  ')}
+                </div>
+              )}
+            </div>
+          )}
+
+          {footer}
+        </div>
+      </div>
+    );
+  }
+
+  /* ============================================================
+     FALLBACK
+     ============================================================ */
+  const fieldEntries = Object.entries(detail.fields || {}).filter(
+    ([, v]) => v !== undefined && v !== null && v !== ''
+  );
+
+  return (
+    <div style={pageStyle}>
+      {watermark}
+      <div style={contentStyle}>
+        {letterhead}
         <h2
           style={{
             fontSize: '1.5rem',
@@ -1303,205 +1912,49 @@ function CommunicationDocument({ detail, company, label }) {
             color: '#0a1628',
             textAlign: 'center',
             textTransform: 'uppercase',
-            letterSpacing: '0.08em',
             margin: '1.5rem 0 0.5rem',
           }}
         >
           {detail.title || label}
         </h2>
-        {detail.subtitle && (
-          <p
-            style={{
-              fontSize: '0.9rem',
-              fontStyle: 'italic',
-              color: '#4b5563',
-              textAlign: 'center',
-              margin: '0 0 1.5rem',
-            }}
-          >
-            {detail.subtitle}
-          </p>
-        )}
         <div style={{ borderTop: '1px solid #cbd5e1', margin: '0 0 1.5rem' }} />
-
-        {/* Fields */}
         {fieldEntries.length > 0 && (
           <table
-            style={{
-              fontSize: '0.85rem',
-              color: '#1f2937',
-              marginBottom: '1.5rem',
-              borderCollapse: 'collapse',
-            }}
+            style={{ fontSize: '0.85rem', marginBottom: '1.5rem', borderCollapse: 'collapse' }}
           >
             <tbody>
-              {fieldEntries.map(([key, value]) => (
-                <tr key={key}>
+              {fieldEntries.map(([k, v]) => (
+                <tr key={k}>
                   <td
                     style={{
                       padding: '0.35rem 1rem 0.35rem 0',
                       fontWeight: 700,
-                      verticalAlign: 'top',
-                      textTransform: 'capitalize',
                       whiteSpace: 'nowrap',
                       color: '#0a1628',
                     }}
                   >
-                    {key.replace(/([A-Z])/g, ' $1').trim()}:
+                    {k}:
                   </td>
-                  <td
-                    style={{
-                      padding: '0.35rem 0',
-                      whiteSpace: 'pre-wrap',
-                      verticalAlign: 'top',
-                      color: '#1f2937',
-                    }}
-                  >
-                    {String(value)}
+                  <td style={{ padding: '0.35rem 0', whiteSpace: 'pre-wrap', color: '#1f2937' }}>
+                    {String(v)}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         )}
-
-        {/* Body */}
         {detail.body && (
-          <div
-            style={{ fontSize: '0.95rem', color: '#1f2937', lineHeight: 1.7 }}
-            dangerouslySetInnerHTML={{ __html: detail.body }}
-          />
+          <div style={{ fontSize: '0.95rem', lineHeight: 1.7 }}>{detail.body}</div>
         )}
-
-        {/* Images */}
-        {detail.images?.length > 0 && (
-          <div
-            style={{
-              marginTop: '2rem',
-              display: 'grid',
-              gridTemplateColumns: 'repeat(2, 1fr)',
-              gap: '1rem',
-            }}
-          >
-            {detail.images.map((img) => (
-              <figure key={img.publicId} style={{ margin: 0 }}>
-                <img
-                  src={img.url}
-                  alt={img.caption || ''}
-                  style={{ width: '100%', borderRadius: 6 }}
-                />
-                {img.caption && (
-                  <figcaption
-                    style={{
-                      fontSize: '0.75rem',
-                      color: '#6b7280',
-                      textAlign: 'center',
-                      marginTop: '0.25rem',
-                    }}
-                  >
-                    {img.caption}
-                  </figcaption>
-                )}
-              </figure>
-            ))}
-          </div>
-        )}
-
-        {/* Signature row — signature left, stamp right */}
-        <div
-          style={{
-            marginTop: '3rem',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-end',
-            gap: '2rem',
-          }}
-        >
-          {/* Signature — left */}
-          <div style={{ textAlign: 'left', flex: 1 }}>
-            {detail.fields?.signatoryName ? (
-              <>
-                <div
-                  style={{
-                    borderTop: '1px solid #374151',
-                    width: '180px',
-                    margin: '0 0 0.35rem',
-                  }}
-                />
-                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0a1628' }}>
-                  {detail.fields.signatoryName}
-                </div>
-                {detail.fields.signatoryTitle && (
-                  <div style={{ fontSize: '0.75rem', color: '#4b5563' }}>
-                    {detail.fields.signatoryTitle}
-                  </div>
-                )}
-              </>
-            ) : null}
-          </div>
-
-          {/* Official stamp — right */}
-          <div style={{ textAlign: 'right', minWidth: '180px' }}>
-            {showStamp ? (
-              <>
-                <img
-                  src={c.stampUrl}
-                  alt="stamp"
-                  style={{
-                    width: '90px',
-                    height: '90px',
-                    objectFit: 'contain',
-                    display: 'block',
-                    marginLeft: 'auto',
-                  }}
-                />
-                <div
-                  style={{
-                    fontSize: '0.8rem',
-                    fontWeight: 700,
-                    color: '#1e6ef0',
-                    marginTop: '0.5rem',
-                    letterSpacing: '0.05em',
-                  }}
-                >
-                  {dateStr}
-                </div>
-                <div
-                  style={{
-                    borderTop: '1px solid #000',
-                    width: '120px',
-                    marginTop: '0.25rem',
-                    marginLeft: 'auto',
-                  }}
-                />
-                <div style={{ fontSize: '0.65rem', color: '#6b7280', marginTop: '0.25rem' }}>
-                  Official Stamp
-                </div>
-              </>
-            ) : null}
-          </div>
+        <div style={{ marginTop: '3rem', display: 'flex', justifyContent: 'flex-end' }}>
+          {stampBlock}
         </div>
-
-        {/* Footer */}
-        <div
-          style={{
-            marginTop: '2rem',
-            borderTop: '1px solid #e5e7eb',
-            paddingTop: '0.75rem',
-            fontSize: '0.72rem',
-            color: '#6b7280',
-            textAlign: 'center',
-          }}
-        >
-          <div>
-            © {new Date().getFullYear()} {c.name || 'HDM Technologies'}. All rights reserved.
-          </div>
-          <div>{[c.email, c.phone, c.website].filter(Boolean).join('  ·  ')}</div>
-        </div>
+        {footer}
       </div>
     </div>
   );
 }
+
 /* ============================================================
    StatCard
    ============================================================ */
