@@ -3,7 +3,7 @@ import {
   HiShoppingCart, HiShieldCheck, HiSparkles,
   HiBriefcase, HiGlobe,
   HiMail, HiWifi, HiCash, HiShoppingBag, HiArrowRight, HiAcademicCap,
-  HiPlus,
+  HiPlus, HiCloud,
 } from 'react-icons/hi'
 
 const systems = [
@@ -42,6 +42,12 @@ const systems = [
     icon: HiPlus, bgGradient: 'from-rose-500 to-pink-600', bgLight: 'bg-rose-50 dark:bg-rose-950',
     textColor: 'text-rose-600 dark:text-rose-400', borderColor: 'border-rose-200 dark:border-rose-800',
     hoverBg: 'hover:bg-rose-600', stats: { pharmacies: '500', branches: '1.2K', uptime: '99.9%' }
+  },
+  {
+    id: 'meteo', name: 'HDM METEO', description: 'Weather intelligence platform',
+    icon: HiCloud, bgGradient: 'from-teal-500 to-cyan-600', bgLight: 'bg-teal-50 dark:bg-teal-950',
+    textColor: 'text-teal-600 dark:text-teal-400', borderColor: 'border-teal-200 dark:border-teal-800',
+    hoverBg: 'hover:bg-teal-600', stats: { cities: '12K', forecasts: '1.4M', uptime: '99.9%' }
   },
   {
     id: 'nexguard', name: 'NexGuard', description: 'Cybersecurity & threat protection',
