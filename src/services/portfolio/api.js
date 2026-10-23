@@ -1,13 +1,18 @@
 import axios from 'axios';
 
-const ROOT =
-  import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const ADMIN_BASE =
+  import.meta.env.VITE_PORTFOLIO_API || '/hdm/api/admin';
 
-const BASE_URL =
-  import.meta.env.VITE_PORTFOLIO_API || `${ROOT}/hdm/api/admin`;
+const ROOT = ADMIN_BASE.replace(/\/hdm\/api\/admin\/?$/, '');
 
 export const api = axios.create({
-  baseURL: BASE_URL,
+  baseURL: ADMIN_BASE,
+  timeout: 30000,
+  headers: { 'Content-Type': 'application/json' },
+});
+
+export const publicApi = axios.create({
+  baseURL: `${ROOT}/hdm/api`,
   timeout: 30000,
   headers: { 'Content-Type': 'application/json' },
 });
@@ -31,13 +36,7 @@ export function setupInterceptors(logoutFn) {
   api.interceptors.response.use(
     (response) => response,
     (error) => {
-      const status = error.response?.status;
-
-      if (status === 401) {
-        logoutFn?.();
-        return Promise.reject(normalizeError(error));
-      }
-
+      if (error.response?.status === 401) logoutFn?.();
       return Promise.reject(normalizeError(error));
     }
   );

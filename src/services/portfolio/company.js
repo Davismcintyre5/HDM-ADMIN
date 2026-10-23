@@ -1,7 +1,7 @@
-import api from './api';
+import { api, publicApi } from './api';
 
 export async function getCompany() {
-  const res = await api.get('/company');
+  const res = await publicApi.get('/company');
   return res.data;
 }
 
