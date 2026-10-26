@@ -5,6 +5,7 @@ import HDMAIApp from './apps/HDMAIApp'
 import SmartPOSApp from './apps/SmartPOSApp'
 import PharmaSysApp from './apps/PharmaSysApp'
 import MeteoApp from './apps/MeteoApp'
+import TvetGridApp from './apps/TvetGridApp'
 import NexGuardApp from './apps/NexGuardApp'
 import PortfolioApp from './apps/PortfolioApp'
 import BizhubApp from './apps/BizhubApp'
@@ -22,6 +23,7 @@ const systemConfig = {
   smartpos: true,
   pharmasys: true,
   meteo: true,
+  tvetgrid: true,
   hdmai: true,
   nexguard: true,
   portfolio: true,
@@ -43,6 +45,7 @@ function App() {
         <Route path="/smartpos/*" element={systemConfig.smartpos ? <SmartPOSApp /> : <ComingSoon />} />
         <Route path="/pharmasys/*" element={systemConfig.pharmasys ? <PharmaSysApp /> : <ComingSoon />} />
         <Route path="/meteo/*" element={systemConfig.meteo ? <MeteoApp /> : <ComingSoon />} />
+        <Route path="/tvetgrid/*" element={systemConfig.tvetgrid ? <TvetGridApp /> : <ComingSoon />} />
         <Route path="/hdmai/*" element={systemConfig.hdmai ? <HDMAIApp /> : <ComingSoon />} />
         <Route path="/nexguard/*" element={systemConfig.nexguard ? <NexGuardApp /> : <ComingSoon />} />
         <Route path="/portfolio/*" element={systemConfig.portfolio ? <PortfolioApp /> : <ComingSoon />} />

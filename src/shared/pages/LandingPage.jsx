@@ -50,6 +50,12 @@ const systems = [
     hoverBg: 'hover:bg-teal-600', stats: { cities: '12K', forecasts: '1.4M', uptime: '99.9%' }
   },
   {
+    id: 'tvetgrid', name: 'TVETGrid', description: 'TVET learning platform',
+    icon: HiAcademicCap, bgGradient: 'from-indigo-500 to-blue-600', bgLight: 'bg-indigo-50 dark:bg-indigo-950',
+    textColor: 'text-indigo-600 dark:text-indigo-400', borderColor: 'border-indigo-200 dark:border-indigo-800',
+    hoverBg: 'hover:bg-indigo-600', stats: { courses: '85', learners: '12K', uptime: '99.9%' }
+  },
+  {
     id: 'nexguard', name: 'NexGuard', description: 'Cybersecurity & threat protection',
     icon: HiShieldCheck, bgGradient: 'from-cyan-500 to-blue-600', bgLight: 'bg-cyan-50 dark:bg-cyan-950',
     textColor: 'text-cyan-600 dark:text-cyan-400', borderColor: 'border-cyan-200 dark:border-cyan-800',

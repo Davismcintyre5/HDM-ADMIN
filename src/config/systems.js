@@ -2,7 +2,7 @@ import {
   HiShoppingCart, HiShieldCheck, HiSparkles,
   HiBriefcase, HiGlobe,
   HiMail, HiWifi, HiCash, HiShoppingBag, HiAcademicCap,
-  HiPlus,
+  HiPlus, HiCloud,
 } from 'react-icons/hi'
 
 export const systems = [
@@ -19,28 +19,16 @@ export const systems = [
     stats: { transactions: '12,456', revenue: '$234K', uptime: '99.9%' }
   },
   {
-    id: 'pharmasys',
-    name: 'PharmaSys',
-    description: 'Pharmacy management system',
-    icon: HiPlus,
-    bgGradient: 'from-rose-500 to-pink-600',
-    bgLight: 'bg-rose-50 dark:bg-rose-950',
-    textColor: 'text-rose-600 dark:text-rose-400',
-    borderColor: 'border-rose-200 dark:border-rose-800',
-    hoverBg: 'hover:bg-rose-600',
-    stats: { pharmacies: '500', branches: '1.2K', uptime: '99.9%' }
-  },
-  {
-    id: 'nexguard',
-    name: 'NexGuard',
-    description: 'Cybersecurity & threat protection',
-    icon: HiShieldCheck,
-    bgGradient: 'from-cyan-500 to-blue-600',
-    bgLight: 'bg-cyan-50 dark:bg-cyan-950',
-    textColor: 'text-cyan-600 dark:text-cyan-400',
-    borderColor: 'border-cyan-200 dark:border-cyan-800',
-    hoverBg: 'hover:bg-cyan-600',
-    stats: { devices: '1,234', threats: '89', uptime: '99.9%' }
+    id: 'portfolio',
+    name: 'HDM',
+    description: 'Company portfolio & showcase',
+    icon: HiBriefcase,
+    bgGradient: 'from-emerald-500 to-green-600',
+    bgLight: 'bg-emerald-50 dark:bg-emerald-950',
+    textColor: 'text-emerald-600 dark:text-emerald-400',
+    borderColor: 'border-emerald-200 dark:border-emerald-800',
+    hoverBg: 'hover:bg-emerald-600',
+    stats: { apps: '45', projects: '120', services: '12' }
   },
   {
     id: 'hdmai',
@@ -55,16 +43,76 @@ export const systems = [
     stats: { models: '234', accuracy: '97.8%', predictions: '1.2M' }
   },
   {
-    id: 'portfolio',
-    name: 'HDM Portfolio',
-    description: 'Company portfolio & showcase',
-    icon: HiBriefcase,
+    id: 'bridge',
+    name: 'HDM Bridge',
+    description: 'Email delivery & communication platform',
+    icon: HiMail,
+    bgGradient: 'from-indigo-500 to-blue-600',
+    bgLight: 'bg-indigo-50 dark:bg-indigo-950',
+    textColor: 'text-indigo-600 dark:text-indigo-400',
+    borderColor: 'border-indigo-200 dark:border-indigo-800',
+    hoverBg: 'hover:bg-indigo-600',
+    stats: { emails: '1.2M', users: '3,400', delivery: '99.7%' }
+  },
+  {
+    id: 'farmvexa',
+    name: 'FarmVexa',
+    description: 'AI-Powered Farm Intelligence',
+    icon: HiGlobe,
     bgGradient: 'from-emerald-500 to-green-600',
     bgLight: 'bg-emerald-50 dark:bg-emerald-950',
     textColor: 'text-emerald-600 dark:text-emerald-400',
     borderColor: 'border-emerald-200 dark:border-emerald-800',
     hoverBg: 'hover:bg-emerald-600',
-    stats: { apps: '45', projects: '120', services: '12' }
+    stats: { farmers: '50', farms: '120', devices: '3/5' }
+  },
+  {
+    id: 'pharmasys',
+    name: 'PharmaSys',
+    description: 'Pharmacy management system',
+    icon: HiPlus,
+    bgGradient: 'from-rose-500 to-pink-600',
+    bgLight: 'bg-rose-50 dark:bg-rose-950',
+    textColor: 'text-rose-600 dark:text-rose-400',
+    borderColor: 'border-rose-200 dark:border-rose-800',
+    hoverBg: 'hover:bg-rose-600',
+    stats: { pharmacies: '500', branches: '1.2K', uptime: '99.9%' }
+  },
+  {
+    id: 'meteo',
+    name: 'HDM METEO',
+    description: 'Weather intelligence platform',
+    icon: HiCloud,
+    bgGradient: 'from-teal-500 to-cyan-600',
+    bgLight: 'bg-teal-50 dark:bg-teal-950',
+    textColor: 'text-teal-600 dark:text-teal-400',
+    borderColor: 'border-teal-200 dark:border-teal-800',
+    hoverBg: 'hover:bg-teal-600',
+    stats: { cities: '12K', forecasts: '1.4M', uptime: '99.9%' }
+  },
+  {
+    id: 'tvetgrid',
+    name: 'TVETGrid',
+    description: 'TVET learning platform',
+    icon: HiAcademicCap,
+    bgGradient: 'from-indigo-500 to-blue-600',
+    bgLight: 'bg-indigo-50 dark:bg-indigo-950',
+    textColor: 'text-indigo-600 dark:text-indigo-400',
+    borderColor: 'border-indigo-200 dark:border-indigo-800',
+    hoverBg: 'hover:bg-indigo-600',
+    stats: { courses: '85', learners: '12K', uptime: '99.9%' }
+  },
+  {
+    id: 'nexguard',
+    name: 'NexGuard',
+    description: 'Cybersecurity & threat protection',
+    icon: HiShieldCheck,
+    bgGradient: 'from-cyan-500 to-blue-600',
+    bgLight: 'bg-cyan-50 dark:bg-cyan-950',
+    textColor: 'text-cyan-600 dark:text-cyan-400',
+    borderColor: 'border-cyan-200 dark:border-cyan-800',
+    hoverBg: 'hover:bg-cyan-600',
+    stats: { devices: '1,234', threats: '89', uptime: '99.9%' }
   },
   {
     id: 'bizhub',
@@ -77,18 +125,6 @@ export const systems = [
     borderColor: 'border-teal-200 dark:border-teal-800',
     hoverBg: 'hover:bg-teal-600',
     stats: { modules: '4', users: '2,500', businesses: '890' }
-  },
-  {
-    id: 'bridge',
-    name: 'HDM Bridge',
-    description: 'Email delivery & communication platform',
-    icon: HiMail,
-    bgGradient: 'from-indigo-500 to-blue-600',
-    bgLight: 'bg-indigo-50 dark:bg-indigo-950',
-    textColor: 'text-indigo-600 dark:text-indigo-400',
-    borderColor: 'border-indigo-200 dark:border-indigo-800',
-    hoverBg: 'hover:bg-indigo-600',
-    stats: { emails: '1.2M', users: '3,400', delivery: '99.7%' }
   },
   {
     id: 'flax',
@@ -125,18 +161,6 @@ export const systems = [
     borderColor: 'border-violet-200 dark:border-violet-800',
     hoverBg: 'hover:bg-violet-700',
     stats: { stores: '234', products: '12K', revenue: 'KES 5M' }
-  },
-  {
-    id: 'farmvexa',
-    name: 'FarmVexa',
-    description: 'AI-Powered Farm Intelligence',
-    icon: HiGlobe,
-    bgGradient: 'from-emerald-500 to-green-600',
-    bgLight: 'bg-emerald-50 dark:bg-emerald-950',
-    textColor: 'text-emerald-600 dark:text-emerald-400',
-    borderColor: 'border-emerald-200 dark:border-emerald-800',
-    hoverBg: 'hover:bg-emerald-600',
-    stats: { farmers: '50', farms: '120', devices: '3/5' }
   },
   {
     id: 'rvnp',
