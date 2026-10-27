@@ -12,6 +12,7 @@ import {
   HiCog,
   HiDatabase,
   HiScale,
+  HiHeart,
   HiChevronLeft,
   HiChevronRight,
   HiX,
@@ -28,6 +29,7 @@ const NAV = [
   { to: '/tvetgrid/meetings', icon: HiUserGroup, label: 'Meetings' },
   { to: '/tvetgrid/analytics', icon: HiChartBar, label: 'Analytics' },
   { to: '/tvetgrid/settings', icon: HiCog, label: 'Settings' },
+  { to: '/tvetgrid/health', icon: HiHeart, label: 'Health' },
   { to: '/tvetgrid/backup', icon: HiDatabase, label: 'Backup' },
   { to: '/tvetgrid/legal', icon: HiScale, label: 'Legal' },
 ];

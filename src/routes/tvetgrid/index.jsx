@@ -15,6 +15,7 @@ import Meetings from '../../pages/tvetgrid/Meetings';
 import MeetingDetail from '../../pages/tvetgrid/MeetingDetail';
 import Analytics from '../../pages/tvetgrid/Analytics';
 import Settings from '../../pages/tvetgrid/Settings';
+import HealthPage from '../../pages/tvetgrid/HealthPage';
 import Backup from '../../pages/tvetgrid/Backup';
 import Legal from '../../pages/tvetgrid/Legal';
 import LegalDetail from '../../pages/tvetgrid/LegalDetail';
@@ -47,6 +48,7 @@ const routes = (
 
     <Route path="analytics" element={<Analytics />} />
     <Route path="settings" element={<Settings />} />
+    <Route path="health" element={<HealthPage />} />
     <Route path="backup" element={<Backup />} />
 
     <Route path="legal" element={<Legal />} />
