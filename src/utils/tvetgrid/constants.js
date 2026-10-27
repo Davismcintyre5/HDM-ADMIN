@@ -84,7 +84,7 @@ export const ANALYTICS_TABS = [
 ];
 
 export const COURSE_TABS = [
-  { key: 'topics', label: 'Topics' },
+  { key: 'subjects', label: 'Subjects' },
   { key: 'lessons', label: 'Lessons' },
   { key: 'notes', label: 'Notes' },
   { key: 'papers', label: 'Papers' },

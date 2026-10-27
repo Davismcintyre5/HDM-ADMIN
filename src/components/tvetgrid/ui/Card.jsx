@@ -1,7 +1,45 @@
-export default function Card({ children, className = '', padding = true }) {
+export default function Card({
+  children,
+  className = '',
+  padding = true,
+  title,
+  description,
+  actions,
+  footer,
+}) {
   return (
-    <div className={`bg-[var(--card-bg)] rounded-xl border border-[var(--border-color)] shadow-sm ${padding ? 'p-4 sm:p-6' : ''} ${className}`}>
-      {children}
+    <div
+      className={`bg-[var(--card-bg)] rounded-xl border border-[var(--border-color)] shadow-sm ${
+        padding && !title && !footer ? 'p-4 sm:p-6' : ''
+      } ${className}`}
+    >
+      {(title || actions || description) && (
+        <div className="flex items-start justify-between gap-4 px-5 py-4 border-b border-[var(--border-color)]">
+          <div className="min-w-0 flex-1">
+            {title && (
+              <h3 className="text-base font-semibold text-[var(--text-primary)]">
+                {title}
+              </h3>
+            )}
+            {description && (
+              <p className="text-sm text-[var(--text-muted)] mt-0.5">
+                {description}
+              </p>
+            )}
+          </div>
+          {actions && (
+            <div className="flex items-center gap-2 shrink-0">{actions}</div>
+          )}
+        </div>
+      )}
+
+      <div className={padding && (title || footer) ? 'p-5' : ''}>{children}</div>
+
+      {footer && (
+        <div className="px-5 py-3 border-t border-[var(--border-color)] bg-[var(--bg-secondary)] rounded-b-xl">
+          {footer}
+        </div>
+      )}
     </div>
   );
 }

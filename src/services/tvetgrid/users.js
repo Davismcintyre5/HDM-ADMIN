@@ -29,3 +29,8 @@ export async function enableUser(id) {
   const res = await api.patch(`/users/${id}/enable`);
   return res.data;
 }
+
+export async function permanentDeleteUser(id) {
+  const res = await api.delete(`/users/${id}`);
+  return res.data;
+}

@@ -10,6 +10,22 @@ export async function getNote(id) {
   return res.data;
 }
 
+export async function requestUploadSignature({
+  folder = 'tvetgrid/notes',
+  resourceType = 'auto',
+} = {}) {
+  const res = await api.post('/notes/upload/sign', { folder, resourceType });
+  return res.data;
+}
+
+export async function confirmUpload({ publicId, resourceType = 'auto' }) {
+  const res = await api.post('/notes/upload/confirm', {
+    publicId,
+    resourceType,
+  });
+  return res.data;
+}
+
 export async function createNote(data) {
   const res = await api.post('/notes', data);
   return res.data;
@@ -17,6 +33,16 @@ export async function createNote(data) {
 
 export async function updateNote(id, data) {
   const res = await api.patch(`/notes/${id}`, data);
+  return res.data;
+}
+
+export async function renameNote(id, title) {
+  const res = await api.patch(`/notes/${id}/rename`, { title });
+  return res.data;
+}
+
+export async function replaceNoteFiles(id, files) {
+  const res = await api.patch(`/notes/${id}/replace`, { files });
   return res.data;
 }
 

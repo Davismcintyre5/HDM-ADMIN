@@ -8,7 +8,7 @@ export {
 export * from './auth';
 export * from './users';
 export * from './courses';
-export * from './topics';
+export * from './subjects';
 export * from './lessons';
 export * from './notes';
 export * from './papers';
