@@ -2,8 +2,8 @@ import { useNavigate } from 'react-router-dom'
 import {
   HiShoppingCart, HiShieldCheck, HiSparkles,
   HiBriefcase, HiGlobe,
-  HiMail, HiWifi, HiCash, HiShoppingBag, HiArrowRight, HiAcademicCap,
-  HiPlus, HiCloud,
+  HiMail, HiCash, HiShoppingBag, HiArrowRight, HiAcademicCap,
+  HiPlus, HiCloud, HiServer,
 } from 'react-icons/hi'
 
 const systems = [
@@ -12,6 +12,12 @@ const systems = [
     icon: HiShoppingCart, bgGradient: 'from-blue-500 to-blue-600', bgLight: 'bg-blue-50 dark:bg-blue-950',
     textColor: 'text-blue-600 dark:text-blue-400', borderColor: 'border-blue-200 dark:border-blue-800',
     hoverBg: 'hover:bg-blue-600', stats: { transactions: '12,456', revenue: '$234K', uptime: '99.9%' }
+  },
+  {
+    id: 'hdmisp', name: 'HDM ISP', description: 'Internet service provider billing & management',
+    icon: HiServer, bgGradient: 'from-cyan-500 to-blue-600', bgLight: 'bg-cyan-50 dark:bg-cyan-950',
+    textColor: 'text-cyan-600 dark:text-cyan-400', borderColor: 'border-cyan-200 dark:border-cyan-800',
+    hoverBg: 'hover:bg-cyan-600', stats: { providers: '3', transactions: '340', uptime: '99.9%' }
   },
   {
     id: 'portfolio', name: 'HDM', description: 'Company portfolio & showcase',
@@ -72,12 +78,6 @@ const systems = [
     icon: HiCash, bgGradient: 'from-blue-600 to-blue-700', bgLight: 'bg-blue-50 dark:bg-blue-950',
     textColor: 'text-blue-600 dark:text-blue-400', borderColor: 'border-blue-200 dark:border-blue-800',
     hoverBg: 'hover:bg-blue-700', stats: { users: '10K', volume: 'KES 1.5M', uptime: '99.9%' }
-  },
-  {
-    id: 'hdmnet', name: 'HDM NET', description: 'WiFi billing & hotspot management',
-    icon: HiWifi, bgGradient: 'from-cyan-500 to-blue-600', bgLight: 'bg-cyan-50 dark:bg-cyan-950',
-    textColor: 'text-cyan-600 dark:text-cyan-400', borderColor: 'border-cyan-200 dark:border-cyan-800',
-    hoverBg: 'hover:bg-cyan-600', stats: { owners: '156', networks: '423', revenue: '$45K' }
   },
   {
     id: 'marketbridge', name: 'MarketBridge', description: 'Multi-vendor marketplace',
