@@ -6,6 +6,7 @@ import Payments from '../../pages/bridge/Payments';
 import Invoices from '../../pages/bridge/Invoices';
 import Plans from '../../pages/bridge/Plans';
 import PaymentMethods from '../../pages/bridge/PaymentMethods';
+import Senders from '../../pages/bridge/Senders';
 import Analytics from '../../pages/bridge/Analytics';
 import Notifications from '../../pages/bridge/Notifications';
 import Health from '../../pages/bridge/Health';
@@ -28,6 +29,7 @@ const routes = (
     <Route path="invoices" element={<Invoices />} />
     <Route path="plans" element={<Plans />} />
     <Route path="payment-methods" element={<PaymentMethods />} />
+    <Route path="senders" element={<Senders />} />
     <Route path="analytics" element={<Analytics />} />
     <Route path="notifications" element={<Notifications />} />
     <Route path="health" element={<Health />} />
