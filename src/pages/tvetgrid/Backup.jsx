@@ -126,16 +126,34 @@ export default function Backup() {
     }
   };
 
-  const handleDownload = async (row) => {
-    try {
-      const res = await getBackupDownloadUrl(row._id || row.id);
-      const url = res?.data?.url || res?.url;
-      if (url) window.open(url, '_blank', 'noopener,noreferrer');
-      else throw new Error('No download URL');
-    } catch (err) {
-      toast.error(err.message || 'Download failed');
-    }
-  };
+const handleDownload = async (row) => {
+  try {
+    const res = await getBackupDownloadUrl(row._id || row.id);
+    const url = res?.data?.url || res?.url;
+    const fileName = res?.data?.fileName || row.fileName || 'backup.json';
+    if (!url) throw new Error('No download URL');
+
+    const blobRes = await fetch(url);
+    if (!blobRes.ok) throw new Error(`Fetch failed: ${blobRes.status}`);
+
+    const blob = await blobRes.blob();
+    const blobUrl = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = fileName;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+
+    toast.success('Download started');
+  } catch (err) {
+    toast.error(err.message || 'Download failed');
+  }
+};
 
   const handleEmail = async () => {
     if (!emailModal.backup) return;

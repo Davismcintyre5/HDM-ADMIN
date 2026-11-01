@@ -23,7 +23,6 @@ const NAV = [
   { to: '/tvetgrid', icon: HiViewGrid, label: 'Dashboard', end: true },
   { to: '/tvetgrid/users', icon: HiUsers, label: 'Users' },
   { to: '/tvetgrid/courses', icon: HiBookOpen, label: 'Courses' },
-  { to: '/tvetgrid/lessons', icon: HiVideoCamera, label: 'Lessons' },
   { to: '/tvetgrid/notes', icon: HiDocumentText, label: 'Notes' },
   { to: '/tvetgrid/papers', icon: HiClipboardList, label: 'Papers' },
   { to: '/tvetgrid/meetings', icon: HiUserGroup, label: 'Meetings' },

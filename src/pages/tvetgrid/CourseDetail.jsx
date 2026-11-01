@@ -7,7 +7,6 @@ import {
   HiSave,
   HiPencil,
   HiBookOpen,
-  HiVideoCamera,
   HiDocumentText,
   HiClipboardList,
   HiChevronUp,
@@ -30,13 +29,11 @@ import {
   deleteSubject,
   reorderSubjects,
 } from '../../services/tvetgrid/subjects';
-import { getLessons } from '../../services/tvetgrid/lessons';
 import { getNotes } from '../../services/tvetgrid/notes';
 import { getPapers } from '../../services/tvetgrid/papers';
 
 const TABS = [
   { key: 'subjects', label: 'Subjects', icon: HiBookOpen },
-  { key: 'lessons', label: 'Lessons', icon: HiVideoCamera },
   { key: 'notes', label: 'Notes', icon: HiDocumentText },
   { key: 'papers', label: 'Papers', icon: HiClipboardList },
 ];
@@ -63,9 +60,6 @@ export default function CourseDetail() {
   const [subjectForm, setSubjectForm] = useState({ name: '', code: '', description: '', order: 0 });
   const [savingSubject, setSavingSubject] = useState(false);
   const [confirmDeleteSubject, setConfirmDeleteSubject] = useState({ open: false, subject: null });
-
-  const [lessons, setLessons] = useState([]);
-  const [lessonsLoading, setLessonsLoading] = useState(false);
 
   const [notes, setNotes] = useState([]);
   const [notesLoading, setNotesLoading] = useState(false);
@@ -105,14 +99,6 @@ export default function CourseDetail() {
       .finally(() => setSubjectsLoading(false));
   };
 
-  const loadLessons = () => {
-    setLessonsLoading(true);
-    getLessons({ courseId: id, limit: 100 })
-      .then((res) => setLessons(res?.data || []))
-      .catch((err) => toast.error(err.message || 'Failed to load lessons'))
-      .finally(() => setLessonsLoading(false));
-  };
-
   const loadNotes = () => {
     setNotesLoading(true);
     getNotes({ courseId: id, limit: 100 })
@@ -131,7 +117,6 @@ export default function CourseDetail() {
 
   useEffect(() => {
     loadCourse();
-    loadLessons();
     loadNotes();
     loadPapers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -225,7 +210,6 @@ export default function CourseDetail() {
       toast.success('Subject deleted');
       setConfirmDeleteSubject({ open: false, subject: null });
       loadSubjects();
-      loadLessons();
       loadNotes();
       loadPapers();
     } catch (err) {
@@ -305,8 +289,8 @@ export default function CourseDetail() {
           <div className="text-sm text-amber-800 dark:text-amber-200">
             <p className="font-medium">Add at least one subject</p>
             <p className="mt-1 text-xs opacity-90">
-              Lessons, notes, and papers attach to a subject. Add the first
-              subject below before creating content.
+              Notes and papers attach to a subject. Add the first subject below
+              before creating content.
             </p>
           </div>
         </div>
@@ -395,7 +379,7 @@ export default function CourseDetail() {
           title={`Subjects${subjects.length > 0 ? ` (${subjects.length})` : ''}`}
           description={
             subjects.length === 0
-              ? 'Add at least one subject before creating lessons, notes, or papers'
+              ? 'Add at least one subject before creating notes or papers'
               : undefined
           }
           actions={
@@ -417,8 +401,8 @@ export default function CourseDetail() {
             <div className="flex flex-col items-center gap-3 py-12 px-4 text-center">
               <HiBookOpen className="w-10 h-10 text-[var(--text-muted)]" />
               <p className="text-sm text-[var(--text-secondary)]">
-                Every course needs at least one subject before you can add
-                lessons, notes, or papers.
+                Every course needs at least one subject before you can add notes
+                or papers.
               </p>
               <Button
                 size="sm"
@@ -495,60 +479,6 @@ export default function CourseDetail() {
                   </li>
                 );
               })}
-            </ul>
-          )}
-        </Card>
-      )}
-
-      {tab === 'lessons' && hasSubjects && (
-        <Card
-          title={`Lessons (${lessons.length})`}
-          actions={
-            <Button
-              size="sm"
-              onClick={() => navigate(`/tvetgrid/lessons?courseId=${id}`)}
-            >
-              Manage lessons
-            </Button>
-          }
-          padding={false}
-        >
-          {lessonsLoading ? (
-            <div className="flex justify-center py-12">
-              <Spinner />
-            </div>
-          ) : lessons.length === 0 ? (
-            <p className="text-sm text-[var(--text-muted)] py-12 text-center">
-              No lessons yet.
-            </p>
-          ) : (
-            <ul className="divide-y divide-[var(--border-color)]">
-              {lessons.map((l) => (
-                <li key={l._id}>
-                  <button
-                    onClick={() => navigate(`/tvetgrid/lessons/${l._id}`)}
-                    className="w-full text-left px-4 py-3 hover:bg-[var(--bg-secondary)] transition-colors flex items-center justify-between gap-3"
-                    type="button"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-[var(--text-primary)] truncate">
-                        {l.title}
-                      </p>
-                      {l.video?.duration && (
-                        <p className="text-xs text-[var(--text-muted)]">
-                          {Math.round(l.video.duration / 60)} min video
-                        </p>
-                      )}
-                    </div>
-                    <Badge
-                      variant={l.isPublished ? 'success' : 'default'}
-                      dot
-                    >
-                      {l.isPublished ? 'Published' : 'Draft'}
-                    </Badge>
-                  </button>
-                </li>
-              ))}
             </ul>
           )}
         </Card>
@@ -722,7 +652,7 @@ export default function CourseDetail() {
         }
         onConfirm={handleDeleteSubject}
         title="Delete subject"
-        message={`Delete "${confirmDeleteSubject.subject?.name}"? Notes in this subject will be deleted; lessons and papers will be unpublished. This cannot be undone.`}
+        message={`Delete "${confirmDeleteSubject.subject?.name}"? Notes in this subject will be deleted; papers will be unpublished. This cannot be undone.`}
         confirmLabel="Delete"
         variant="danger"
       />
