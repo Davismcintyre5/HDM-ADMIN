@@ -4,6 +4,7 @@ import {
   HiBriefcase, HiGlobe,
   HiMail, HiCash, HiShoppingBag, HiArrowRight, HiAcademicCap,
   HiPlus, HiCloud, HiServer,
+  HiTicket,
 } from 'react-icons/hi'
 
 const systems = [
@@ -96,6 +97,12 @@ const systems = [
     icon: HiAcademicCap, bgGradient: 'from-amber-500 to-orange-600', bgLight: 'bg-amber-50 dark:bg-amber-950',
     textColor: 'text-amber-600 dark:text-amber-400', borderColor: 'border-amber-200 dark:border-amber-800',
     hoverBg: 'hover:bg-amber-600', stats: { schools: '45', students: '12K', teachers: '890' }
+  },
+  {
+    id: 'talanta', name: 'Talanta Sports City', description: 'Match ticketing & fan engagement',
+    icon: HiTicket, bgGradient: 'from-sky-500 to-blue-600', bgLight: 'bg-sky-50 dark:bg-sky-950',
+    textColor: 'text-sky-600 dark:text-sky-400', borderColor: 'border-sky-200 dark:border-sky-800',
+    hoverBg: 'hover:bg-sky-600', stats: { tickets: '—', sales: '—', fans: '—' }
   }
 ]
 

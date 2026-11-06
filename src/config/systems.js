@@ -1,12 +1,26 @@
+// src/config/systems.js
 import {
   HiShoppingCart, HiShieldCheck, HiSparkles,
   HiBriefcase, HiGlobe,
   HiMail, HiCash, HiShoppingBag, HiAcademicCap,
   HiPlus, HiCloud,
   HiServer,
+  HiTicket,
 } from 'react-icons/hi'
 
 export const systems = [
+  {
+    id: 'talanta',
+    name: 'Talanta Sports City',
+    description: 'Match ticketing & fan engagement',
+    icon: HiTicket,
+    bgGradient: 'from-sky-500 to-blue-600',
+    bgLight: 'bg-sky-50 dark:bg-sky-950',
+    textColor: 'text-sky-600 dark:text-sky-400',
+    borderColor: 'border-sky-200 dark:border-sky-800',
+    hoverBg: 'hover:bg-sky-600',
+    stats: { tickets: '—', sales: '—', fans: '—' }
+  },
   {
     id: 'smartpos',
     name: 'SmartPOS',
@@ -191,9 +205,15 @@ export const systems = [
 
 export function getSystem(id) {
   return systems.find(s => s.id === id) || {
-    id: 'unknown', name: 'System', description: 'Unknown system',
-    icon: HiSparkles, bgGradient: 'from-gray-500 to-gray-600',
-    bgLight: 'bg-gray-50 dark:bg-gray-900', textColor: 'text-gray-600 dark:text-gray-400',
-    borderColor: 'border-gray-200 dark:border-gray-700', hoverBg: 'hover:bg-gray-600', stats: {}
+    id: 'unknown',
+    name: 'System',
+    description: 'Unknown system',
+    icon: HiSparkles,
+    bgGradient: 'from-gray-500 to-gray-600',
+    bgLight: 'bg-gray-50 dark:bg-gray-900',
+    textColor: 'text-gray-600 dark:text-gray-400',
+    borderColor: 'border-gray-200 dark:border-gray-700',
+    hoverBg: 'hover:bg-gray-600',
+    stats: {}
   }
 }

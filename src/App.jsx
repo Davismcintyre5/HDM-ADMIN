@@ -1,3 +1,4 @@
+// src/App.jsx
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import LandingPage from './shared/pages/LandingPage'
 import ComingSoon from './shared/pages/ComingSoon'
@@ -16,6 +17,7 @@ import MarketBridgeApp from './apps/MarketBridgeApp'
 import RVNPApp from './apps/RVNPApp'
 import EduPrimeApp from './apps/EduPrimeApp'
 import FarmVexaApp from './apps/FarmVexaApp'
+import TalantaApp from './apps/TalantaApp'
 
 const routerFuture = { v7_startTransition: true, v7_relativeSplatPath: true }
 
@@ -35,6 +37,7 @@ const systemConfig = {
   marketbridge: true,
   rvnp: true,
   eduprime: true,
+  talanta: true,
 }
 
 function App() {
@@ -57,6 +60,7 @@ function App() {
         <Route path="/marketbridge/*" element={systemConfig.marketbridge ? <MarketBridgeApp /> : <ComingSoon />} />
         <Route path="/rvnp/*" element={systemConfig.rvnp ? <RVNPApp /> : <ComingSoon />} />
         <Route path="/eduprime/*" element={systemConfig.eduprime ? <EduPrimeApp /> : <ComingSoon />} />
+        <Route path="/talanta/*" element={systemConfig.talanta ? <TalantaApp /> : <ComingSoon />} />
         <Route path="*" element={<ComingSoon />} />
       </Routes>
     </BrowserRouter>
