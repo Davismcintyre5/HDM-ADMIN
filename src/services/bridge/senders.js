@@ -16,8 +16,8 @@ export async function updateSender(id, data) {
   const res = await api.put(`/senders/${id}`, data);
   return res.data;
 }
-export async function approveSender(id) {
-  const res = await api.put(`/senders/${id}/approve`);
+export async function approveSender(id, data = {}) {
+  const res = await api.put(`/senders/${id}/approve`, data);
   return res.data;
 }
 export async function rejectSender(id, reason) {

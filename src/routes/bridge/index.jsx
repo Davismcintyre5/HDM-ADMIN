@@ -7,6 +7,9 @@ import Invoices from '../../pages/bridge/Invoices';
 import Plans from '../../pages/bridge/Plans';
 import PaymentMethods from '../../pages/bridge/PaymentMethods';
 import Senders from '../../pages/bridge/Senders';
+import SmsWallets from '../../pages/bridge/SmsWallets';
+import SmsWalletDetail from '../../pages/bridge/SmsWalletDetail';
+import SmsMargin from '../../pages/bridge/SmsMargin';
 import Analytics from '../../pages/bridge/Analytics';
 import Notifications from '../../pages/bridge/Notifications';
 import Health from '../../pages/bridge/Health';
@@ -30,6 +33,9 @@ const routes = (
     <Route path="plans" element={<Plans />} />
     <Route path="payment-methods" element={<PaymentMethods />} />
     <Route path="senders" element={<Senders />} />
+    <Route path="sms/wallets" element={<SmsWallets />} />
+    <Route path="sms/wallets/:orgId" element={<SmsWalletDetail />} />
+    <Route path="sms/margin" element={<SmsMargin />} />
     <Route path="analytics" element={<Analytics />} />
     <Route path="notifications" element={<Notifications />} />
     <Route path="health" element={<Health />} />

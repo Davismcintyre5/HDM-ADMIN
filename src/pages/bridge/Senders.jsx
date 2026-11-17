@@ -25,31 +25,102 @@ import PageHeader from '../../components/bridge/ui/PageHeader';
 import { formatDate } from '../../utils/bridge/formatDate';
 import { HiPlus, HiPencil, HiTrash, HiCheck, HiX, HiStar } from 'react-icons/hi';
 
+const senderChannels = (s) => {
+  const ch = Array.isArray(s?.channels) && s.channels.length > 0 ? s.channels : ['email'];
+  return ch;
+};
+const hasSmsChannel = (s) => senderChannels(s).includes('sms');
+const hasEmailChannel = (s) => senderChannels(s).includes('email');
+
+function ChannelBadges({ sender }) {
+  const ch = senderChannels(sender);
+  const atReg = !!sender?.atRegistered;
+  return (
+    <div className="flex items-center gap-1 flex-wrap">
+      {ch.includes('email') && <Badge variant="indigo">Email</Badge>}
+      {ch.includes('sms') && (
+        <Badge variant={atReg ? 'success' : 'warning'}>
+          SMS{atReg ? '' : ' · pending AT'}
+        </Badge>
+      )}
+    </div>
+  );
+}
+
+function ChannelCheckboxes({ value, onChange, disabled }) {
+  const list = Array.isArray(value) && value.length > 0 ? value : ['email'];
+  const toggle = (ch) => {
+    if (disabled) return;
+    const next = list.includes(ch) ? list.filter(c => c !== ch) : [...list, ch];
+    if (next.length === 0) return;
+    onChange(next);
+  };
+  return (
+    <div className="space-y-2">
+      <label className="block text-sm font-medium text-[var(--text-secondary)]">Channels</label>
+      <div className="flex items-center gap-4">
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <input
+            type="checkbox"
+            checked={list.includes('email')}
+            onChange={() => toggle('email')}
+            disabled={disabled}
+            className="rounded"
+          />
+          <span>Email</span>
+        </label>
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <input
+            type="checkbox"
+            checked={list.includes('sms')}
+            onChange={() => toggle('sms')}
+            disabled={disabled}
+            className="rounded"
+          />
+          <span>SMS</span>
+        </label>
+      </div>
+      {list.includes('sms') && (
+        <p className="text-xs text-[var(--text-muted)]">
+          SMS requires Africa's Talking registration before approval.
+        </p>
+      )}
+    </div>
+  );
+}
+
 export default function Senders() {
-  /* ── Platform pool state ───────────────────────────────────── */
   const [grouped, setGrouped] = useState({ verified: [], pending: [], rejected: [] });
   const [defaultSender, setDefaultSender] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  /* ── Customer submissions state ────────────────────────────── */
   const [clientPending, setClientPending] = useState([]);
   const [clientRejected, setClientRejected] = useState([]);
   const [clientLoading, setClientLoading] = useState(true);
   const [showClientRejected, setShowClientRejected] = useState(false);
 
-  /* ── Modals ────────────────────────────────────────────────── */
-  const [addModal, setAddModal] = useState({ open: false, loading: false, form: { name: '', email: '', description: '', verifiedInBrevo: false } });
-  const [editModal, setEditModal] = useState({ open: false, sender: null, loading: false, form: { name: '', email: '', description: '', isActive: true } });
-  const [approveModal, setApproveModal] = useState({ open: false, sender: null, confirmed: false, loading: false });
+  const [addModal, setAddModal] = useState({
+    open: false, loading: false,
+    form: { name: '', email: '', description: '', verifiedInBrevo: false, channels: ['email'] },
+  });
+  const [editModal, setEditModal] = useState({
+    open: false, sender: null, loading: false,
+    form: { name: '', email: '', description: '', isActive: true },
+  });
+  const [approveModal, setApproveModal] = useState({
+    open: false, sender: null, confirmedBrevo: false, confirmedAt: false, loading: false,
+  });
   const [rejectModal, setRejectModal] = useState({ open: false, sender: null, reason: '', loading: false });
   const [deleteModal, setDeleteModal] = useState({ open: false, sender: null, loading: false });
   const [showRejected, setShowRejected] = useState(false);
 
-  /* ── Client review modals ──────────────────────────────────── */
-  const [clientApproveModal, setClientApproveModal] = useState({ open: false, sender: null, loading: false });
-  const [clientRejectModal, setClientRejectModal] = useState({ open: false, sender: null, reason: '', loading: false });
+  const [clientApproveModal, setClientApproveModal] = useState({
+    open: false, sender: null, confirmedAt: false, loading: false,
+  });
+  const [clientRejectModal, setClientRejectModal] = useState({
+    open: false, sender: null, reason: '', loading: false,
+  });
 
-  /* ── Loaders ───────────────────────────────────────────────── */
   const refreshPlatform = async () => {
     setLoading(true);
     try {
@@ -80,14 +151,20 @@ export default function Senders() {
 
   useEffect(() => { refresh(); }, []);
 
-  /* ── Platform pool actions ─────────────────────────────────── */
   const openAdd = () => {
-    setAddModal({ open: true, loading: false, form: { name: '', email: '', description: '', verifiedInBrevo: false } });
+    setAddModal({
+      open: true, loading: false,
+      form: { name: '', email: '', description: '', verifiedInBrevo: false, channels: ['email'] },
+    });
   };
 
   const submitAdd = async () => {
     const f = addModal.form;
     if (!f.name.trim() || !f.email.trim()) return;
+    if (!f.channels || f.channels.length === 0) {
+      alert('Select at least one channel');
+      return;
+    }
     setAddModal((s) => ({ ...s, loading: true }));
     try {
       await createSender({
@@ -95,6 +172,7 @@ export default function Senders() {
         email: f.email.trim(),
         description: f.description.trim() || undefined,
         verifiedInBrevo: f.verifiedInBrevo,
+        channels: f.channels,
       });
       setAddModal((s) => ({ ...s, open: false, loading: false }));
       await refreshPlatform();
@@ -106,9 +184,7 @@ export default function Senders() {
 
   const openEdit = (sender) => {
     setEditModal({
-      open: true,
-      sender,
-      loading: false,
+      open: true, sender, loading: false,
       form: {
         name: sender.name || '',
         email: sender.email || '',
@@ -137,13 +213,20 @@ export default function Senders() {
     }
   };
 
-  const openApprove = (sender) => setApproveModal({ open: true, sender, confirmed: false, loading: false });
+  const openApprove = (sender) => setApproveModal({
+    open: true, sender, confirmedBrevo: false, confirmedAt: false, loading: false,
+  });
 
   const submitApprove = async () => {
-    if (!approveModal.confirmed) return;
+    const sender = approveModal.sender;
+    const needsEmail = hasEmailChannel(sender);
+    const needsAt = hasSmsChannel(sender);
+    if (needsEmail && !approveModal.confirmedBrevo) return;
+    if (needsAt && !approveModal.confirmedAt) return;
     setApproveModal((s) => ({ ...s, loading: true }));
     try {
-      await approveSender(approveModal.sender._id);
+      const body = needsAt ? { atRegistered: true } : {};
+      await approveSender(sender._id, body);
       setApproveModal((s) => ({ ...s, open: false, loading: false }));
       await refreshPlatform();
     } catch (err) {
@@ -202,14 +285,19 @@ export default function Senders() {
     }
   };
 
-  /* ── Client review actions ─────────────────────────────────── */
-  const openClientApprove = (sender) => setClientApproveModal({ open: true, sender, loading: false });
+  const openClientApprove = (sender) => setClientApproveModal({
+    open: true, sender, confirmedAt: false, loading: false,
+  });
 
   const submitClientApprove = async () => {
+    const sender = clientApproveModal.sender;
+    const needsAt = hasSmsChannel(sender);
+    if (needsAt && !clientApproveModal.confirmedAt) return;
     setClientApproveModal((s) => ({ ...s, loading: true }));
     try {
-      await approveClientSender(clientApproveModal.sender._id);
-      setClientApproveModal({ open: false, sender: null, loading: false });
+      const body = needsAt ? { atRegistered: true } : {};
+      await approveClientSender(sender._id, body);
+      setClientApproveModal({ open: false, sender: null, confirmedAt: false, loading: false });
       await refreshClientReviews();
     } catch (err) {
       alert(err.response?.data?.error || err.message);
@@ -253,6 +341,11 @@ export default function Senders() {
       render: (row) => <span className="font-mono text-xs text-[var(--text-secondary)]">{row.email}</span>,
     },
     {
+      key: 'channels',
+      label: 'Channels',
+      render: (row) => <ChannelBadges sender={row} />,
+    },
+    {
       key: 'description',
       label: 'Description',
       render: (row) => <span className="text-xs text-[var(--text-muted)]">{row.description || '—'}</span>,
@@ -289,14 +382,9 @@ export default function Senders() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Senders"
-        description="Platform pool and customer submissions"
-      />
+      <PageHeader title="Senders" description="Platform pool and customer submissions" />
 
-      {/* ────────────────────────────────────────────────────────
-          CUSTOMER SUBMISSIONS — pending/rejected client senders
-          ──────────────────────────────────────────────────────── */}
+      {/* Customer submissions */}
       <Card>
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -327,6 +415,7 @@ export default function Senders() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-medium text-[var(--text-primary)]">{s.name}</p>
                       <Badge variant="warning">Pending</Badge>
+                      <ChannelBadges sender={s} />
                     </div>
                     <p className="text-sm font-mono text-[var(--text-secondary)] break-all">{s.email}</p>
 
@@ -366,7 +455,6 @@ export default function Senders() {
           </div>
         )}
 
-        {/* Rejected sub-section */}
         <div className="mt-6 border-t border-[var(--border-color)] pt-4">
           <button
             type="button"
@@ -396,6 +484,7 @@ export default function Senders() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-medium text-[var(--text-primary)]">{s.name}</p>
                       <Badge variant="danger">Rejected</Badge>
+                      <ChannelBadges sender={s} />
                     </div>
                     <p className="text-xs font-mono text-[var(--text-secondary)] break-all">{s.email}</p>
                     <p className="text-xs text-[var(--text-muted)] mt-1">
@@ -418,9 +507,7 @@ export default function Senders() {
         </div>
       </Card>
 
-      {/* ────────────────────────────────────────────────────────
-          PLATFORM POOL — default card + verified table
-          ──────────────────────────────────────────────────────── */}
+      {/* Default card */}
       <Card>
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
@@ -429,7 +516,10 @@ export default function Senders() {
             </h3>
             {defaultSender ? (
               <div>
-                <p className="text-lg font-semibold text-[var(--text-primary)]">{defaultSender.name}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-lg font-semibold text-[var(--text-primary)]">{defaultSender.name}</p>
+                  <ChannelBadges sender={defaultSender} />
+                </div>
                 <p className="text-sm text-[var(--text-secondary)] font-mono">{defaultSender.email}</p>
                 {defaultSender.description && (
                   <p className="text-xs text-[var(--text-muted)] mt-1">{defaultSender.description}</p>
@@ -444,6 +534,7 @@ export default function Senders() {
         </div>
       </Card>
 
+      {/* Verified table */}
       <Card>
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -463,6 +554,7 @@ export default function Senders() {
         />
       </Card>
 
+      {/* Pending platform senders */}
       <Card>
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -485,7 +577,10 @@ export default function Senders() {
               <div key={s._id} className="p-4 bg-[var(--bg-secondary)] rounded-lg space-y-2">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium text-[var(--text-primary)]">{s.name}</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-medium text-[var(--text-primary)]">{s.name}</p>
+                      <ChannelBadges sender={s} />
+                    </div>
                     <p className="text-sm font-mono text-[var(--text-secondary)]">{s.email}</p>
                     {s.description && (
                       <p className="text-xs text-[var(--text-muted)] mt-1">{s.description}</p>
@@ -509,6 +604,7 @@ export default function Senders() {
         )}
       </Card>
 
+      {/* Rejected platform senders */}
       <Card>
         <button
           onClick={() => setShowRejected(!showRejected)}
@@ -535,7 +631,10 @@ export default function Senders() {
             ) : (
               grouped.rejected.map((s) => (
                 <div key={s._id} className="p-3 bg-[var(--bg-secondary)] rounded-lg text-sm">
-                  <p className="font-medium text-[var(--text-primary)]">{s.name}</p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-medium text-[var(--text-primary)]">{s.name}</p>
+                    <ChannelBadges sender={s} />
+                  </div>
                   <p className="text-xs font-mono text-[var(--text-secondary)]">{s.email}</p>
                   {s.rejectionReason && (
                     <p className="text-xs text-red-600 mt-1">Reason: {s.rejectionReason}</p>
@@ -550,11 +649,7 @@ export default function Senders() {
         )}
       </Card>
 
-      {/* ────────────────────────────────────────────────────────
-          ALL MODALS
-          ──────────────────────────────────────────────────────── */}
-
-      {/* Add platform sender */}
+      {/* Add modal */}
       <Modal open={addModal.open} onClose={() => setAddModal((s) => ({ ...s, open: false }))} title="Add platform sender" size="md">
         <div className="space-y-4">
           <Input
@@ -576,6 +671,10 @@ export default function Senders() {
             onChange={(e) => setAddModal((s) => ({ ...s, form: { ...s.form, description: e.target.value } }))}
             placeholder="Use for transactional emails"
           />
+          <ChannelCheckboxes
+            value={addModal.form.channels}
+            onChange={(ch) => setAddModal((s) => ({ ...s, form: { ...s.form, channels: ch } }))}
+          />
           <div className="p-3 bg-[var(--bg-secondary)] rounded-lg">
             <Toggle
               label="Already verified this sender in Brevo"
@@ -587,6 +686,11 @@ export default function Senders() {
                 ? 'Sender will be added as live immediately.'
                 : 'Sender will be added to pending verification.'}
             </p>
+            {addModal.form.channels?.includes('sms') && !addModal.form.verifiedInBrevo && (
+              <p className="text-xs text-yellow-600 mt-2">
+                SMS sender — you'll need to register it in Africa's Talking before approving.
+              </p>
+            )}
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="secondary" onClick={() => setAddModal((s) => ({ ...s, open: false }))}>
@@ -599,9 +703,17 @@ export default function Senders() {
         </div>
       </Modal>
 
-      {/* Edit platform sender */}
+      {/* Edit modal */}
       <Modal open={editModal.open} onClose={() => setEditModal((s) => ({ ...s, open: false }))} title="Edit sender" size="md">
         <div className="space-y-4">
+          {editModal.sender && (
+            <div className="p-3 bg-[var(--bg-secondary)] rounded-lg text-xs">
+              <p className="text-[var(--text-muted)]">
+                Channels: <ChannelBadges sender={editModal.sender} />
+              </p>
+              <p className="text-[var(--text-muted)] mt-1">Channels cannot be changed after creation.</p>
+            </div>
+          )}
           <Input
             label="Name"
             value={editModal.form.name}
@@ -639,22 +751,52 @@ export default function Senders() {
         {approveModal.sender && (
           <div className="space-y-4">
             <div className="p-3 bg-[var(--bg-secondary)] rounded-lg text-sm">
-              <p className="font-medium text-[var(--text-primary)]">{approveModal.sender.name}</p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="font-medium text-[var(--text-primary)]">{approveModal.sender.name}</p>
+                <ChannelBadges sender={approveModal.sender} />
+              </div>
               <p className="text-xs font-mono text-[var(--text-secondary)]">{approveModal.sender.email}</p>
             </div>
-            <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-sm text-yellow-800 dark:text-yellow-200">
-              Before approving, make sure this address is verified in your Brevo dashboard.
-            </div>
-            <Toggle
-              label="I've confirmed this sender is verified in Brevo"
-              checked={approveModal.confirmed}
-              onChange={(v) => setApproveModal((s) => ({ ...s, confirmed: v }))}
-            />
+
+            {hasEmailChannel(approveModal.sender) && (
+              <>
+                <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-sm text-yellow-800 dark:text-yellow-200">
+                  Before approving, make sure this address is verified in your Brevo dashboard.
+                </div>
+                <Toggle
+                  label="I've confirmed this sender is verified in Brevo"
+                  checked={approveModal.confirmedBrevo}
+                  onChange={(v) => setApproveModal((s) => ({ ...s, confirmedBrevo: v }))}
+                />
+              </>
+            )}
+
+            {hasSmsChannel(approveModal.sender) && (
+              <>
+                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-sm text-blue-800 dark:text-blue-200">
+                  Before approving, register this Sender ID in Africa's Talking and wait for AT confirmation.
+                </div>
+                <Toggle
+                  label="I've registered this sender in Africa's Talking"
+                  checked={approveModal.confirmedAt}
+                  onChange={(v) => setApproveModal((s) => ({ ...s, confirmedAt: v }))}
+                />
+              </>
+            )}
+
             <div className="flex justify-end gap-2">
               <Button variant="secondary" onClick={() => setApproveModal((s) => ({ ...s, open: false }))}>
                 Cancel
               </Button>
-              <Button variant="success" onClick={submitApprove} loading={approveModal.loading} disabled={!approveModal.confirmed}>
+              <Button
+                variant="success"
+                onClick={submitApprove}
+                loading={approveModal.loading}
+                disabled={
+                  (hasEmailChannel(approveModal.sender) && !approveModal.confirmedBrevo) ||
+                  (hasSmsChannel(approveModal.sender) && !approveModal.confirmedAt)
+                }
+              >
                 Approve
               </Button>
             </div>
@@ -662,12 +804,15 @@ export default function Senders() {
         )}
       </Modal>
 
-      {/* Reject platform sender */}
+      {/* Reject modal */}
       <Modal open={rejectModal.open} onClose={() => setRejectModal((s) => ({ ...s, open: false }))} title="Reject platform sender" size="md">
         {rejectModal.sender && (
           <div className="space-y-4">
             <div className="p-3 bg-[var(--bg-secondary)] rounded-lg text-sm">
-              <p className="font-medium text-[var(--text-primary)]">{rejectModal.sender.name}</p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="font-medium text-[var(--text-primary)]">{rejectModal.sender.name}</p>
+                <ChannelBadges sender={rejectModal.sender} />
+              </div>
               <p className="text-xs font-mono text-[var(--text-secondary)]">{rejectModal.sender.email}</p>
             </div>
             <div>
@@ -678,7 +823,7 @@ export default function Senders() {
                 value={rejectModal.reason}
                 onChange={(e) => setRejectModal((s) => ({ ...s, reason: e.target.value }))}
                 rows={3}
-                placeholder="e.g. Not verified in Brevo"
+                placeholder="e.g. Not verified in Brevo, or Sender ID rejected by Africa's Talking"
                 className="w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--input-bg)] text-sm focus:ring-2 focus:ring-indigo-500 resize-y"
               />
             </div>
@@ -694,7 +839,7 @@ export default function Senders() {
         )}
       </Modal>
 
-      {/* Delete platform sender */}
+      {/* Delete modal */}
       <Modal open={deleteModal.open} onClose={() => setDeleteModal((s) => ({ ...s, open: false }))} title="Delete sender" size="md">
         {deleteModal.sender && (
           <div className="space-y-4">
@@ -723,14 +868,17 @@ export default function Senders() {
       {/* Approve customer submission */}
       <Modal
         open={clientApproveModal.open}
-        onClose={() => setClientApproveModal({ open: false, sender: null, loading: false })}
+        onClose={() => setClientApproveModal({ open: false, sender: null, confirmedAt: false, loading: false })}
         title="Approve customer sender"
         size="md"
       >
         {clientApproveModal.sender && (
           <div className="space-y-4">
             <div className="p-3 bg-[var(--bg-secondary)] rounded-lg text-sm">
-              <p className="font-medium text-[var(--text-primary)]">{clientApproveModal.sender.name}</p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="font-medium text-[var(--text-primary)]">{clientApproveModal.sender.name}</p>
+                <ChannelBadges sender={clientApproveModal.sender} />
+              </div>
               <p className="text-xs font-mono text-[var(--text-secondary)] break-all">{clientApproveModal.sender.email}</p>
               <p className="text-xs text-[var(--text-muted)] mt-1">
                 {clientApproveModal.sender.organizationId?.name || '—'}
@@ -741,14 +889,34 @@ export default function Senders() {
                     : ''}
               </p>
             </div>
+
             <p className="text-sm text-[var(--text-secondary)]">
               Approving enables this address for the customer immediately. It will <strong>not</strong> be shared with other organizations.
             </p>
+
+            {hasSmsChannel(clientApproveModal.sender) && (
+              <>
+                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-sm text-blue-800 dark:text-blue-200">
+                  This sender includes SMS. Register the Sender ID in Africa's Talking and wait for AT approval before enabling.
+                </div>
+                <Toggle
+                  label="I've registered this sender in Africa's Talking"
+                  checked={clientApproveModal.confirmedAt}
+                  onChange={(v) => setClientApproveModal((s) => ({ ...s, confirmedAt: v }))}
+                />
+              </>
+            )}
+
             <div className="flex justify-end gap-2">
-              <Button variant="secondary" onClick={() => setClientApproveModal({ open: false, sender: null, loading: false })}>
+              <Button variant="secondary" onClick={() => setClientApproveModal({ open: false, sender: null, confirmedAt: false, loading: false })}>
                 Cancel
               </Button>
-              <Button variant="success" onClick={submitClientApprove} loading={clientApproveModal.loading}>
+              <Button
+                variant="success"
+                onClick={submitClientApprove}
+                loading={clientApproveModal.loading}
+                disabled={hasSmsChannel(clientApproveModal.sender) && !clientApproveModal.confirmedAt}
+              >
                 Approve
               </Button>
             </div>
@@ -766,7 +934,10 @@ export default function Senders() {
         {clientRejectModal.sender && (
           <div className="space-y-4">
             <div className="p-3 bg-[var(--bg-secondary)] rounded-lg text-sm">
-              <p className="font-medium text-[var(--text-primary)]">{clientRejectModal.sender.name}</p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="font-medium text-[var(--text-primary)]">{clientRejectModal.sender.name}</p>
+                <ChannelBadges sender={clientRejectModal.sender} />
+              </div>
               <p className="text-xs font-mono text-[var(--text-secondary)] break-all">{clientRejectModal.sender.email}</p>
               <p className="text-xs text-[var(--text-muted)] mt-1">
                 {clientRejectModal.sender.organizationId?.name || '—'}
@@ -785,7 +956,7 @@ export default function Senders() {
                 value={clientRejectModal.reason}
                 onChange={(e) => setClientRejectModal((s) => ({ ...s, reason: e.target.value }))}
                 rows={3}
-                placeholder="e.g. Please verify the sending domain in your Brevo account first"
+                placeholder="e.g. Please verify the sending domain in your Brevo account first, or Sender ID was rejected by AT"
                 className="w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--input-bg)] text-sm focus:ring-2 focus:ring-indigo-500 resize-y"
               />
               <p className="text-xs text-[var(--text-muted)] mt-1">

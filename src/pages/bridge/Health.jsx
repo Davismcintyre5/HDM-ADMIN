@@ -178,7 +178,23 @@ export default function Health() {
 
         <ServiceCard icon={HiDeviceMobile} title="SMS" status={data.sms?.status}>
           <Detail label="Provider" value={data.sms?.provider} />
-          <Detail label="Sender" value={data.sms?.sender} />
+          <Detail label="Username" value={data.sms?.username} />
+          <Detail label="Enabled" value={data.sms?.enabled ? 'Yes' : 'No'} />
+          <Detail label="Configured" value={data.sms?.configured ? 'Yes' : 'No'} />
+          <Detail
+            label="Sender mode"
+            value={data.sms?.senderMode === 'explicit' ? 'Custom' : 'AT default'}
+          />
+          <Detail label="Sender ID" value={data.sms?.senderId} />
+          <Detail
+            label="Rate"
+            value={data.sms?.rateKes != null ? `KSh ${Number(data.sms.rateKes).toFixed(2)} / SMS` : undefined}
+          />
+          {data.sms?.configured && !data.sms?.enabled && (
+            <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-2">
+              Configured — flip <span className="font-mono">sms_enabled</span> in System Settings to activate
+            </p>
+          )}
         </ServiceCard>
 
         <ServiceCard icon={SiStripe} title="Stripe" status={data.stripe?.status}>

@@ -5,8 +5,8 @@ export async function listClientSendersForReview(params = {}) {
   return res.data;
 }
 
-export async function approveClientSender(id) {
-  const res = await api.put(`/senders/client-review/${id}/approve`);
+export async function approveClientSender(id, data = {}) {
+  const res = await api.put(`/senders/client-review/${id}/approve`, data);
   return res.data;
 }
 

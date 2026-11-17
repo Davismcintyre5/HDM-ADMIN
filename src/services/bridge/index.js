@@ -6,6 +6,7 @@ export * from './plans';
 export * from './currency';
 export * from './system';
 export * from './senders';
+export * from './sms';                    // ← ADD
 export * from './analytics';
 export * from './aiWidget';
 export * from './legal';
